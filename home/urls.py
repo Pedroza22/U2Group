@@ -1,6 +1,5 @@
 from django.urls import path, include
 from rest_framework import routers
-from home.views import HomeViewSet
 from drf_spectacular.views import SpectacularSwaggerView
 
 from home.views import BlogViewSet, ProjectViewSet
