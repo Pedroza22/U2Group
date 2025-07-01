@@ -3,11 +3,12 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
-import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useLanguage } from "@/hooks/use-language"
 
 export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
   const { t } = useLanguage()
+  const router = useRouter()
 
   const INITIAL_AREA = 75
   const MAX_AREA = 200
@@ -16,110 +17,59 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
   const [area, setArea] = useState(INITIAL_AREA)
   const total = area * PRICE_PER_M2
 
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/home/calculator/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          area_m2: area
+        })
+      })
+
+      if (!response.ok) {
+        alert("❌ Hubo un error al guardar. Intenta nuevamente.")
+      } else {
+        alert("✅ Cotización guardada con éxito.")
+      }
+
+      router.push("/disena")
+    } catch (error) {
+      alert("⚠️ Error de conexión con el servidor.")
+      router.push("/disena")
+    }
+  }
+
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <div
-        style={{
-          maxWidth: "800px",
-          margin: "0 auto",
-          padding: "40px 20px",
-          backgroundColor: "transparent",
-          textAlign: "center",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "clamp(28px, 6vw, 48px)",
-            fontWeight: "bold",
-            lineHeight: "1.1",
-            color: "#262626",
-            marginBottom: "0",
-          }}
-          className="neutra-font-bold animate-fade-in-up"
-        >
+      <div style={{ maxWidth: "800px", margin: "0 auto", padding: "40px 20px", backgroundColor: "transparent", textAlign: "center" }}>
+        <h1 className="neutra-font-bold animate-fade-in-up" style={{ fontSize: "clamp(28px, 6vw, 48px)", fontWeight: "bold", lineHeight: "1.1", color: "#262626", marginBottom: "0" }}>
           {t("turn every square meter info")}{" "}
-          <span
-            style={{
-              color: "#0D00FF",
-              fontSize: "clamp(40px, 7vw, 80px)",
-              fontWeight: "900",
-              display: "inline-block",
-              lineHeight: "0.9",
-            }}
-            className="neutra-font-black"
-          >
+          <span className="neutra-font-black" style={{ color: "#0D00FF", fontSize: "clamp(40px, 7vw, 80px)", fontWeight: "900", display: "inline-block", lineHeight: "0.9" }}>
             {t("something extraordinary")}{" "}
           </span>
         </h1>
 
-        <p
-          style={{
-            marginTop: "20px",
-            fontSize: "clamp(22px, 5vw, 32px)",
-            fontWeight: "600",
-            color: "#262626",
-          }}
-          className="neutra-font-bold animate-fade-in-up animation-delay-200"
-        >
+        <p className="neutra-font-bold animate-fade-in-up animation-delay-200" style={{ marginTop: "20px", fontSize: "clamp(22px, 5vw, 32px)", fontWeight: "600", color: "#262626" }}>
           {t("start building your dream space starting from")}{" "}
-          <span
-            style={{
-              color: "#0D00FF",
-              fontSize: "clamp(32px, 6vw, 60px)",
-              fontWeight: "900",
-              lineHeight: "1.1",
-            }}
-            className="neutra-font-black"
-          >
+          <span className="neutra-font-black" style={{ color: "#0D00FF", fontSize: "clamp(32px, 6vw, 60px)", fontWeight: "900", lineHeight: "1.1" }}>
             ${total.toLocaleString("en-US")} USD
           </span>{" "}
           {t("With U2 Group")}
         </p>
 
-        <p
-          style={{
-            marginTop: "10px",
-            fontSize: "clamp(18px, 4vw, 22px)",
-            fontWeight: "500",
-            color: "#262626",
-          }}
-          className="neutra-font animate-fade-in-up animation-delay-400"
-        >
-          <span
-            style={{
-              fontSize: "clamp(20px, 5vw, 27px)",
-              fontWeight: 600,
-              color: "#0D00FF",
-            }}
-            className="neutra-font-bold"
-          >
+        <p className="neutra-font animate-fade-in-up animation-delay-400" style={{ marginTop: "10px", fontSize: "clamp(18px, 4vw, 22px)", fontWeight: "500", color: "#262626" }}>
+          <span className="neutra-font-bold" style={{ fontSize: "clamp(20px, 5vw, 27px)", fontWeight: 600, color: "#0D00FF" }}>
             {area} m²
           </span>{" "}
-          · ${PRICE_PER_M2} {t("USD per m²")} ·{" "}
+          · ${PRICE_PER_M2} {t("USD per m²")} ·
         </p>
 
-        <p
-          style={{
-            marginTop: "10px",
-            fontSize: "clamp(16px, 4vw, 20px)",
-            color: "#262626",
-            marginBottom: "30px",
-          }}
-          className="neutra-font animate-fade-in-up animation-delay-500"
-        >
+        <p className="neutra-font animate-fade-in-up animation-delay-500" style={{ marginTop: "10px", fontSize: "clamp(16px, 4vw, 20px)", color: "#262626", marginBottom: "30px" }}>
           {t("Learn More About")}{" "}
-          <a
-            href="https://u2group.framer.website/u2/en/calculator"
-            style={{
-              color: "#0D00FF",
-              fontWeight: "600",
-              fontSize: "inherit",
-              textDecoration: "none",
-              borderBottom: "2px solid #0D00FF",
-              paddingBottom: "2px",
-            }}
-            className="neutra-font-bold hover:opacity-80 transition-opacity"
-          >
+          <a href="https://u2group.framer.website/u2/en/calculator" className="neutra-font-bold hover:opacity-80 transition-opacity" style={{ color: "#0D00FF", fontWeight: "600", fontSize: "inherit", textDecoration: "none", borderBottom: "2px solid #0D00FF", paddingBottom: "2px" }}>
             {t("How We Calculate Your Project Cost")}
           </a>
         </p>
@@ -133,6 +83,7 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
             step={1}
             value={area}
             onChange={(e) => setArea(Number.parseInt(e.target.value))}
+            className="slider cursor-pointer"
             style={{
               width: "100%",
               height: "8px",
@@ -142,90 +93,62 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
               opacity: "0.8",
               transition: "opacity 0.2s",
             }}
-            className="slider cursor-pointer"
           />
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto animate-fade-in-up animation-delay-700">
-          <Link href="/disena" className="w-full sm:w-auto">
-            <Button
-              className="w-full sm:w-auto text-white px-8 py-3 text-lg font-medium neutra-font-bold rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg"
-              style={{
-                backgroundColor: "#0D00FF",
-                border: "none",
-              }}
-            >
-              {t("Design Your Project")}
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
+          <Button
+            onClick={handleSubmit}
+            className="w-full sm:w-auto text-white px-8 py-3 text-lg font-medium neutra-font-bold rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg"
+            style={{ backgroundColor: "#0D00FF", border: "none" }}
+          >
+            {t("Design Your Project")}
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
         </div>
 
-        {/* Botón de cerrar si es modal */}
         {onClose && (
           <div className="text-center mt-6 animate-fade-in-up animation-delay-800">
-            <Button
-              onClick={onClose}
-              variant="outline"
-              className="neutra-font bg-transparent border-gray-300 text-gray-600 hover:bg-gray-50"
-            >
+            <Button onClick={onClose} variant="outline" className="neutra-font bg-transparent border-gray-300 text-gray-600 hover:bg-gray-50">
               {t("language") === "es" ? "Cerrar" : "Close"}
             </Button>
           </div>
         )}
       </div>
 
-      {/* Estilos CSS para animaciones y slider */}
       <style jsx>{`
         @keyframes fade-in-up {
-          from { 
-            opacity: 0; 
-            transform: translateY(30px); 
+          from {
+            opacity: 0;
+            transform: translateY(30px);
           }
-          to { 
-            opacity: 1; 
-            transform: translateY(0); 
+          to {
+            opacity: 1;
+            transform: translateY(0);
           }
         }
-        
+
         .animate-fade-in-up {
           animation: fade-in-up 0.8s ease-out forwards;
           opacity: 0;
         }
-        
-        .animation-delay-200 {
-          animation-delay: 0.2s;
-        }
-        
-        .animation-delay-400 {
-          animation-delay: 0.4s;
-        }
-        
-        .animation-delay-500 {
-          animation-delay: 0.5s;
-        }
-        
-        .animation-delay-600 {
-          animation-delay: 0.6s;
-        }
-        
-        .animation-delay-700 {
-          animation-delay: 0.7s;
-        }
-        
-        .animation-delay-800 {
-          animation-delay: 0.8s;
-        }
+
+        .animation-delay-200 { animation-delay: 0.2s; }
+        .animation-delay-400 { animation-delay: 0.4s; }
+        .animation-delay-500 { animation-delay: 0.5s; }
+        .animation-delay-600 { animation-delay: 0.6s; }
+        .animation-delay-700 { animation-delay: 0.7s; }
+        .animation-delay-800 { animation-delay: 0.8s; }
 
         .slider {
           -webkit-appearance: none;
           appearance: none;
         }
-        
+
         .slider:hover {
           opacity: 1;
         }
-        
+
         .slider::-webkit-slider-thumb {
           -webkit-appearance: none;
           appearance: none;
@@ -259,16 +182,11 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
           box-shadow: 0 4px 12px rgba(13, 0, 255, 0.4);
         }
 
-        .slider::-webkit-slider-track {
-          height: 8px;
-          border-radius: 5px;
-          background: transparent;
-        }
-
+        .slider::-webkit-slider-track,
         .slider::-moz-range-track {
           height: 8px;
           border-radius: 5px;
-          background: #ddd;
+          background: transparent;
         }
 
         .slider::-moz-range-progress {

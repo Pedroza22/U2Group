@@ -1,18 +1,26 @@
-from rest_framework import viewsets
-from .models import Blog, Project
-from .serializer import BlogSerializer, ProjectSerializer
-from rest_framework.decorators import action
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import status
+from .serializer import CalculatorEntrySerializer
+from .services import calculate_price
 
-class BlogViewSet(viewsets.ReadOnlyModelViewSet):
-        queryset = Blog.objects.all().order_by('-date')
-        serializer_class = BlogSerializer
-@action(detail=False)
-def featured(self, request):
-        blogs = self.queryset.filter(featured=True)[:4]
-        serializer = self.get_serializer(blogs, many=True)
-        return Response(serializer.data)
+@api_view(['POST'])
+def save_calculator_entry(request):
+    try:
+        data = request.data.copy()
 
-class ProjectViewSet(viewsets.ReadOnlyModelViewSet):
-        queryset = Project.objects.all()
-        serializer_class = ProjectSerializer
+        area = int(data.get('area_m2', 0))
+        if area <= 0:
+            return Response({"error": "Área inválida"}, status=status.HTTP_400_BAD_REQUEST)
+
+        price = area * 4  # Precio fijo por metro cuadrado
+        data['price'] = price
+
+        serializer = CalculatorEntrySerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

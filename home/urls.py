@@ -1,14 +1,10 @@
-from django.urls import path, include
-from rest_framework import routers
-from drf_spectacular.views import SpectacularSwaggerView
-
-from home.views import BlogViewSet, ProjectViewSet
-
-router = routers.DefaultRouter()
-router.register(r'blogs', BlogViewSet, basename='blogs')
-router.register(r'projects', ProjectViewSet, basename='projects')
+# home/urls.py
+from django.urls import path
+from drf_spectacular.views import SpectacularSwaggerView, SpectacularAPIView
+from home.views import save_calculator_entry
 
 urlpatterns = [
-    path('home/', include(router.urls)),
+    path('calculator/', save_calculator_entry, name='price-calc'),  # POST desde el frontend
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
