@@ -9,7 +9,7 @@ import Link from "next/link"
 import Header from "@/components/layout/header"
 import Footer from "@/components/layout/footer"
 import { useLanguage } from "@/hooks/use-language"
-import { DESIGN_CATEGORIES, BASE_PRICE, type DesignOption } from "@/data/design-options"
+import { getDesignCategories, getBasicCategories, BASE_PRICE, type DesignOption } from "@/data/design-options"
 
 export default function DisenaPage() {
   const { t } = useLanguage()
@@ -23,10 +23,27 @@ export default function DisenaPage() {
   const [activeTab, setActiveTab] = useState("basics")
   const [selectedOptions, setSelectedOptions] = useState<Record<string, DesignOption[]>>({})
   const [showQuote, setShowQuote] = useState(false)
+  const [currentMainImage, setCurrentMainImage] = useState<string>("/images/u2-logo.png") // Imagen por defecto
+
+  // Obtener categorías dinámicamente
+  const [designCategories, setDesignCategories] = useState(getDesignCategories())
+  const [basicCategories, setBasicCategories] = useState(getBasicCategories())
+  const [selectedBasics, setSelectedBasics] = useState<Record<string, number>>({
+    floors: 1,
+    rooms: 1,
+    bathrooms: 1,
+    parking: 0,
+  })
+
+  // Refrescar categorías cuando se monta el componente
+  useEffect(() => {
+    setDesignCategories(getDesignCategories())
+    setBasicCategories(getBasicCategories())
+  }, [])
 
   // Función para manejar selección de opciones de diseño
   const handleOptionSelect = (categoryId: string, option: DesignOption) => {
-    const category = DESIGN_CATEGORIES.find((c) => c.id === categoryId)
+    const category = designCategories.find((c) => c.id === categoryId)
     if (!category) return
 
     setSelectedOptions((prev) => {
@@ -36,20 +53,84 @@ export default function DisenaPage() {
         // Permitir múltiples selecciones para esta categoría
         const exists = current.find((o) => o.id === option.id)
         if (exists) {
-          return { ...prev, [categoryId]: current.filter((o) => o.id !== option.id) }
+          const newOptions = { ...prev, [categoryId]: current.filter((o) => o.id !== option.id) }
+          updateMainImage(newOptions)
+          return newOptions
         } else {
-          return { ...prev, [categoryId]: [...current, option] }
+          const newOptions = { ...prev, [categoryId]: [...current, option] }
+          updateMainImage(newOptions)
+          return newOptions
         }
       } else {
         // Solo una selección permitida
-        return { ...prev, [categoryId]: [option] }
+        const newOptions = { ...prev, [categoryId]: [option] }
+        updateMainImage(newOptions)
+        return newOptions
       }
     })
+  }
+
+  // Función para manejar selección de categorías básicas
+  const handleBasicSelect = (categoryId: string, quantity: number) => {
+    setSelectedBasics((prev) => ({
+      ...prev,
+      [categoryId]: quantity,
+    }))
+
+    // Actualizar imagen principal si es necesario
+    const category = basicCategories.find((c) => c.id === categoryId)
+    if (category && category.image && quantity > 0) {
+      setCurrentMainImage(category.image)
+    }
+  }
+
+  // Función para actualizar la imagen principal según las selecciones
+  const updateMainImage = (options: Record<string, DesignOption[]>) => {
+    // Buscar la última opción seleccionada que tenga imagen
+    let latestImageOption: DesignOption | null = null
+
+    // Priorizar opciones que no sean "basics" para mostrar imágenes más interesantes
+    const priorityCategories = [
+      "additions",
+      "family",
+      "hobbies",
+      "sustainability",
+      "productivity",
+      "interior-design",
+      "s2-systems",
+    ]
+
+    for (const categoryId of priorityCategories) {
+      const categoryOptions = options[categoryId] || []
+      if (categoryOptions.length > 0) {
+        // Tomar la última opción seleccionada de esta categoría
+        const lastOption = categoryOptions[categoryOptions.length - 1]
+        if (lastOption.image && lastOption.image !== "/placeholder.svg?height=100&width=100") {
+          latestImageOption = lastOption
+          break
+        }
+      }
+    }
+
+    // Si no hay opciones con imagen, usar el logo por defecto
+    if (latestImageOption && latestImageOption.image) {
+      setCurrentMainImage(latestImageOption.image)
+    } else {
+      setCurrentMainImage("/images/u2-logo.png")
+    }
   }
 
   // Calcular precio total del diseño
   const calculateTotal = () => {
     let total = BASE_PRICE
+
+    // Agregar costo de categorías básicas
+    basicCategories.forEach((category) => {
+      const quantity = selectedBasics[category.id] || 0
+      total += quantity * category.pricePerUnit
+    })
+
+    // Agregar costo de otras opciones
     Object.values(selectedOptions).forEach((options) => {
       options.forEach((option) => {
         total += option.price
@@ -122,7 +203,7 @@ export default function DisenaPage() {
                 {/* Imagen del proyecto */}
                 <div className="mb-8">
                   <Image
-                    src="/placeholder.svg?height=300&width=600"
+                    src={currentMainImage || "/placeholder.svg"}
                     alt="House Design"
                     width={600}
                     height={300}
@@ -152,7 +233,7 @@ export default function DisenaPage() {
                 <div className="space-y-4 mb-8 text-left">
                   {Object.entries(selectedOptions).map(([categoryId, options]) => {
                     if (options.length === 0) return null
-                    const category = DESIGN_CATEGORIES.find((c) => c.id === categoryId)
+                    const category = designCategories.find((c) => c.id === categoryId)
                     const categoryTotal = options.reduce((sum, opt) => sum + opt.price, 0)
 
                     return (
@@ -218,9 +299,7 @@ export default function DisenaPage() {
                 {/* Placeholder para Cal*/}
                 <div className="bg-gray-100 rounded-lg p-8 min-h-[400px] flex items-center justify-center border-2 border-dashed border-gray-300">
                   <div className="text-center">
-                    <p className="text-gray-500 neutra-font">
-                      {t("calendarPlaceholder") || ""}
-                    </p>
+                    <p className="text-gray-500 neutra-font">{t("calendarPlaceholder") || ""}</p>
                     <p className="text-sm text-gray-400 neutra-font mt-2">Cal.app integration coming soon</p>
                   </div>
                 </div>
@@ -243,7 +322,7 @@ export default function DisenaPage() {
   }
 
   // Pantalla principal de configuración
-  const currentCategory = DESIGN_CATEGORIES.find((c) => c.id === activeTab)
+  const currentCategory = designCategories.find((c) => c.id === activeTab)
 
   return (
     <div className="min-h-screen bg-gray-50 neutra-font">
@@ -274,146 +353,86 @@ export default function DisenaPage() {
       {/* Contenido principal */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Imagen principal del diseño */}
+          {/* Imagen principal del diseño - DINÁMICA */}
           <div className="lg:col-span-2">
-            <div className="relative aspect-video rounded-lg overflow-hidden mb-8">
+            <div className="relative aspect-video rounded-lg overflow-hidden mb-8 bg-white border-2 border-gray-200">
               <Image
-                src="/placeholder.svg?height=400&width=600"
-                alt="Modern House Design"
+                src={currentMainImage || "/placeholder.svg"}
+                alt="Design Preview"
                 fill
-                className="object-cover"
+                className="object-contain transition-all duration-500"
+                priority
               />
+
+              {/* Indicador de imagen activa */}
+              <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm neutra-font">
+                {currentMainImage === "/images/u2-logo.png" ? "Vista por defecto" : "Vista personalizada"}
+              </div>
             </div>
           </div>
 
-          {/* Panel de configuración lateral */}
+          {/* Panel de configuración lateral con altura fija y scroll */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg p-6 shadow-lg sticky top-8">
-              <div className="mb-6">
-                <h2 className="text-2xl neutra-font-bold text-blue-600 mb-4">
-                  {t("chooseThe") || "Choose the"} {currentCategory?.name}
+            <div className="bg-white rounded-lg shadow-lg sticky top-8 flex flex-col" style={{ height: "555px" }}>
+              {/* Header del panel */}
+              <div className="p-4 border-b flex-shrink-0">
+                <h2 className="text-xl neutra-font-bold text-blue-600">
+                  {t("chooseThe") || "Elige los"} {currentCategory?.name}
                 </h2>
+              </div>
 
-                {/* Opciones de la categoría actual */}
+              {/* Contenido scrolleable */}
+              <div className="flex-1 overflow-y-auto p-4">
                 {currentCategory && (
                   <div className="space-y-4">
                     {/* Categoría especial "basics" con opciones agrupadas */}
                     {activeTab === "basics" ? (
                       <>
-                        {/* Selector de pisos */}
-                        <div className="mb-6">
-                          <h3 className="text-lg neutra-font-bold text-gray-900 mb-3 flex items-center">
-                            <Image
-                              src="/placeholder.svg?height=40&width=40"
-                              alt="Floors"
-                              width={40}
-                              height={40}
-                              className="mr-3 rounded"
-                            />
-                            {t("floors") || "Floors"}
-                          </h3>
-                          <div className="flex gap-2">
-                            {[1, 2, 3].map((num) => (
-                              <button
-                                key={`${num}-floor`}
-                                onClick={() =>
-                                  handleOptionSelect("basics", {
-                                    id: `${num}-floor`,
-                                    name: `${num} Floor${num > 1 ? "s" : ""}`,
-                                    price: 0,
-                                  })
-                                }
-                                className={`px-4 py-2 rounded-lg border-2 transition-colors neutra-font ${
-                                  isOptionSelected("basics", `${num}-floor`)
-                                    ? "border-blue-600 bg-blue-50 text-blue-600"
-                                    : "border-gray-300 hover:border-gray-400"
-                                }`}
-                              >
-                                {num}
-                              </button>
-                            ))}
+                        {basicCategories.map((category) => (
+                          <div key={category.id} className="mb-6">
+                            <h3 className="text-sm neutra-font-bold text-gray-900 mb-3 flex items-center">
+                              {category.image && (
+                                <Image
+                                  src={category.image || "/placeholder.svg"}
+                                  alt={category.nameEs}
+                                  width={30}
+                                  height={30}
+                                  className="mr-2 rounded"
+                                />
+                              )}
+                              {category.nameEs}
+                            </h3>
+                            <div className="grid grid-cols-5 gap-2">
+                              {Array.from({ length: category.maxQuantity - category.minQuantity + 1 }, (_, i) => {
+                                const quantity = category.minQuantity + i
+                                return (
+                                  <button
+                                    key={quantity}
+                                    onClick={() => handleBasicSelect(category.id, quantity)}
+                                    className={`px-2 py-2 rounded-lg border-2 transition-colors neutra-font text-sm ${
+                                      selectedBasics[category.id] === quantity
+                                        ? "border-blue-600 bg-blue-50 text-blue-600"
+                                        : "border-gray-300 hover:border-gray-400"
+                                    }`}
+                                  >
+                                    {quantity}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1 neutra-font">
+                              {t("price") || "Precio"}: ${category.pricePerUnit} USD por unidad
+                            </p>
                           </div>
-                          <p className="text-sm text-gray-500 mt-1 neutra-font">{t("price") || "Precio"}: $0</p>
-                        </div>
-
-                        {/* Selector de habitaciones */}
-                        <div className="mb-6">
-                          <h3 className="text-lg neutra-font-bold text-gray-900 mb-3 flex items-center">
-                            <Image
-                              src="/placeholder.svg?height=40&width=40"
-                              alt="Rooms"
-                              width={40}
-                              height={40}
-                              className="mr-3 rounded"
-                            />
-                            {t("rooms") || "Rooms"}
-                          </h3>
-                          <div className="flex gap-2 flex-wrap">
-                            {[1, 2, 3, 4, 5].map((num) => (
-                              <button
-                                key={`${num}-room`}
-                                onClick={() =>
-                                  handleOptionSelect("basics", {
-                                    id: `${num}-room`,
-                                    name: `${num} Room${num > 1 ? "s" : ""}`,
-                                    price: 0,
-                                  })
-                                }
-                                className={`px-4 py-2 rounded-lg border-2 transition-colors neutra-font ${
-                                  isOptionSelected("basics", `${num}-room`)
-                                    ? "border-blue-600 bg-blue-50 text-blue-600"
-                                    : "border-gray-300 hover:border-gray-400"
-                                }`}
-                              >
-                                {num}
-                              </button>
-                            ))}
-                          </div>
-                          <p className="text-sm text-gray-500 mt-1 neutra-font">{t("price") || "Precio"}: $0</p>
-                        </div>
-
-                        {/* Selector de baños */}
-                        <div className="mb-6">
-                          <h3 className="text-lg neutra-font-bold text-gray-900 mb-3 flex items-center">
-                            <Image
-                              src="/placeholder.svg?height=40&width=40"
-                              alt="Bath Rooms"
-                              width={40}
-                              height={40}
-                              className="mr-3 rounded"
-                            />
-                            {t("bathrooms") || "Bath Rooms"}
-                          </h3>
-                          <div className="grid grid-cols-5 gap-2">
-                            {[1, 2, 3, 4, 5].map((num) => (
-                              <button
-                                key={`${num}-bath`}
-                                onClick={() =>
-                                  handleOptionSelect("basics", {
-                                    id: `${num}-bath`,
-                                    name: `${num} Bathroom${num > 1 ? "s" : ""}`,
-                                    price: 0,
-                                  })
-                                }
-                                className={`px-3 py-2 rounded-lg border-2 transition-colors neutra-font text-sm ${
-                                  isOptionSelected("basics", `${num}-bath`)
-                                    ? "border-blue-600 bg-blue-50"
-                                    : "border-gray-200 hover:border-gray-300"
-                                }`}
-                              >
-                                {num}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
+                        ))}
                       </>
                     ) : (
                       /* Otras categorías con opciones estándar */
-                      <div className="grid gap-4">
+                      <div className="space-y-3">
                         {currentCategory.options.map((option) => (
                           <Card
                             key={option.id}
-                            className={`p-4 cursor-pointer transition-all hover:shadow-md ${
+                            className={`p-3 cursor-pointer transition-all hover:shadow-md ${
                               isOptionSelected(currentCategory.id, option.id)
                                 ? "border-blue-600 bg-blue-50"
                                 : "border-gray-200 hover:border-gray-300"
@@ -425,19 +444,19 @@ export default function DisenaPage() {
                                 <Image
                                   src={option.image || "/placeholder.svg"}
                                   alt={option.name}
-                                  width={50}
-                                  height={50}
-                                  className="rounded"
+                                  width={40}
+                                  height={40}
+                                  className="rounded object-cover"
                                 />
                               )}
                               <div className="flex-1">
-                                <h4 className="neutra-font-bold text-gray-900">{option.name}</h4>
-                                <p className="text-sm text-blue-600 neutra-font">${option.price} USD</p>
+                                <h4 className="neutra-font-bold text-gray-900 text-sm">{option.name}</h4>
+                                <p className="text-xs text-blue-600 neutra-font">${option.price} USD</p>
                               </div>
                               {/* Checkmark para opciones seleccionadas */}
                               {isOptionSelected(currentCategory.id, option.id) && (
-                                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-                                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                                     <path
                                       fillRule="evenodd"
                                       d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -455,29 +474,30 @@ export default function DisenaPage() {
                 )}
               </div>
 
-              {/* Panel de precio total */}
-              <div className="border-t pt-6">
+              {/* Panel de precio total - FIJO en la parte inferior */}
+              <div className="border-t p-4 bg-white rounded-b-lg flex-shrink-0">
                 <div className="text-center mb-4">
-                  <p className="text-lg neutra-font-bold text-gray-700">{t("designCost")}</p>
-                  <div className="text-4xl neutra-font-black text-blue-600">
-                    ${calculateTotal()} <span className="text-lg neutra-font">USD</span>
+                  <p className="text-sm neutra-font-bold text-gray-700">{t("designCost") || "Costo del Diseño"}</p>
+                  <div className="text-2xl neutra-font-black text-blue-600">
+                    ${calculateTotal()} <span className="text-sm neutra-font">USD</span>
                   </div>
                 </div>
 
-                {/* Botón para obtener cotización */}
-                <Button
-                  onClick={() => setShowQuote(true)}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 neutra-font-bold"
-                >
-                  {t("getYourQuote")}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
+                {/* Botones de acción */}
+                <div className="space-y-2">
+                  <Button
+                    onClick={() => setShowQuote(true)}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 neutra-font-bold text-sm"
+                  >
+                    {t("getYourQuote") || "Obtén tu Cotización"}
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
 
-                {/* Botón siguiente */}
-                <Button className="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white py-3 neutra-font-bold">
-                  {t("next")}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 neutra-font-bold text-sm">
+                    {t("next") || "Siguiente"}
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

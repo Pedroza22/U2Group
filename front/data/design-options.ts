@@ -1,4 +1,7 @@
 // DATOS MODULARES PARA LA PÁGINA DE DISEÑO
+// Mantiene compatibilidad con datos estáticos + sincronización con AdminDataManager
+
+import { AdminDataManager } from "./admin-data"
 
 export interface DesignOption {
   id: string
@@ -18,7 +21,18 @@ export interface DesignCategory {
   required?: boolean
 }
 
-// CONFIGURACIÓN DE PRECIOS - FÁCIL DE EDITAR
+export interface BasicCategory {
+  id: string
+  name: string
+  nameEs: string
+  nameEn: string
+  pricePerUnit: number
+  image?: string
+  maxQuantity: number
+  minQuantity: number
+}
+
+// CONFIGURACIÓN DE PRECIOS ESTÁTICOS - MANTENER COMO FALLBACK
 export const DESIGN_PRICING = {
   // BASICS
   FLOORS: [
@@ -118,8 +132,8 @@ export const DESIGN_PRICING = {
   ],
 }
 
-// CATEGORÍAS ORGANIZADAS
-export const DESIGN_CATEGORIES: DesignCategory[] = [
+// CATEGORÍAS ESTÁTICAS - MANTENER COMO FALLBACK
+const STATIC_DESIGN_CATEGORIES: DesignCategory[] = [
   {
     id: "basics",
     name: "Basics",
@@ -190,5 +204,124 @@ export const DESIGN_CATEGORIES: DesignCategory[] = [
   },
 ]
 
+// FUNCIÓN PARA OBTENER CATEGORÍAS BÁSICAS
+export const getBasicCategories = (): BasicCategory[] => {
+  try {
+    if (typeof window !== "undefined") {
+      const adminCategories = AdminDataManager.getBasicCategories()
+      if (adminCategories && adminCategories.length > 0) {
+        return adminCategories.map((category) => ({
+          id: category.id,
+          name: category.name,
+          nameEs: category.nameEs,
+          nameEn: category.nameEn,
+          pricePerUnit: category.pricePerUnit,
+          image: category.image,
+          maxQuantity: category.maxQuantity,
+          minQuantity: category.minQuantity,
+        }))
+      }
+    }
+  } catch (error) {
+    console.warn("Error loading admin basic categories, using static fallback:", error)
+  }
+
+  // Fallback a datos estáticos
+  return [
+    {
+      id: "floors",
+      name: "Floors",
+      nameEs: "Pisos",
+      nameEn: "Floors",
+      pricePerUnit: 100,
+      image: "/placeholder.svg?height=100&width=100",
+      maxQuantity: 5,
+      minQuantity: 1,
+    },
+    {
+      id: "rooms",
+      name: "Rooms",
+      nameEs: "Habitaciones",
+      nameEn: "Rooms",
+      pricePerUnit: 50,
+      image: "/placeholder.svg?height=100&width=100",
+      maxQuantity: 8,
+      minQuantity: 1,
+    },
+    {
+      id: "bathrooms",
+      name: "Bathrooms",
+      nameEs: "Baños",
+      nameEn: "Bathrooms",
+      pricePerUnit: 75,
+      image: "/placeholder.svg?height=100&width=100",
+      maxQuantity: 6,
+      minQuantity: 1,
+    },
+    {
+      id: "parking",
+      name: "Parking",
+      nameEs: "Parqueaderos",
+      nameEn: "Parking",
+      pricePerUnit: 50,
+      image: "/placeholder.svg?height=100&width=100",
+      maxQuantity: 4,
+      minQuantity: 0,
+    },
+  ]
+}
+
+// FUNCIÓN PARA OBTENER CATEGORÍAS (SIN BASICS)
+export const getDesignCategories = (): DesignCategory[] => {
+  try {
+    if (typeof window !== "undefined") {
+      const adminCategories = AdminDataManager.getDesignOptions()
+      if (adminCategories && adminCategories.length > 0) {
+        return adminCategories.map((category) => ({
+          id: category.id,
+          name: category.name,
+          nameEs: category.nameEs,
+          nameEn: category.nameEn,
+          options: category.options.map((option) => ({
+            id: option.id,
+            name: option.name,
+            price: option.price,
+            image: option.image,
+            description: option.description,
+          })),
+          allowMultiple: category.allowMultiple,
+          required: category.required,
+        }))
+      }
+    }
+  } catch (error) {
+    console.warn("Error loading admin design options, using static fallback:", error)
+  }
+
+  // Fallback a datos estáticos (sin basics)
+  return STATIC_DESIGN_CATEGORIES.filter((cat) => cat.id !== "basics")
+}
+
+// FUNCIÓN PARA OBTENER OPCIONES POR CATEGORÍA
+export const getOptionsByCategory = (categoryId: string): DesignOption[] => {
+  const categories = getDesignCategories()
+  const category = categories.find((c) => c.id === categoryId)
+  return category?.options || []
+}
+
+// FUNCIÓN PARA OBTENER UNA OPCIÓN ESPECÍFICA
+export const getOptionById = (categoryId: string, optionId: string): DesignOption | null => {
+  const options = getOptionsByCategory(categoryId)
+  return options.find((option) => option.id === optionId) || null
+}
+
+// MANTENER COMPATIBILIDAD CON EL CÓDIGO EXISTENTE
+export const DESIGN_CATEGORIES: DesignCategory[] = getDesignCategories()
+
 // PRECIO BASE
 export const BASE_PRICE = 400
+
+// FUNCIÓN PARA REFRESCAR DATOS (llamar cuando se actualicen desde admin)
+export const refreshDesignCategories = (): DesignCategory[] => {
+  return getDesignCategories()
+}
