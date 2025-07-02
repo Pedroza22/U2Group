@@ -19,7 +19,7 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
 
   const handleSubmit = async () => {
     try {
-      const response = await fetch("http://localhost:8000/home/calculator/", {
+      await fetch("http://localhost:8000/home/calculator/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -29,52 +29,127 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
         })
       })
 
-      if (!response.ok) {
-        alert("❌ Hubo un error al guardar. Intenta nuevamente.")
-      } else {
-        alert("✅ Cotización guardada con éxito.")
-      }
-
+      // Redirigir sin alertas
       router.push("/disena")
     } catch (error) {
-      alert("⚠️ Error de conexión con el servidor.")
+      // Redirigir incluso si falla la conexión
       router.push("/disena")
     }
   }
 
   return (
     <div className="w-full max-w-4xl mx-auto">
-      <div style={{ maxWidth: "800px", margin: "0 auto", padding: "40px 20px", backgroundColor: "transparent", textAlign: "center" }}>
-        <h1 className="neutra-font-bold animate-fade-in-up" style={{ fontSize: "clamp(28px, 6vw, 48px)", fontWeight: "bold", lineHeight: "1.1", color: "#262626", marginBottom: "0" }}>
+      <div
+        style={{
+          maxWidth: "800px",
+          margin: "0 auto",
+          padding: "40px 20px",
+          backgroundColor: "transparent",
+          textAlign: "center"
+        }}
+      >
+        <h1
+          className="neutra-font-bold animate-fade-in-up"
+          style={{
+            fontSize: "clamp(28px, 6vw, 48px)",
+            fontWeight: "bold",
+            lineHeight: "1.1",
+            color: "#262626",
+            marginBottom: "0"
+          }}
+        >
           {t("turn every square meter info")}{" "}
-          <span className="neutra-font-black" style={{ color: "#0D00FF", fontSize: "clamp(40px, 7vw, 80px)", fontWeight: "900", display: "inline-block", lineHeight: "0.9" }}>
+          <span
+            className="neutra-font-black"
+            style={{
+              color: "#0D00FF",
+              fontSize: "clamp(40px, 7vw, 80px)",
+              fontWeight: "900",
+              display: "inline-block",
+              lineHeight: "0.9"
+            }}
+          >
             {t("something extraordinary")}{" "}
           </span>
         </h1>
 
-        <p className="neutra-font-bold animate-fade-in-up animation-delay-200" style={{ marginTop: "20px", fontSize: "clamp(22px, 5vw, 32px)", fontWeight: "600", color: "#262626" }}>
+        <p
+          className="neutra-font-bold animate-fade-in-up animation-delay-200"
+          style={{
+            marginTop: "20px",
+            fontSize: "clamp(22px, 5vw, 32px)",
+            fontWeight: "600",
+            color: "#262626"
+          }}
+        >
           {t("start building your dream space starting from")}{" "}
-          <span className="neutra-font-black" style={{ color: "#0D00FF", fontSize: "clamp(32px, 6vw, 60px)", fontWeight: "900", lineHeight: "1.1" }}>
+          <span
+            className="neutra-font-black"
+            style={{
+              color: "#0D00FF",
+              fontSize: "clamp(32px, 6vw, 60px)",
+              fontWeight: "900",
+              lineHeight: "1.1"
+            }}
+          >
             ${total.toLocaleString("en-US")} USD
           </span>{" "}
           {t("With U2 Group")}
         </p>
 
-        <p className="neutra-font animate-fade-in-up animation-delay-400" style={{ marginTop: "10px", fontSize: "clamp(18px, 4vw, 22px)", fontWeight: "500", color: "#262626" }}>
-          <span className="neutra-font-bold" style={{ fontSize: "clamp(20px, 5vw, 27px)", fontWeight: 600, color: "#0D00FF" }}>
+        <p
+          className="neutra-font animate-fade-in-up animation-delay-400"
+          style={{
+            marginTop: "10px",
+            fontSize: "clamp(18px, 4vw, 22px)",
+            fontWeight: "500",
+            color: "#262626"
+          }}
+        >
+          <span
+            className="neutra-font-bold"
+            style={{
+              fontSize: "clamp(20px, 5vw, 27px)",
+              fontWeight: 600,
+              color: "#0D00FF"
+            }}
+          >
             {area} m²
           </span>{" "}
           · ${PRICE_PER_M2} {t("USD per m²")} ·
         </p>
 
-        <p className="neutra-font animate-fade-in-up animation-delay-500" style={{ marginTop: "10px", fontSize: "clamp(16px, 4vw, 20px)", color: "#262626", marginBottom: "30px" }}>
+        <p
+          className="neutra-font animate-fade-in-up animation-delay-500"
+          style={{
+            marginTop: "10px",
+            fontSize: "clamp(16px, 4vw, 20px)",
+            color: "#262626",
+            marginBottom: "30px"
+          }}
+        >
           {t("Learn More About")}{" "}
-          <a href="https://u2group.framer.website/u2/en/calculator" className="neutra-font-bold hover:opacity-80 transition-opacity" style={{ color: "#0D00FF", fontWeight: "600", fontSize: "inherit", textDecoration: "none", borderBottom: "2px solid #0D00FF", paddingBottom: "2px" }}>
+          <a
+            href="https://u2group.framer.website/u2/en/calculator"
+            className="neutra-font-bold hover:opacity-80 transition-opacity"
+            style={{
+              color: "#0D00FF",
+              fontWeight: "600",
+              fontSize: "inherit",
+              textDecoration: "none",
+              borderBottom: "2px solid #0D00FF",
+              paddingBottom: "2px"
+            }}
+          >
             {t("How We Calculate Your Project Cost")}
           </a>
         </p>
 
-        <div style={{ marginTop: "30px", marginBottom: "40px" }} className="animate-fade-in-up animation-delay-600">
+        {/* Rango de metros cuadrados */}
+        <div
+          style={{ marginTop: "30px", marginBottom: "40px" }}
+          className="animate-fade-in-up animation-delay-600"
+        >
           <input
             id="area-range"
             type="range"
@@ -91,11 +166,12 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
               background: `linear-gradient(to right, #0D00FF 0%, #0D00FF ${(area / MAX_AREA) * 100}%, #ddd ${(area / MAX_AREA) * 100}%, #ddd 100%)`,
               outline: "none",
               opacity: "0.8",
-              transition: "opacity 0.2s",
+              transition: "opacity 0.2s"
             }}
           />
         </div>
 
+        {/* Botón para enviar y redirigir */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto animate-fade-in-up animation-delay-700">
           <Button
             onClick={handleSubmit}
@@ -107,9 +183,14 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
           </Button>
         </div>
 
+        {/* Botón cerrar si aplica */}
         {onClose && (
           <div className="text-center mt-6 animate-fade-in-up animation-delay-800">
-            <Button onClick={onClose} variant="outline" className="neutra-font bg-transparent border-gray-300 text-gray-600 hover:bg-gray-50">
+            <Button
+              onClick={onClose}
+              variant="outline"
+              className="neutra-font bg-transparent border-gray-300 text-gray-600 hover:bg-gray-50"
+            >
               {t("language") === "es" ? "Cerrar" : "Close"}
             </Button>
           </div>
@@ -133,12 +214,24 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
           opacity: 0;
         }
 
-        .animation-delay-200 { animation-delay: 0.2s; }
-        .animation-delay-400 { animation-delay: 0.4s; }
-        .animation-delay-500 { animation-delay: 0.5s; }
-        .animation-delay-600 { animation-delay: 0.6s; }
-        .animation-delay-700 { animation-delay: 0.7s; }
-        .animation-delay-800 { animation-delay: 0.8s; }
+        .animation-delay-200 {
+          animation-delay: 0.2s;
+        }
+        .animation-delay-400 {
+          animation-delay: 0.4s;
+        }
+        .animation-delay-500 {
+          animation-delay: 0.5s;
+        }
+        .animation-delay-600 {
+          animation-delay: 0.6s;
+        }
+        .animation-delay-700 {
+          animation-delay: 0.7s;
+        }
+        .animation-delay-800 {
+          animation-delay: 0.8s;
+        }
 
         .slider {
           -webkit-appearance: none;
@@ -155,7 +248,7 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
           height: 25px;
           width: 25px;
           border-radius: 50%;
-          background: #0D00FF;
+          background: #0d00ff;
           cursor: pointer;
           box-shadow: 0 2px 6px rgba(13, 0, 255, 0.3);
           transition: all 0.2s ease;
@@ -170,7 +263,7 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
           height: 25px;
           width: 25px;
           border-radius: 50%;
-          background: #0D00FF;
+          background: #0d00ff;
           cursor: pointer;
           border: none;
           box-shadow: 0 2px 6px rgba(13, 0, 255, 0.3);
@@ -192,7 +285,7 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
         .slider::-moz-range-progress {
           height: 8px;
           border-radius: 5px;
-          background: #0D00FF;
+          background: #0d00ff;
         }
       `}</style>
     </div>

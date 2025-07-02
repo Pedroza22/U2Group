@@ -29,7 +29,7 @@ export default function ProyectosPage() {
 
       {/* GRID DE PROYECTOS */}
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {projects.map((project, index) => {
             const heights = [
               "aspect-[4/5]",
@@ -54,7 +54,7 @@ export default function ProyectosPage() {
                     alt={project.name}
                     fill
                     className="object-cover transition-all duration-300 group-hover:brightness-75"
-                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                   />
 
                   <div className="absolute top-4 right-4 text-gray-600 neutra-font-bold text-lg opacity-70">U2</div>
