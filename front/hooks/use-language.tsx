@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { createContext, useContext, useState, useEffect } from "react"
 
 // Contexto para manejar el idioma de la aplicación
@@ -26,12 +25,26 @@ const translations = {
     blog: "Blog",
     contacto: "Contacto",
 
+    // Selector de idioma - AGREGAR ESTAS LÍNEAS
+    spanish: "Español",
+    english: "English",
+
     // Hero section - textos principales de la página de inicio
     heroDescription: "U2 Group es una incubadora de ideas arquitectónicas que desafían el status quo.",
     heroText:
       "Transformamos espacios en experiencias únicas que reflejan tu visión y estilo de vida, combinando innovación, funcionalidad y diseño excepcional.",
 
-    // Calculadora de precios
+    // Calculadora de precios - NUEVAS TRADUCCIONES AGREGADAS
+    calculatorMainTitle: "Convierte cada metro cuadrado en",
+    calculatorMainHighlight: "algo extraordinario.",
+    calculatorStartText: "Comienza a construir el espacio de tus sueños desde",
+    calculatorWithText: "con U2 Group.",
+    calculatorPerM2: "USD por m²",
+    calculatorLearnMore: "Aprende más sobre",
+    calculatorHowWeCalculate: "cómo calculamos tu proyecto",
+    calculatorDesignButton: "Diseña conmigo",
+
+    // Calculadora - textos adicionales
     calculatorTitle: "Calcula el costo de tu proyecto",
     calculatorTitleHighlight: "Obtén una estimación instantánea",
     calculatorDescription:
@@ -63,28 +76,28 @@ const translations = {
     aboutText1: "creadores de experiencias",
     aboutText2:
       "Con más de 4 años de experiencia en la industria, hemos trabajado en diferentes climas, contextos y desafíos siempre con el mismo objetivo: hacer que la arquitectura sea más simple, inteligente y personal.",
-    ourMission: "Our Mission",
-    ourVision: "Our Vision",
+    ourMission: "Nuestra Misión",
+    ourVision: "Nuestra Visión",
     ourMissionText:
       "Creemos que la arquitectura no debe sentirse distante, intimidante o reservada para unos pocos. Debe sentirse como hogar desde el primer boceto hasta el último ladrillo. Por eso creamos espacios que son honestos, humanos y profundamente personales.",
     ourVisionText:
       "Aspiramos a convertirnos en una referencia global para la arquitectura reflexiva, sostenible y profundamente humana, inspirando a las personas a construir espacios que importan, no solo estructuras que existen.",
-    whatWeDo: "What We Do",
-    weSpecialize: "We Specialize",
-    globalVision: "Global Vision",
-    noGuesswork: "No Guesswork",
-    realTeam: "Real Team",
-    howWeDo: "How We Do",
-    creativity: "Creativity",
-    sustainability: "Sustainability",
-    quality: "Quality",
-    innovation: "Innovation",
-    clientCentric: "Client Centric",
-    integrity: "Integrity",
-    collaboration: "Collaboration",
-    attentionToDetail: "Attention to Detail",
-    flexibility: "Flexibility",
-    weListen: "We listen",
+    whatWeDo: "Qué Hacemos",
+    weSpecialize: "Nos Especializamos",
+    globalVision: "Visión Global",
+    noGuesswork: "Sin Conjeturas",
+    realTeam: "Equipo Real",
+    howWeDo: "Cómo lo Hacemos",
+    creativity: "Creatividad",
+    sustainability: "Sostenibilidad",
+    quality: "Calidad",
+    innovation: "Innovación",
+    clientCentric: "Centrado en el Cliente",
+    integrity: "Integridad",
+    collaboration: "Colaboración",
+    attentionToDetail: "Atención al Detalle",
+    flexibility: "Flexibilidad",
+    weListen: "Escuchamos",
     weListenText: "No tomamos decisiones hasta que tu visión esté clara.",
 
     // Página de contacto
@@ -177,10 +190,24 @@ const translations = {
     blog: "Blog",
     contacto: "Contact",
 
+    // Language selector - AGREGAR ESTAS LÍNEAS
+    spanish: "Español",
+    english: "English",
+
     // Hero section
     heroDescription: "U2 Group is an incubator of architectural ideas that challenge the status quo.",
     heroText:
       "We transform spaces into unique experiences that reflect your vision and lifestyle, combining innovation, functionality and exceptional design.",
+
+    // Price calculator - NUEVAS TRADUCCIONES AGREGADAS
+    calculatorMainTitle: "Turn every square meter into",
+    calculatorMainHighlight: "something extraordinary.",
+    calculatorStartText: "Start building your dream space starting from",
+    calculatorWithText: "with U2 Group.",
+    calculatorPerM2: "USD per m²",
+    calculatorLearnMore: "Learn more about",
+    calculatorHowWeCalculate: "how we calculate your project",
+    calculatorDesignButton: "Design with me",
 
     // Price calculator
     calculatorTitle: "Calculate your project cost",

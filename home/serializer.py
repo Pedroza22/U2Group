@@ -1,7 +1,13 @@
 from rest_framework import serializers
-from .models import CalculatorEntry
+from .models import CalculatorEntry, Project
 
 class CalculatorEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = CalculatorEntry
-        fields = ['id', 'area_m2', 'price', 'created_at']  # Asegúrate de incluir los campos correctos
+        fields = ['id', 'area_m2', 'price', 'created_at']
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id', 'name', 'description', 'latitude', 'longitude', 'created_at']

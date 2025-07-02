@@ -1,29 +1,38 @@
 "use client"
 
-import { Instagram, Facebook, Youtube, Linkedin, Twitter } from "lucide-react"
+import { Instagram, Facebook, Youtube, Linkedin, Twitter, FileText } from "lucide-react"
 import Link from "next/link"
-import Image from "next/image"
 
-export default function FooterV2() {
+export default function Footer() {
   return (
-    <footer className="w-full bg-blue-900 text-white py-12">
+    <footer className="w-full text-white py-12" style={{ backgroundColor: "#0D00FF" }}>
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
-          {/* Logo y descripción */}
+          {/* Logo y enlace a políticas */}
           <div className="md:col-span-1">
-            <div className="flex items-center mb-4">
-              <Image src="/images/u2-logo.png" alt="U2 Group" width={40} height={40} className="mr-3" />
-              <span className="text-xl neutra-font-bold">U2 GROUP</span>
+            {/* Solo texto U2 GROUP más grande */}
+            <div className="mb-4">
+              <h2 className="text-3xl neutra-font-bold">U2 GROUP</h2>
             </div>
-            <p className="text-blue-200 text-sm neutra-font leading-relaxed">
-              Arquitectura que desafía el status quo. Creamos espacios únicos que reflejan tu visión y estilo de vida.
-            </p>
+
+            {/* Enlace a políticas de privacidad */}
+            <div className="mt-4">
+              <a
+                href="/documents/politicas-privacidad.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-blue-100 hover:text-white transition-colors neutra-font text-sm"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Políticas de Privacidad
+              </a>
+            </div>
           </div>
 
           {/* Servicios */}
           <div>
             <h3 className="text-white neutra-font-bold mb-4">Servicios</h3>
-            <ul className="space-y-2 text-blue-200 text-sm">
+            <ul className="space-y-2 text-blue-100 text-sm">
               <li>
                 <Link href="/disena" className="hover:text-white transition-colors neutra-font">
                   Diseño Arquitectónico
@@ -50,7 +59,7 @@ export default function FooterV2() {
           {/* Empresa */}
           <div>
             <h3 className="text-white neutra-font-bold mb-4">Empresa</h3>
-            <ul className="space-y-2 text-blue-200 text-sm">
+            <ul className="space-y-2 text-blue-100 text-sm">
               <li>
                 <Link href="/nosotros" className="hover:text-white transition-colors neutra-font">
                   Nosotros
@@ -60,8 +69,6 @@ export default function FooterV2() {
                 <Link href="/blog" className="hover:text-white transition-colors neutra-font">
                   Blog
                 </Link>
-              </li>
-              <li>
               </li>
               <li>
                 <Link href="/admin/login" className="hover:text-white transition-colors neutra-font">
@@ -74,37 +81,37 @@ export default function FooterV2() {
           {/* Contacto */}
           <div>
             <h3 className="text-white neutra-font-bold mb-4">Contacto</h3>
-            <div className="space-y-2 text-blue-200 text-sm">
+            <div className="space-y-2 text-blue-100 text-sm">
               <p className="neutra-font">info@u2group.com</p>
               <p className="neutra-font">+57 3043001791</p>
-              <p className="neutra-font">Pasto , Colombia </p>
+              <p className="neutra-font">Pasto, Colombia</p>
             </div>
           </div>
         </div>
 
         {/* Línea divisoria */}
-        <div className="border-t border-blue-700 pt-6">
+        <div className="border-t border-blue-400 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             {/* Copyright */}
-            <div className="text-blue-200 text-sm neutra-font">© 2025 U2 GROUP. Todos los derechos reservados.</div>
+            <div className="text-blue-100 text-sm neutra-font">© 2025 U2 GROUP. Todos los derechos reservados.</div>
 
             {/* Redes sociales */}
             <div className="flex items-center space-x-4">
               <span className="text-white text-sm neutra-font-bold mr-2">Síguenos</span>
               <div className="flex space-x-3">
-                <a href="#" className="text-blue-200 hover:text-white transition-colors">
+                <a href="#" className="text-blue-100 hover:text-white transition-colors">
                   <Linkedin className="w-5 h-5" />
                 </a>
-                <a href="#" className="text-blue-200 hover:text-white transition-colors">
+                <a href="#" className="text-blue-100 hover:text-white transition-colors">
                   <Facebook className="w-5 h-5" />
                 </a>
-                <a href="#" className="text-blue-200 hover:text-white transition-colors">
+                <a href="#" className="text-blue-100 hover:text-white transition-colors">
                   <Instagram className="w-5 h-5" />
                 </a>
-                <a href="#" className="text-blue-200 hover:text-white transition-colors">
+                <a href="#" className="text-blue-100 hover:text-white transition-colors">
                   <Twitter className="w-5 h-5" />
                 </a>
-                <a href="#" className="text-blue-200 hover:text-white transition-colors">
+                <a href="#" className="text-blue-100 hover:text-white transition-colors">
                   <Youtube className="w-5 h-5" />
                 </a>
               </div>
@@ -113,7 +120,9 @@ export default function FooterV2() {
 
           {/* Créditos de desarrollo */}
           <div className="text-center mt-4">
-            <div className="text-xs text-blue-300 neutra-font">Desarrollado por: Jpedroza & Jaraagb Developers inc.</div>
+            <div className="text-xs text-blue-100 neutra-font">
+              Desarrollado por: Jpedroza & Jaraagb Developers inc.
+            </div>
           </div>
         </div>
       </div>
