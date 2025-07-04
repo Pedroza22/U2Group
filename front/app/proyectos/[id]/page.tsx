@@ -62,7 +62,7 @@ export default function ProjectDetailPage() {
           </div>
 
           {/* INFORMACIÓN DEL PROYECTO - Detalles técnicos */}
-          <div className="space-y-8">
+          <div className="space-y-5.85">
             {/* Utilización del proyecto */}
             <div>
               <h3 className="text-gray-600 neutra-font mb-2">[{t("utilization")}]</h3>
