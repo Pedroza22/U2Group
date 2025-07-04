@@ -1,110 +1,101 @@
 "use client"
 
-import type React from "react"
-
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Globe, Menu } from "lucide-react"
+import { Menu, X, Globe } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useLanguage } from "@/hooks/use-language"
 
 interface HeaderProps {
   currentPage?: string
-  onLogoClick?: () => void // NUEVA PROP PARA EL CLICK DEL LOGO
 }
 
-export default function Header({ currentPage = "", onLogoClick }: HeaderProps) {
+export default function Header({ currentPage }: HeaderProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { language, setLanguage, t } = useLanguage()
 
-  const handleLanguageChange = (newLanguage: "es" | "en") => {
-    setLanguage(newLanguage)
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen)
   }
 
-  const getLinkClass = (page: string) => {
-    return currentPage === page
-      ? "text-blue-600 font-medium transition-colors"
-      : "text-gray-700 hover:text-blue-600 transition-colors"
+  const handleLanguageToggle = () => {
+    setLanguage(language === "es" ? "en" : "es")
   }
 
-  // FUNCIÓN PARA MANEJAR EL CLICK DEL LOGO
-  const handleLogoClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    console.log("🖱️ Logo clicked in Header")
-    if (onLogoClick) {
-      onLogoClick()
-    }
-  }
+  const navItems = [
+    { id: "inicio", label: t("inicio"), href: "/" },
+    { id: "proyectos", label: t("proyectos"), href: "/proyectos" },
+    { id: "nosotros", label: t("nosotros"), href: "/nosotros" },
+    { id: "disena", label: t("disena"), href: "/disena" },
+    { id: "blog", label: t("blog"), href: "/blog" },
+    { id: "contacto", label: t("contacto"), href: "/contacto" },
+  ]
 
   return (
-    <header className="w-full border-b border-gray-200 bg-white">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        {/* LOGO - AHORA CLICKEABLE PARA REPRODUCIR VIDEO */}
-        <div className="flex items-center">
-          {onLogoClick ? (
-            // Si hay función onLogoClick, hacer el logo clickeable
-            <button onClick={handleLogoClick} className="cursor-pointer hover:opacity-80 transition-opacity">
-              <Image src="/images/u2-logo.png" alt="U2 Group Logo" width={80} height={35} className="object-contain" />
-            </button>
-          ) : (
-            // Si no hay función, usar Link normal
-            <Link href="/">
-              <Image src="/images/u2-logo.png" alt="U2 Group Logo" width={80} height={35} className="object-contain" />
-            </Link>
-          )}
+    <header className="bg-white shadow-sm border-b neutra-font">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          {/* LOGO */}
+          <Link href="/" className="flex items-center" onClick={() => (window.location.href = "/")}>
+            <Image src="/images/u2-logo.png" alt="U2 Group" width={80} height={80} className="mr-2" />
+            <span className="text-xl neutra-font-black text-blue-600"></span>
+          </Link>
+
+          {/* NAVEGACIÓN DESKTOP */}
+          <nav className="hidden md:flex items-center space-x-8">
+            {navItems.map((item) => (
+              <Link
+                key={item.id}
+                href={item.href}
+                className={`text-gray-700 hover:text-blue-600 transition-colors neutra-font ${
+                  currentPage === item.id ? "text-blue-600 font-medium" : ""
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* BOTÓN DE IDIOMA Y MENÚ MÓVIL */}
+          <div className="flex items-center space-x-4">
+            {/*FIX DEL BOTÓN */}
+            <Button
+              onClick={handleLanguageToggle}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 neutra-font bg-transparent"
+            >
+              <Globe className="w-4 h-4" />
+              {language === "es" ? "EN" : "ES"}
+            </Button>
+
+            {/* BOTÓN MENÚ MÓVIL */}
+            <Button onClick={toggleMenu} variant="ghost" size="sm" className="md:hidden">
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
+          </div>
         </div>
 
-        {/* NAVEGACIÓN */}
-        <nav className="hidden md:flex items-center space-x-8 text-lg neutra-font">
-          <Link href="/" className={getLinkClass("inicio")}>
-            {t("inicio")}
-          </Link>
-          <Link href="/proyectos" className={getLinkClass("proyectos")}>
-            {t("proyectos")}
-          </Link>
-          <Link href="/nosotros" className={getLinkClass("nosotros")}>
-            {t("nosotros")}
-          </Link>
-          <Link href="/disena" className={getLinkClass("disena")}>
-            {t("disena")}
-          </Link>
-          <Link href="/blog" className={getLinkClass("blog")}>
-            {t("blog")}
-          </Link>
-          <Link href="/contacto" className={getLinkClass("contacto")}>
-            {t("contacto")}
-          </Link>
-        </nav>
-
-        {/* SELECTOR DE IDIOMA Y MENÚ MÓVIL */}
-        <div className="flex items-center space-x-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="bg-white text-gray-700 neutra-font">
-                <Globe className="w-4 h-4 mr-2" />
-                {language.toUpperCase()}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem
-                onClick={() => handleLanguageChange("es")}
-                className={language === "es" ? "bg-blue-50 text-blue-600" : ""}
-              >
-                {t("spanish")}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleLanguageChange("en")}
-                className={language === "en" ? "bg-blue-50 text-blue-600" : ""}
-              >
-                {t("english")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Button variant="outline" size="sm" className="md:hidden bg-white text-gray-700">
-            <Menu className="w-4 h-4" />
-          </Button>
-        </div>
+        {/* MENÚ MÓVIL */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t bg-white">
+            <nav className="py-4 space-y-2">
+              {navItems.map((item) => (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`block px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors neutra-font ${
+                    currentPage === item.id ? "text-blue-600 font-medium bg-blue-50" : ""
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   )

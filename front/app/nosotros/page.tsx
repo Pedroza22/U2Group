@@ -24,7 +24,7 @@ import Footer from "@/components/layout/footer"
 import { useLanguage } from "@/hooks/use-language"
 
 export default function NosotrosPage() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
 
   // Estado para controlar qué botón está activo (Our Mission / Our Vision)
   const [activeButton, setActiveButton] = useState("mission")
@@ -85,32 +85,35 @@ export default function NosotrosPage() {
     },
   ]
 
-  // Datos de los pasos del proceso
+  // Datos de los pasos del proceso - USAR TRADUCCIONES DINÁMICAS
   const processSteps = [
     {
       id: 1,
       title: t("weListen") || "We listen",
-      description: t("weListenText") || "No tomamos decisiones hasta que tu visión esté clara.",
+      description: t("weListenDescription") || "No tomamos decisiones hasta que tu visión esté clara.",
       image: "",
     },
     {
       id: 2,
-      title: "We create the concept",
+      title: t("weCreateConcept") || "We create the concept",
       description:
+        t("weCreateConceptDescription") ||
         "This is where the magic begins: we blend function, aesthetics, and emotion into a unique concept. Every detail comes from your real needs. No templates only purpose.",
       image: "",
     },
     {
       id: 3,
-      title: "You visualize in 3D",
+      title: t("youVisualize3D") || "You visualize in 3D",
       description:
+        t("youVisualize3DDescription") ||
         "With our hyper-realistic renders, you'll walk through and feel your home before a single brick is laid. That way, you make decisions with clarity and confidence.",
       image: "",
     },
     {
       id: 4,
-      title: "We build it with you",
+      title: t("weBuildWithYou") || "We build it with you",
       description:
+        t("weBuildWithYouDescription") ||
         "From plans to finishes, you're part of every step. We guide you, keep you informed, and walk with you. Your home isn't built alone it's built with you.",
       image: "",
     },
@@ -140,11 +143,10 @@ export default function NosotrosPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <h1 className="text-5xl md:text-7xl lg:text-8xl neutra-font-bold leading-tight mb-8 text-gray-900">
-              Somos más que
-              <br />
-              arquitectos, somos
-              <br />
-              creadores de experiencias
+              {t("heroTitle") ||
+                (language === "en"
+                  ? "We are more than architects, we are experience creators"
+                  : "Somos más que arquitectos, somos creadores de experiencias")}
             </h1>
 
             <div className="grid md:grid-cols-2 gap-8 mb-12">
@@ -352,14 +354,14 @@ export default function NosotrosPage() {
               <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
                 <div className="mb-6">
                   <Image
-                    src="https://www.tuproyectodevida.pe/wp-content/uploads/2021/04/Seis-se%C3%B1ales-1200x628.jpg"
+                    src="/placeholder.svg?height=120&width=120"
                     alt="Sofía Solarte"
                     width={120}
                     height={120}
                     className="rounded-full mx-auto mb-4 object-cover"
                   />
                   <h3 className="text-2xl neutra-font-bold text-gray-900 mb-2">Sofía Solarte</h3>
-                  <p className="text-gray-600 neutra-font">Founder & Architect</p>
+                  <p className="text-gray-600 neutra-font">Co-Founder & Architect</p>
                 </div>
 
                 {/* Redes sociales */}
@@ -380,7 +382,7 @@ export default function NosotrosPage() {
               <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
                 <div className="mb-6">
                   <Image
-                    src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhQS6O5QhmebBvhCm_e-9bkhQDnG_SgiA8Sw8SITEzkgEl_R3qDvB7b-Gsr-3aVrFpVyZxY6hCbMHiS011mqT0DshZasVFMfBN6FqJ7kTT20W12ylkZekI8NIyiVuRev-lc9BoO7JJA11Nc834-kiHFlQgYQ2o-ynP0lf9dXoUSpryjz4fhyphenhyphenjSnt8fWTruo/s1600/arquitecto-tecnico-rol-funciones-responsabilidades.webpheight=120&width=120"
+                    src="/placeholder.svg?height=120&width=120"
                     alt="Juan José Lima"
                     width={120}
                     height={120}

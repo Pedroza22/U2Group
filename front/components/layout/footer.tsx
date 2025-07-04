@@ -39,16 +39,7 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/proyectos" className="hover:text-white transition-colors neutra-font">
-                  Proyectos Residenciales
-                </Link>
-              </li>
-              <li>
-                <Link href="/proyectos" className="hover:text-white transition-colors neutra-font">
-                  Proyectos Comerciales
-                </Link>
-              </li>
-              <li>
+
                 <Link href="/contacto" className="hover:text-white transition-colors neutra-font">
                   Consultoría
                 </Link>
@@ -93,26 +84,26 @@ export default function Footer() {
         <div className="border-t border-blue-400 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             {/* Copyright */}
-            <div className="text-blue-100 text-sm neutra-font">© 2025 U2 GROUP. Todos los derechos reservados.</div>
+            <div className="text-blue-100 text-sm neutra-font">© 2022 U2 GROUP. Todos los derechos reservados.</div>
 
             {/* Redes sociales */}
             <div className="flex items-center space-x-4">
               <span className="text-white text-sm neutra-font-bold mr-2">Síguenos</span>
               <div className="flex space-x-3">
                 <a href="#" className="text-blue-100 hover:text-white transition-colors">
-                  <Linkedin className="w-5 h-5" />
+                  <Linkedin className="w-10 h-10" />
                 </a>
                 <a href="#" className="text-blue-100 hover:text-white transition-colors">
-                  <Facebook className="w-5 h-5" />
+                  <Facebook className="w-10 h-10" />
                 </a>
                 <a href="#" className="text-blue-100 hover:text-white transition-colors">
-                  <Instagram className="w-5 h-5" />
+                  <Instagram className="w-10 h-10" />
                 </a>
                 <a href="#" className="text-blue-100 hover:text-white transition-colors">
-                  <Twitter className="w-5 h-5" />
+                  <Twitter className="w-10 h-10" />
                 </a>
                 <a href="#" className="text-blue-100 hover:text-white transition-colors">
-                  <Youtube className="w-5 h-5" />
+                  <Youtube className="w-10 h-10" />
                 </a>
               </div>
             </div>
