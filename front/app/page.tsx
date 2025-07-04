@@ -146,7 +146,7 @@ export default function HomePage() {
   // Datos de blogs estáticos
   const featuredBlogs = [
     {
-      id: "blog1",
+      id: "1",
       title: "Tendencias en diseño arquitectónico moderno",
       category: "Diseño Interior",
       image: "/placeholder.svg?height=150&width=200",
@@ -154,7 +154,7 @@ export default function HomePage() {
       readTime: "5 min",
     },
     {
-      id: "blog2",
+      id: "2",
       title: "Arquitectura sostenible y eco-friendly",
       category: "Sostenibilidad",
       image: "/placeholder.svg?height=150&width=200",
@@ -162,7 +162,7 @@ export default function HomePage() {
       readTime: "7 min",
     },
     {
-      id: "blog3",
+      id: "3",
       title: "Espacios de trabajo creativos y productivos",
       category: "Corporativo",
       image: "/placeholder.svg?height=150&width=200",
@@ -170,7 +170,7 @@ export default function HomePage() {
       readTime: "6 min",
     },
     {
-      id: "blog4",
+      id: "4",
       title: "Remodelación de casas históricas",
       category: "Residencial",
       image: "/placeholder.svg?height=150&width=200",

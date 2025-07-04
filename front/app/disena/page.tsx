@@ -10,6 +10,7 @@ import Header from "@/components/layout/header"
 import Footer from "@/components/layout/footer"
 import { useLanguage } from "@/hooks/use-language"
 import { getDesignCategories, getBasicCategories, BASE_PRICE, type DesignOption } from "@/data/design-options"
+import { CalEmbed } from "@/components/cal-embed"
 
 export default function DisenaPage() {
   const { t } = useLanguage()
@@ -23,7 +24,7 @@ export default function DisenaPage() {
   const [activeTab, setActiveTab] = useState("basics")
   const [selectedOptions, setSelectedOptions] = useState<Record<string, DesignOption[]>>({})
   const [showQuote, setShowQuote] = useState(false)
-  const [currentMainImage, setCurrentMainImage] = useState<string>("/images/u2-logo.png") // Imagen por defecto
+  const [currentMainImage, setCurrentMainImage] = useState<string>("/images/u2-logo.png")
 
   // Obtener categorías dinámicamente
   const [designCategories, setDesignCategories] = useState(getDesignCategories())
@@ -50,7 +51,6 @@ export default function DisenaPage() {
       const current = prev[categoryId] || []
 
       if (category.allowMultiple) {
-        // Permitir múltiples selecciones para esta categoría
         const exists = current.find((o) => o.id === option.id)
         if (exists) {
           const newOptions = { ...prev, [categoryId]: current.filter((o) => o.id !== option.id) }
@@ -62,7 +62,6 @@ export default function DisenaPage() {
           return newOptions
         }
       } else {
-        // Solo una selección permitida
         const newOptions = { ...prev, [categoryId]: [option] }
         updateMainImage(newOptions)
         return newOptions
@@ -77,7 +76,6 @@ export default function DisenaPage() {
       [categoryId]: quantity,
     }))
 
-    // Actualizar imagen principal si es necesario
     const category = basicCategories.find((c) => c.id === categoryId)
     if (category && category.image && quantity > 0) {
       setCurrentMainImage(category.image)
@@ -86,10 +84,8 @@ export default function DisenaPage() {
 
   // Función para actualizar la imagen principal según las selecciones
   const updateMainImage = (options: Record<string, DesignOption[]>) => {
-    // Buscar la última opción seleccionada que tenga imagen
     let latestImageOption: DesignOption | null = null
 
-    // Priorizar opciones que no sean "basics" para mostrar imágenes más interesantes
     const priorityCategories = [
       "additions",
       "family",
@@ -103,7 +99,6 @@ export default function DisenaPage() {
     for (const categoryId of priorityCategories) {
       const categoryOptions = options[categoryId] || []
       if (categoryOptions.length > 0) {
-        // Tomar la última opción seleccionada de esta categoría
         const lastOption = categoryOptions[categoryOptions.length - 1]
         if (lastOption.image && lastOption.image !== "/placeholder.svg?height=100&width=100") {
           latestImageOption = lastOption
@@ -112,7 +107,6 @@ export default function DisenaPage() {
       }
     }
 
-    // Si no hay opciones con imagen, usar el logo por defecto
     if (latestImageOption && latestImageOption.image) {
       setCurrentMainImage(latestImageOption.image)
     } else {
@@ -124,13 +118,11 @@ export default function DisenaPage() {
   const calculateTotal = () => {
     let total = BASE_PRICE
 
-    // Agregar costo de categorías básicas
     basicCategories.forEach((category) => {
       const quantity = selectedBasics[category.id] || 0
       total += quantity * category.pricePerUnit
     })
 
-    // Agregar costo de otras opciones
     Object.values(selectedOptions).forEach((options) => {
       options.forEach((option) => {
         total += option.price
@@ -163,7 +155,7 @@ export default function DisenaPage() {
     { id: "get-quote", name: t("getYourQuote") || "Get Your Quote" },
   ]
 
-  // Pantalla de cotización final - SIN cuadros blancos
+  // Pantalla de cotización final con Cal.com integrado
   if (showQuote || activeTab === "get-quote") {
     return (
       <div className="min-h-screen bg-gray-50 neutra-font">
@@ -194,7 +186,7 @@ export default function DisenaPage() {
           </div>
         </div>
 
-        {/* Contenido de la cotización - Layout de dos columnas SIN cuadros blancos */}
+        {/* Contenido de la cotización con Cal.com */}
         <div className="container mx-auto px-4 py-8">
           <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
             {/* LADO IZQUIERDO - Resumen del proyecto */}
@@ -285,9 +277,9 @@ export default function DisenaPage() {
               </div>
             </div>
 
-            {/*Espacio para calendario Cal.app */}
+            {/* LADO DERECHO - Calendario Cal.com */}
             <div className="lg:col-span-1">
-              <div className="text-center">
+              <div className="text-center mb-6">
                 <Calendar className="w-16 h-16 text-blue-600 mx-auto mb-6" />
                 <h3 className="text-2xl neutra-font-bold text-blue-600 mb-4">
                   {t("scheduleConsultation") || "Agenda una Consulta"}
@@ -295,22 +287,19 @@ export default function DisenaPage() {
                 <p className="text-gray-600 neutra-font mb-6">
                   {t("bookMeeting") || "Reserva una reunión con nuestro equipo para discutir tu proyecto en detalle."}
                 </p>
+              </div>
 
-                {/* Placeholder para Cal*/}
-                <div className="bg-gray-100 rounded-lg p-8 min-h-[400px] flex items-center justify-center border-2 border-dashed border-gray-300">
-                  <div className="text-center">
-                    <p className="text-gray-500 neutra-font">{t("calendarPlaceholder") || ""}</p>
-                    <p className="text-sm text-gray-400 neutra-font mt-2">Cal.app integration coming soon</p>
-                  </div>
-                </div>
-
-                <Button
-                  variant="outline"
-                  className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white neutra-font bg-transparent mt-6"
-                >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Agendar Cita (Próximamente)
-                </Button>
+              {/* Integración de Cal.com */}
+              <div className="bg-white rounded-lg shadow-lg p-4 min-h-[500px]">
+                <CalEmbed
+                  calLink="jara-u2group-lrzdfm/consulta-arquitectura?overlayCalendar=true"
+                  showDemo={false}
+                  config={{
+                    theme: "light",
+                    hideEventTypeDetails: false,
+                    layout: "month_view",
+                  }}
+                />
               </div>
             </div>
           </div>
