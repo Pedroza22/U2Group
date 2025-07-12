@@ -8,19 +8,45 @@ import Header from "@/components/layout/header"
 import Footer from "@/components/layout/footer"
 import { useLanguage } from "@/hooks/use-language"
 import { useParams } from "next/navigation"
-import { getProjects } from "@/data/projects"
+import axios from "axios";
+import { useState, useEffect } from "react";
+import type { AdminProject } from "@/data/admin-data";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/admin";
 
 export default function ProjectDetailPage() {
-  const { t } = useLanguage()
-  const params = useParams()
-  const projectId = params.id
-  const projects = getProjects(t)
+  const { t } = useLanguage();
+  const params = useParams();
+  const projectId = params.id;
+  const [project, setProject] = useState<AdminProject | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Encontrar el proyecto actual por ID
-  const project = projects.find((p) => p.id === Number(projectId)) || projects[0]
+  useEffect(() => {
+    const fetchProject = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get(`${API_URL}/projects/${projectId}/`);
+        setProject(res.data as AdminProject);
+        setError("");
+      } catch (err: any) {
+        setError("No se pudo cargar el proyecto.");
+        setProject(null);
+      }
+      setLoading(false);
+    };
+    if (projectId) fetchProject();
+  }, [projectId]);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Cargando proyecto...</div>;
+  }
+  if (error || !project) {
+    return <div className="min-h-screen flex items-center justify-center text-red-600">{error || "Proyecto no encontrado."}</div>;
+  }
 
   // Otros proyectos para mostrar al final (excluye el actual)
-  const otherProjects = projects.filter((p) => p.id !== project.id).slice(0, 2)
+  const otherProjects = project.images && project.images.length > 1 ? project.images.slice(1).slice(0, 2) : [];
 
   return (
     <div className="min-h-screen bg-white neutra-font">
@@ -29,10 +55,10 @@ export default function ProjectDetailPage() {
 
       {/* BOTÓN VOLVER - Para regresar a la lista de proyectos */}
       <div className="container mx-auto px-4 py-6">
-        <Link href="/proyectos">
+        <Link href="/admin/dashboard">
           <Button variant="outline" className="neutra-font bg-transparent">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            {t("proyectos")}
+            Projects
           </Button>
         </Link>
       </div>
@@ -114,7 +140,7 @@ export default function ProjectDetailPage() {
 
             {/* Grid que se adapta automáticamente según la cantidad de imágenes */}
             <div className="grid md:grid-cols-2 gap-8">
-              {project.images.slice(1).map((image, index) => (
+              {project.images.slice(1).map((image: string, index: number) => (
                 <div key={index} className="relative aspect-[4/3] rounded-2xl overflow-hidden group">
                   <Image
                     src={image || "/placeholder.svg"}
@@ -141,7 +167,7 @@ export default function ProjectDetailPage() {
               <>
                 <h4 className="text-xl neutra-font-bold text-gray-900 mb-4">Características Principales</h4>
                 <ul className="space-y-2">
-                  {project.features.map((feature, index) => (
+                  {project.features.map((feature: string, index: number) => (
                     <li key={index} className="text-gray-700 neutra-font flex items-start">
                       <span className="text-blue-600 mr-2">•</span>
                       {feature}
@@ -165,11 +191,11 @@ export default function ProjectDetailPage() {
           {/* Grid de proyectos relacionados */}
           <div className="grid md:grid-cols-2 gap-8">
             {otherProjects.map((otherProject) => (
-              <Link key={otherProject.id} href={`/proyectos/${otherProject.id}`}>
+              <Link key={otherProject} href={`/proyectos/${otherProject}`}>
                 <div className="relative aspect-[16/9] rounded-2xl overflow-hidden group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl">
                   <Image
-                    src={otherProject.image || "/placeholder.svg"}
-                    alt={otherProject.name}
+                    src={`/placeholder.svg`} // Assuming a placeholder for other projects
+                    alt={`Proyecto ${otherProject}`}
                     fill
                     className="object-cover transition-all duration-300 group-hover:brightness-75"
                   />
@@ -179,16 +205,16 @@ export default function ProjectDetailPage() {
 
                   {/* Título del proyecto */}
                   <div className="absolute bottom-6 left-6">
-                    <h3 className="text-3xl md:text-4xl neutra-font-black text-white">{otherProject.name}</h3>
+                    <h3 className="text-3xl md:text-4xl neutra-font-black text-white">{`Proyecto ${otherProject}`}</h3>
                   </div>
 
                   {/* Overlay con información al hacer hover */}
                   <div
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center"
-                    style={{ backgroundColor: `${otherProject.color}CC` }}
+                    style={{ backgroundColor: `#000000CC` }} // Placeholder color
                   >
                     <div className="text-center text-white">
-                      <h3 className="text-3xl md:text-4xl neutra-font-black mb-2">{otherProject.name}</h3>
+                      <h3 className="text-3xl md:text-4xl neutra-font-black mb-2">{`Proyecto ${otherProject}`}</h3>
                       <p className="text-lg neutra-font opacity-90">{t("viewProject")}</p>
                     </div>
                   </div>

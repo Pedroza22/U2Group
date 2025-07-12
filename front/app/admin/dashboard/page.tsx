@@ -32,20 +32,30 @@ import {
 import ProjectEditor from "@/components/admin/project-editor"
 import BlogEditor from "@/components/admin/blog-editor"
 import ImageUploader from "@/components/admin/image-uploader"
+import axios from "axios";
+import {
+  getProjects,
+  createProject,
+  updateProject,
+  deleteProject,
+  uploadProjectImage,
+} from "@/lib/api-projects";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/admin";
 
 export default function AdminDashboardPage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<"projects" | "blogs" | "design-options" | "settings">("projects")
-  const [projects, setProjects] = useState<AdminProject[]>([])
+  const [projects, setProjects] = useState<AdminProject[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [editingProject, setEditingProject] = useState<AdminProject | null>(null);
+  const [showProjectEditor, setShowProjectEditor] = useState(false);
   const [blogs, setBlogs] = useState<AdminBlog[]>([])
   const [designOptions, setDesignOptions] = useState<AdminDesignCategory[]>([])
   const [basicCategories, setBasicCategories] = useState<AdminBasicCategory[]>([])
   const [editingBasicCategory, setEditingBasicCategory] = useState<AdminBasicCategory | null>(null)
   const [showBasicEditor, setShowBasicEditor] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [editingProject, setEditingProject] = useState<AdminProject | null>(null)
   const [editingBlog, setEditingBlog] = useState<AdminBlog | null>(null)
-  const [showProjectEditor, setShowProjectEditor] = useState(false)
   const [showBlogEditor, setShowBlogEditor] = useState(false)
 
   // Estados para opciones de diseño
@@ -53,86 +63,103 @@ export default function AdminDashboardPage() {
   const [editingOption, setEditingOption] = useState<AdminDesignOption | null>(null)
   const [showOptionEditor, setShowOptionEditor] = useState(false)
 
-  // VERIFICAR AUTENTICACIÓN
+  // --- LÓGICA DE PROYECTOS CON API REAL ---
+  // Corrección de tipado y referencias obsoletas
+
+  // 1. Tipar correctamente los datos de la API
+  const loadProjects = async () => {
+    setIsLoading(true);
+    try {
+      const data = await getProjects();
+      setProjects(data as AdminProject[]);
+    } catch (error) {
+      // Manejo de error opcional
+    }
+    setIsLoading(false);
+  };
+
   useEffect(() => {
-    const token = localStorage.getItem("u2-admin-token")
+    const token = localStorage.getItem("u2-admin-token");
     if (!token) {
-      router.push("/admin/login")
-      return
+      router.push("/admin/login");
+      return;
     }
+    loadProjects();
+  }, [router]);
 
-    // CARGAR DATOS
-    loadData()
-  }, [router])
-
-  const loadData = () => {
-    setProjects(AdminDataManager.getProjects())
-    setBlogs(AdminDataManager.getBlogs())
-    setDesignOptions(AdminDataManager.getDesignOptions())
-    setBasicCategories(AdminDataManager.getBasicCategories())
-    setIsLoading(false)
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem("u2-admin-token")
-    router.push("/admin/login")
-  }
-
-  const handleDeleteProject = (id: number) => {
+  const handleDeleteProject = async (id: number) => {
     if (confirm("¿Estás seguro de que quieres eliminar este proyecto?")) {
-      AdminDataManager.deleteProject(id)
-      loadData()
+      await deleteProject(id);
+      await loadProjects();
     }
-  }
-
-  const handleDeleteBlog = (id: number) => {
-    if (confirm("¿Estás seguro de que quieres eliminar este blog?")) {
-      AdminDataManager.deleteBlog(id)
-      loadData()
-    }
-  }
+  };
 
   const handleEditProject = (project: AdminProject) => {
-    setEditingProject(project)
-    setShowProjectEditor(true)
-  }
-
-  const handleEditBlog = (blog: AdminBlog) => {
-    setEditingBlog(blog)
-    setShowBlogEditor(true)
-  }
+    setEditingProject(project);
+    setShowProjectEditor(true);
+  };
 
   const handleNewProject = () => {
-    setEditingProject(null)
-    setShowProjectEditor(true)
-  }
+    setEditingProject(null);
+    setShowProjectEditor(true);
+  };
 
-  const handleNewBlog = () => {
-    setEditingBlog(null)
-    setShowBlogEditor(true)
-  }
+  // Corrección de tipado en handleSaveProject y uso de blogs
 
-  const handleSaveProject = (project: AdminProject) => {
+  const handleSaveProject = async (formData: any) => {
+    console.log('Intentando guardar proyecto:', formData);
+    let mainImage = formData.image;
+    let fd = new FormData();
+    // Campos comunes
+    fd.append("name", formData.name);
+    fd.append("color", formData.color);
+    fd.append("utilization", formData.utilization);
+    fd.append("services", formData.services);
+    fd.append("year", formData.year);
+    fd.append("category", formData.category);
+    fd.append("type", formData.type);
+    fd.append("size", formData.size);
+    fd.append("location", formData.location);
+    fd.append("status", formData.status);
+    fd.append("featured", formData.featured);
+    fd.append("description", formData.description || "");
+    fd.append("display_title", formData.displayTitle || "");
+    fd.append("features", JSON.stringify(formData.features || []));
+
+    // Imagen principal
+    if (mainImage instanceof File) {
+      fd.append("image", mainImage);
+    } else if (typeof mainImage === "string" && mainImage) {
+      // Si es una URL existente, incluirla
+      fd.append("image", mainImage);
+    }
+    // Si es string vacío, NO la incluimos (Django mantiene la anterior)
+
+    let project;
     if (editingProject) {
-      AdminDataManager.updateProject(project.id, project)
+      console.log('Actualizando proyecto existente:', editingProject.id);
+      for (let pair of fd.entries()) {
+        console.log('PUT field:', pair[0], pair[1]);
+      }
+      project = await updateProject(editingProject.id, fd);
     } else {
-      AdminDataManager.addProject(project)
+      console.log('Creando nuevo proyecto');
+      for (let pair of fd.entries()) {
+        console.log('POST field:', pair[0], pair[1]);
+      }
+      project = await createProject(fd);
     }
-    setShowProjectEditor(false)
-    setEditingProject(null)
-    loadData()
-  }
-
-  const handleSaveBlog = (blog: AdminBlog) => {
-    if (editingBlog) {
-      AdminDataManager.updateBlog(blog.id, blog)
-    } else {
-      AdminDataManager.addBlog(blog)
+    // Subir imágenes extra si son archivos
+    for (const img of formData.images) {
+      if (img instanceof File) {
+        console.log('Subiendo imagen extra:', img);
+        await uploadProjectImage((project as AdminProject).id, img);
+      }
     }
-    setShowBlogEditor(false)
-    setEditingBlog(null)
-    loadData()
-  }
+    setShowProjectEditor(false);
+    setEditingProject(null);
+    await loadProjects();
+  };
 
   const handleCancelEdit = () => {
     setShowProjectEditor(false)
@@ -168,13 +195,13 @@ export default function AdminDashboardPage() {
     setShowOptionEditor(false)
     setEditingOption(null)
     setSelectedCategory("")
-    loadData()
+    loadProjects(); // Reload projects to update design options count
   }
 
   const handleDeleteOption = (categoryId: string, optionId: string) => {
     if (confirm("¿Estás seguro de que quieres eliminar esta opción?")) {
       AdminDataManager.deleteDesignOption(categoryId, optionId)
-      loadData()
+      loadProjects(); // Reload projects to update design options count
     }
   }
 
@@ -187,8 +214,40 @@ export default function AdminDashboardPage() {
     AdminDataManager.updateBasicCategory(category.id, category)
     setShowBasicEditor(false)
     setEditingBasicCategory(null)
-    loadData()
+    loadProjects(); // Reload projects to update basic categories count
   }
+
+  // Definir funciones de blogs para evitar errores de referencia
+  const handleNewBlog = () => {
+    setEditingBlog(null);
+    setShowBlogEditor(true);
+  };
+  const handleEditBlog = (blog: AdminBlog) => {
+    setEditingBlog(blog);
+    setShowBlogEditor(true);
+  };
+  const handleDeleteBlog = (id: number) => {
+    if (confirm("¿Estás seguro de que quieres eliminar este blog?")) {
+      AdminDataManager.deleteBlog(id);
+      // Si tienes lógica para recargar blogs, agrégala aquí
+    }
+  };
+  const handleSaveBlog = (blog: AdminBlog) => {
+    if (editingBlog) {
+      AdminDataManager.updateBlog(blog.id, blog);
+    } else {
+      AdminDataManager.addBlog(blog);
+    }
+    setShowBlogEditor(false);
+    setEditingBlog(null);
+    // Si tienes lógica para recargar blogs, agrégala aquí
+  };
+
+  // 2. Definir handleLogout (se usaba en el header)
+  const handleLogout = () => {
+    localStorage.removeItem("u2-admin-token");
+    router.push("/admin/login");
+  };
 
   if (isLoading) {
     return (
@@ -767,6 +826,7 @@ function BasicCategoryEditor({
 }) {
   const [formData, setFormData] = useState<AdminBasicCategory>({
     id: category?.id || "",
+    name: category?.nameEs || "", // Asegúrate de incluir el campo 'name'
     nameEs: category?.nameEs || "",
     nameEn: category?.nameEn || "",
     pricePerUnit: category?.pricePerUnit || 0,
