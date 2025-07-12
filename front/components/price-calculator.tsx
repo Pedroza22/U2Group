@@ -128,28 +128,11 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
             marginBottom: "30px"
           }}
         >
-          {t("Learn More About")}{" "}
-          <a
-            href="https://u2group.framer.website/u2/en/calculator"
-            className="neutra-font-bold hover:opacity-80 transition-opacity"
-            style={{
-              color: "#0D00FF",
-              fontWeight: "600",
-              fontSize: "inherit",
-              textDecoration: "none",
-              borderBottom: "2px solid #0D00FF",
-              paddingBottom: "2px"
-            }}
-          >
-            {t("How We Calculate Your Project Cost")}
-          </a>
+          {/* Enlace eliminado porque daba error 404. Si se requiere, agregar aquí el texto o enlace correcto. */}
         </p>
 
-        {/* Rango de metros cuadrados */}
-        <div
-          style={{ marginTop: "30px", marginBottom: "40px" }}
-          className="animate-fade-in-up animation-delay-600"
-        >
+        {/* Slider con separación */}
+        <div className="flex flex-col items-center w-full" style={{ marginTop: "30px", marginBottom: "40px" }}>
           <input
             id="area-range"
             type="range"
@@ -169,18 +152,19 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
               transition: "opacity 0.2s"
             }}
           />
-        </div>
-
-        {/* Botón para enviar y redirigir */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto animate-fade-in-up animation-delay-700">
-          <Button
-            onClick={handleSubmit}
-            className="w-full sm:w-auto text-white px-8 py-3 text-lg font-medium neutra-font-bold rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg"
-            style={{ backgroundColor: "#0D00FF", border: "none" }}
-          >
-            {t("Design Your Project")}
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
+          {/* Espacio extra */}
+          <div style={{ height: "35px" }} />
+          {/* Botón para enviar y redirigir */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto animate-fade-in-up animation-delay-700">
+            <Button
+              onClick={handleSubmit}
+              className="w-full sm:w-auto text-white px-8 py-3 text-lg font-medium neutra-font-bold rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              style={{ backgroundColor: "#0D00FF", border: "none" }}
+            >
+              {t("Design Your Project")}
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         </div>
 
         {/* Botón cerrar si aplica */}

@@ -252,6 +252,7 @@ const translations = {
     readArticle: "Leer Artículo",
     // Las categorías ya existen: interiorDesignCategory, sustainabilityCategory, corporateCategory, residentialCategory
     // Botón de ver todos los artículos ya existe: viewAllArticles
+    consulting: "Consultoría",
   },
   en: {
     // NAVIGATION
@@ -490,6 +491,7 @@ const translations = {
     newsSubtitle: "Stay up to date with the latest trends in architecture and design.",
     readArticle: "Read Article",
     // Las categorías y viewAllArticles ya existen
+    consulting: "Consulting",
   },
 }
 

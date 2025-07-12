@@ -18,7 +18,7 @@ export default function Footer() {
             </div>
             {/* Enlace a políticas de privacidad */}
             <div className="mt-4">
-              <a href="/documents/politicas-privacidad.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-blue-100 hover:text-white transition-colors neutra-font text-sm">
+              <a href="/privacidad" className="inline-flex items-center text-blue-100 hover:text-white transition-colors neutra-font text-sm">
                 <FileText className="w-4 h-4 mr-2" />
                 {t("privacyPolicy")}
               </a>
@@ -66,13 +66,13 @@ export default function Footer() {
             <h3 className="text-white neutra-font-bold mb-4">{t("contact")}</h3>
             <ul className="space-y-2 text-blue-100 text-sm">
               <li>
-                <a href="mailto:info@u2group.com" className="hover:text-white transition-colors neutra-font">
-                  info@u2group.com
+                <a href="mailto:support-team@u2.group" className="hover:text-white transition-colors neutra-font">
+                  support-team@u2.group
                 </a>
               </li>
               <li>
-                <a href="tel:+573043001791" className="hover:text-white transition-colors neutra-font">
-                  +57 3043001791
+                <a href="tel:+573164035330" className="hover:text-white transition-colors neutra-font">
+                  +57 3164035330
                 </a>
               </li>
               <li>
@@ -89,20 +89,22 @@ export default function Footer() {
             <div className="flex items-center space-x-4">
               <span className="text-white text-sm neutra-font-bold mr-2">{t("followUs")}</span>
               <div className="flex space-x-3">
-                <a href="#" className="text-blue-100 hover:text-white transition-colors">
+                <a href="https://www.linkedin.com/company/u2-group/" target="_blank" rel="noopener noreferrer" className="text-blue-100 hover:text-white transition-colors">
                   <Linkedin className="w-10 h-10" />
                 </a>
-                <a href="#" className="text-blue-100 hover:text-white transition-colors">
+                <a href="https://www.facebook.com/share/1DEBNZd94e/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="text-blue-100 hover:text-white transition-colors">
                   <Facebook className="w-10 h-10" />
                 </a>
-                <a href="#" className="text-blue-100 hover:text-white transition-colors">
+                <a href="https://www.instagram.com/u2.group?igsh=MTB3MGZ2NzVnenBjaQ==" target="_blank" rel="noopener noreferrer" className="text-blue-100 hover:text-white transition-colors">
                   <Instagram className="w-10 h-10" />
                 </a>
-                <a href="#" className="text-blue-100 hover:text-white transition-colors">
-                  <Twitter className="w-10 h-10" />
+                <a href="https://www.tiktok.com/@u2.group" target="_blank" rel="noopener noreferrer" className="text-blue-100 hover:text-white transition-colors">
+                  {/* TikTok icono no está en lucide-react, puedes agregar uno SVG personalizado aquí si lo deseas */}
+                  <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M12.75 2.25h2.25a.75.75 0 0 1 .75.75v2.25a3.75 3.75 0 0 0 3.75 3.75h.75a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-.75.75h-1.5v4.5a6.75 6.75 0 1 1-6.75-6.75.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-.75.75 3 3 0 1 0 3 3v-9a.75.75 0 0 1 .75-.75z"/></svg>
                 </a>
-                <a href="#" className="text-blue-100 hover:text-white transition-colors">
-                  <Youtube className="w-10 h-10" />
+                <a href="https://co.pinterest.com/u2group/" target="_blank" rel="noopener noreferrer" className="text-blue-100 hover:text-white transition-colors">
+                  {/* Icono Pinterest SVG */}
+                  <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.04C6.477 2.04 2 6.515 2 12.04c0 4.418 2.865 8.166 6.839 9.489-.094-.807-.179-2.048.037-2.93.195-.803 1.252-5.12 1.252-5.12s-.319-.64-.319-1.584c0-1.484.861-2.592 1.934-2.592.912 0 1.353.684 1.353 1.504 0 .916-.583 2.288-.884 3.565-.252 1.066.535 1.936 1.587 1.936 1.904 0 3.37-2.008 3.37-4.904 0-2.563-1.844-4.36-4.478-4.36-3.052 0-4.848 2.29-4.848 4.658 0 .924.355 1.918.8 2.456.09.11.104.206.076.316-.083.342-.267 1.086-.304 1.236-.048.195-.156.237-.362.143-1.35-.627-2.192-2.594-2.192-4.176 0-3.4 2.768-7.48 8.26-7.48 4.42 0 7.33 3.2 7.33 6.64 0 4.548-2.522 7.95-6.25 7.95-1.25 0-2.426-.676-2.83-1.438l-.77 2.93c-.233.89-.688 2.003-1.025 2.684.77.238 1.584.367 2.43.367 5.523 0 10-4.477 10-10.001 0-5.523-4.477-10-10-10z"/></svg>
                 </a>
               </div>
             </div>

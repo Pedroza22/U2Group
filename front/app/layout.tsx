@@ -3,6 +3,8 @@ import type { Metadata } from "next"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LanguageProvider } from "@/hooks/use-language"
+import { useEffect, useState } from "react";
+import { CookieBanner } from "./components/cookie-banner";
 
 export const metadata: Metadata = {
   title: "U2 Group - Arquitectura del Futuro",
@@ -22,6 +24,7 @@ export default function RootLayout({
           {/* PROVIDER DE IDIOMAS - Envuelve toda la aplicación */}
           <LanguageProvider>{children}</LanguageProvider>
         </ThemeProvider>
+        <CookieBanner />
       </body>
     </html>
   )
