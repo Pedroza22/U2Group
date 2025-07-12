@@ -15,29 +15,37 @@ interface ProjectEditorProps {
   onCancel: () => void
 }
 
+// Ajuste de tipos para el estado local del formulario
+interface ProjectFormState extends Omit<AdminProject, 'image' | 'images'> {
+  image: string | File;
+  images: (string | File)[];
+}
+
 export default function ProjectEditor({ project, onSave, onCancel }: ProjectEditorProps) {
   // Estado del formulario - inicializa con datos del proyecto o valores por defecto
-  const [formData, setFormData] = useState<AdminProject>(
-    project || {
-      id: 0,
-      name: "", // Nombre que aparece en las tarjetas
-      displayTitle: "", // Título que aparece en la página de detalle
-      color: COMPANY_COLORS.PRIMARY_BLUE,
-      image: "",
-      utilization: "",
-      services: "",
-      year: new Date().getFullYear().toString(),
-      category: "",
-      type: "",
-      size: "",
-      location: "",
-      status: "Planning",
-      featured: false,
-      description: "",
-      features: [],
-      images: [],
-    },
-  )
+  const [formData, setFormData] = useState<ProjectFormState>(
+    project
+      ? { ...project, image: project.image, images: project.images || [] }
+      : {
+          id: 0,
+          name: "",
+          displayTitle: "",
+          color: COMPANY_COLORS.PRIMARY_BLUE,
+          image: "",
+          utilization: "",
+          services: "",
+          year: new Date().getFullYear().toString(),
+          category: "",
+          type: "",
+          size: "",
+          location: "",
+          status: "Planning",
+          featured: false,
+          description: "",
+          features: [],
+          images: [],
+        }
+  );
 
   // Manejar cambios en los inputs del formulario
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -74,21 +82,18 @@ export default function ProjectEditor({ project, onSave, onCancel }: ProjectEdit
     }))
   }
 
-  // Agregar nueva imagen al proyecto
-  const handleImageAdd = () => {
+  // En el ProjectEditor, cuando se selecciona una imagen, guardar el File en el estado
+  // Para la imagen principal:
+  const handleMainImageChange = (file: File | null) => {
+    setFormData((prev) => ({ ...prev, image: file || "" }));
+  };
+  // Para imágenes extra:
+  const handleImageChange = (index: number, file: File | string | null) => {
     setFormData((prev) => ({
       ...prev,
-      images: [...(prev.images || []), ""],
-    }))
-  }
-
-  // Modificar una imagen existente
-  const handleImageChange = (index: number, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images?.map((img, i) => (i === index ? value : img)) || [],
-    }))
-  }
+      images: prev.images?.map((img, i) => (i === index ? (file || "") : img)) || [],
+    }));
+  };
 
   // Eliminar una imagen
   const handleImageRemove = (index: number) => {
@@ -98,11 +103,20 @@ export default function ProjectEditor({ project, onSave, onCancel }: ProjectEdit
     }))
   }
 
+  // Agregar nueva imagen adicional
+  const handleImageAdd = () => {
+    setFormData((prev) => ({
+      ...prev,
+      images: [...(prev.images || []), ""],
+    }));
+  };
+
   // Enviar el formulario
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSave(formData)
-  }
+    e.preventDefault();
+    // Al guardar, pasamos el formData tal cual, el handler superior se encarga de procesar los File
+    onSave(formData as any);
+  };
 
   return (
     // Modal overlay que cubre toda la pantalla
@@ -279,9 +293,8 @@ export default function ProjectEditor({ project, onSave, onCancel }: ProjectEdit
           <div>
             <ImageUploader
               value={formData.image}
-              onChange={(value) => setFormData((prev) => ({ ...prev, image: value }))}
+              onChange={handleMainImageChange}
               label="Imagen Principal *"
-              placeholder="https://ejemplo.com/imagen.jpg"
             />
           </div>
 
@@ -361,7 +374,6 @@ export default function ProjectEditor({ project, onSave, onCancel }: ProjectEdit
                   <ImageUploader
                     value={image}
                     onChange={(value) => handleImageChange(index, value)}
-                    placeholder="https://ejemplo.com/imagen.jpg"
                   />
                 </div>
               ))}

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'home',
     'project',
+    'admin_api',
 ]
 
 MIDDLEWARE = [
@@ -141,3 +142,8 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'Documentación de la API del backend para la app de U2Group',
     'VERSION': '1.0.0',
 }
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
