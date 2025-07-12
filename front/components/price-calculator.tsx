@@ -58,7 +58,7 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
             marginBottom: "0"
           }}
         >
-          {t("turn every square meter info")}{" "}
+          {t("turnEverySquareMeter")}{" "}
           <span
             className="neutra-font-black"
             style={{
@@ -69,7 +69,7 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
               lineHeight: "0.9"
             }}
           >
-            {t("something extraordinary")}{" "}
+            {t("somethingExtraordinary")}{" "}
           </span>
         </h1>
 
@@ -82,7 +82,7 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
             color: "#262626"
           }}
         >
-          {t("start building your dream space starting from")}{" "}
+          {t("startBuildingYourDreamSpaceStartingFrom")}{" "}
           <span
             className="neutra-font-black"
             style={{
@@ -94,7 +94,7 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
           >
             ${total.toLocaleString("en-US")} USD
           </span>{" "}
-          {t("With U2 Group")}
+          {t("withU2Group")}
         </p>
 
         <p
@@ -116,7 +116,7 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
           >
             {area} m²
           </span>{" "}
-          · ${PRICE_PER_M2} {t("USD per m²")} ·
+          · ${PRICE_PER_M2} {t("usdPerM2")} ·
         </p>
 
         <p
