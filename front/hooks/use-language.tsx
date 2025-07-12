@@ -38,6 +38,16 @@ const translations = {
     readMore: "Leer Más",
     getStarted: "Comenzar",
     weDesignTheFuture: "Diseñamos el futuro",
+    homeDescription1: "En U2 Group, la arquitectura es nuestro lienzo y la creatividad nuestra herramienta más poderosa. Somos un estudio creativo que transforma ideas audaces en estructuras construidas, combinando diseño contemporáneo con funcionalidad visionaria.",
+    homeDescription2: "No repetimos fórmulas; las reinventamos. Cada proyecto comienza con innovación, empujando los límites de la arquitectura convencional para crear espacios que no solo son funcionales, sino transformadores y profundamente personales.",
+    homeSlogan1: "U2 Group no solo diseña espacios.",
+    homeSlogan2: "Los reimaginamos.",
+    homeQuote: '"Vamos grupo, buen diseño, toma tiempo, construir, costo."',
+    homeHeroTitle: "U2 Group es una incubadora de ideas arquitectónicas que desafían el status quo.",
+    homeHeroDescription: "Transformamos espacios en experiencias únicas que reflejan tu visión y estilo de vida, combinando innovación, funcionalidad y diseño excepcional.",
+    projectsSectionTitle: "Proyectos de U2 Group",
+    projectsSectionDescription: "Descubre cómo transformamos ideas en realidades arquitectónicas excepcionales.",
+    viewAllProjects: "Ver Todos los Proyectos",
 
     // PROYECTOS PAGE
     projectsTitle: "Nuestros Proyectos",
@@ -62,6 +72,43 @@ const translations = {
     "Global Vision": "Visión Global",
     "No Guesswork": "Sin Conjeturas",
     "Real Team": "Equipo Real",
+    mission: "Misión",
+    vision: "Visión",
+    missionDescription: "Creemos que la arquitectura no debe sentirse distante, intimidante o reservada para unos pocos. Debe sentirse como hogar desde el primer boceto hasta el último ladrillo. Por eso creamos espacios que son honestos, humanos y profundamente personales.",
+    visionDescription: "Aspiramos a convertirnos en una referencia global para la arquitectura reflexiva, sostenible y profundamente humana, inspirando a las personas a construir espacios que importan, no solo estructuras que existen.",
+    whatWeDo: "Qué Hacemos",
+    whatWeDoDescription: "Convertimos el diseño arquitectónico en un proceso claro y colaborativo, donde presupuesto, cronogramas y creatividad trabajan juntos.",
+    weSpecialize: "Nos Especializamos",
+    weSpecializeDescription: "Eso significa que nos enfocamos 100% en lo creativo y en hacer que tu proyecto sea visualmente impresionante, técnicamente preciso y listo para inspirar.",
+    globalVision: "Visión Global",
+    globalVisionDescription: "Nuestros planos son detallados, profesionales y elaborados para cumplir con estándares internacionales, listos para que tu arquitecto o ingeniero local los adapte a los códigos de tu región.",
+    noGuesswork: "Sin Conjeturas",
+    noGuessworkDescription: "Sabrás exactamente lo que obtienes: planos, secciones, renders, detalles organizados, pulidos y listos para presentación.",
+    realTeam: "Equipo Real",
+    realTeamDescription: "Somos humanos, no bots. Puedes hablar con nosotros. Hacer preguntas. Obtener apoyo. Te guiaremos con cuidado desde el primer día.",
+    howWeDo: "Cómo Lo Hacemos",
+    meetTheFounders: "Conoce a los",
+    founders: "Fundadores",
+    coFounderArchitect: "Co-Fundadora y Arquitecta",
+    coFounderIndustrialDesigner: "Co-Fundador y Diseñador Industrial",
+    creativity: "Creatividad",
+    creativityTooltip: "Abrazamos la creatividad en todas sus formas, superando los límites del diseño para crear espacios únicos e inspiradores.",
+    sustainability: "Sostenibilidad",
+    sustainabilityTooltip: "Priorizamos prácticas sostenibles y soluciones ecológicas en cada proyecto que realizamos.",
+    quality: "Calidad",
+    qualityTooltip: "Mantenemos los más altos estándares de calidad en cada aspecto de nuestro trabajo y entregables.",
+    innovation: "Innovación",
+    innovationTooltip: "Buscamos constantemente soluciones innovadoras y enfoques de vanguardia para los desafíos arquitectónicos.",
+    clientCentric: "Centrado en el Cliente",
+    clientCentricTooltip: "Nuestros clientes están en el centro de todo lo que hacemos, asegurando que su visión se haga realidad.",
+    integrity: "Integridad",
+    integrityTooltip: "Actuamos con honestidad, transparencia y ética en todo momento.",
+    collaboration: "Colaboración",
+    collaborationTooltip: "Creemos en el poder del trabajo en equipo y las alianzas colaborativas para lograr resultados excepcionales.",
+    attentionToDetail: "Atención al Detalle",
+    attentionToDetailTooltip: "Cada detalle importa, desde el concepto inicial hasta la ejecución final de tu proyecto.",
+    flexibility: "Flexibilidad",
+    flexibilityTooltip: "Nos adaptamos a las necesidades y circunstancias cambiantes manteniendo nuestro compromiso con la excelencia.",
 
     // DISEÑA PAGE
     designTitle: "Diseña tu Espacio",
@@ -69,7 +116,6 @@ const translations = {
     basics: "Básicos",
     additions: "Adiciones",
     family: "Familia",
-    sustainability: "Sostenibilidad",
     productivity: "Productividad",
     hobbies: "Pasatiempos",
     interiorDesign: "Diseño Interior",
@@ -93,14 +139,48 @@ const translations = {
     blogTitle: "Últimas Noticias",
     blogSubtitle: "Mantente al día con las últimas tendencias en arquitectura y diseño",
     readPost: "Leer Artículo",
-    Todos: "Todos",
-    Tips: "Tips",
-    News: "Noticias",
-    Articles: "Artículos",
+    all: "Todos",
+    tips: "Tips",
+    news: "Noticias",
+    articles: "Artículos",
+    interiorDesignCategory: "Diseño Interior",
+    sustainabilityCategory: "Sostenibilidad",
+    corporateCategory: "Corporativo",
+    residentialCategory: "Residencial",
+    viewAllArticles: "Ver Todos los Artículos",
 
     // CONTACTO PAGE
-    contactTitle: "Contacto",
-    contactSubtitle: "Ponte en contacto con nosotros",
+    contactTitle: "Contáctanos",
+    contactSubtitle: "Estamos aquí para ayudarte a convertir tu visión en realidad. Cuéntanos sobre tu proyecto.",
+    getInTouch: "Ponte en Contacto",
+    office: "Oficina",
+    moreThan4Years: "Más de 4 años de experiencia",
+    customDesigns: "Diseños personalizados y únicos",
+    professionalTeam: "Equipo profesional y dedicado",
+    response24h: "Respuesta en 24 horas",
+    contactInfo: "Información de Contacto",
+    fillForm: "Completa este formulario y nuestro equipo te contactará en 24 horas para discutir tu proyecto.",
+    firstName: "Nombre",
+    lastName: "Apellido",
+    firstNamePlaceholder: "Juan",
+    lastNamePlaceholder: "Pérez",
+    emailAddress: "Correo Electrónico",
+    emailPlaceholder: "juan@ejemplo.com",
+    phoneNumber: "Número de Teléfono",
+    phonePlaceholder: "+57 300 1234567",
+    projectLocation: "Ubicación del Proyecto",
+    projectLocationPlaceholder: "Ciudad, País",
+    projectTimeline: "Cronograma del Proyecto",
+    selectTimeline: "Seleccionar cronograma",
+    asap: "Lo antes posible",
+    within3Months: "Dentro de 3 meses",
+    within6Months: "Dentro de 6 meses",
+    within1Year: "Dentro de 1 año",
+    justPlanning: "Solo planeando",
+    additionalComments: "Comentarios Adicionales",
+    commentsPlaceholder: "Cuéntanos más sobre tu proyecto...",
+    sendMessage: "Enviar Mensaje",
+    submitForm: "Al enviar este formulario, aceptas nuestros Términos de Servicio y Política de Privacidad.",
     name: "Nombre",
     email: "Email",
     message: "Mensaje",
@@ -139,7 +219,6 @@ const translations = {
 
     // NOSOTROS PAGE - TÍTULOS Y DESCRIPCIONES
     heroTitle: "Somos más que arquitectos, somos creadores de experiencias",
-    weListen: "Escuchamos",
     weListenDescription: "No tomamos decisiones hasta que tu visión esté clara.",
     weCreateConcept: "Creamos el concepto",
     weCreateConceptDescription:
@@ -151,6 +230,28 @@ const translations = {
     weBuildWithYouDescription:
       "Desde los planos hasta los acabados, eres parte de cada paso. Te guiamos, te mantenemos informado y caminamos contigo. Tu hogar no se construye solo, se construye contigo.",
     startNow: "COMENZAR AHORA",
+    turnEverySquareMeter: "Convierte cada metro cuadrado en",
+    somethingExtraordinary: "algo extraordinario.",
+    startBuildingYourDreamSpaceStartingFrom: "Comienza a construir el espacio de tus sueños desde",
+    withU2Group: "con U2 Group.",
+    usdPerM2: "USD por m²",
+    designWithMe: "Diseña conmigo",
+    aboutUs: "Nosotros",
+    adminPanel: "Panel Admin",
+    developedBy: "Desarrollado por: Jpedroza & Jaraagb Developers inc.",
+    // CALCULADORA DE PRECIOS
+    calculatorTitle1: "Convierte cada metro cuadrado en",
+    calculatorTitle2: "algo extraordinario.",
+    calculatorSubtitle1: "Comienza a construir el espacio de tus sueños desde",
+    calculatorSubtitle2: "con U2 Group.",
+    calculatorPerM2: "por m²",
+    calculatorButton: "Diseña conmigo",
+    // NOTICIAS/BLOG
+    newsTitle: "Últimas Noticias",
+    newsSubtitle: "Mantente al día con las últimas tendencias en arquitectura y diseño.",
+    readArticle: "Leer Artículo",
+    // Las categorías ya existen: interiorDesignCategory, sustainabilityCategory, corporateCategory, residentialCategory
+    // Botón de ver todos los artículos ya existe: viewAllArticles
   },
   en: {
     // NAVIGATION
@@ -176,6 +277,16 @@ const translations = {
     readMore: "Read More",
     getStarted: "Get Started",
     weDesignTheFuture: "We design the future",
+    homeDescription1: "At U2 Group, architecture is our canvas and creativity our most powerful tool. We are a creative studio that transforms bold ideas into built structures, blending contemporary design with visionary functionality.",
+    homeDescription2: "We don't repeat formulas; we reinvent them. Every project begins with innovation, pushing the boundaries of conventional architecture to create spaces that are not just functional, but transformative and deeply personal.",
+    homeSlogan1: "U2 Group doesn't just design spaces.",
+    homeSlogan2: "We reimagine them.",
+    homeQuote: '"Let\'s go group good design, take time, build, cost."',
+    homeHeroTitle: "U2 Group is an incubator of architectural ideas that challenge the status quo.",
+    homeHeroDescription: "We transform spaces into unique experiences that reflect your vision and lifestyle, combining innovation, functionality, and exceptional design.",
+    projectsSectionTitle: "U2 Group Projects",
+    projectsSectionDescription: "Discover how we turn ideas into exceptional architectural realities.",
+    viewAllProjects: "View All Projects",
 
     // PROJECTS PAGE
     projectsTitle: "Our Projects",
@@ -200,6 +311,43 @@ const translations = {
     "Global Vision": "Global Vision",
     "No Guesswork": "No Guesswork",
     "Real Team": "Real Team",
+    mission: "Mission",
+    vision: "Vision",
+    missionDescription: "We believe that architecture should not feel distant, intimidating or reserved for a few. It should feel like home from the first sketch to the last brick. That's why we create spaces that are honest, human and deeply personal.",
+    visionDescription: "We aim to become a global reference for architecture that's thoughtful, sustainable, and deeply human inspiring people to build spaces that matter, not just structures that exist.",
+    whatWeDo: "What We Do",
+    whatWeDoDescription: "We turn architectural design into a clear and collaborative process, where budget, schedules and creativity work together.",
+    weSpecialize: "We Specialize",
+    weSpecializeDescription: "That means we focus 100% on the creative and making your project visually stunning, technically precise and ready to inspire.",
+    globalVision: "Global Vision",
+    globalVisionDescription: "Our plans are detailed, professional and crafted to meet international standards, ready for your local architect or engineer to adapt to your region's codes.",
+    noGuesswork: "No Guesswork",
+    noGuessworkDescription: "You'll know exactly what you get: plans, sections, renders, details organized, polished and ready for presentation.",
+    realTeam: "Real Team",
+    realTeamDescription: "We are humans, not bots. You can talk to us. Ask questions. Get support. We'll guide you carefully from day one.",
+    howWeDo: "How We Do",
+    meetTheFounders: "Meet the",
+    founders: "Founders",
+    coFounderArchitect: "Co-Founder & Architect",
+    coFounderIndustrialDesigner: "Co-Founder & Industrial Designer",
+    creativity: "Creativity",
+    creativityTooltip: "We embrace creativity in all its forms, pushing the boundaries of design to craft unique and inspiring spaces.",
+    sustainability: "Sustainability",
+    sustainabilityTooltip: "We prioritize sustainable practices and eco-friendly solutions in every project we undertake.",
+    quality: "Quality",
+    qualityTooltip: "We maintain the highest standards of quality in every aspect of our work and deliverables.",
+    innovation: "Innovation",
+    innovationTooltip: "We constantly seek innovative solutions and cutting-edge approaches to architectural challenges.",
+    clientCentric: "Client Centric",
+    clientCentricTooltip: "Our clients are at the heart of everything we do, ensuring their vision becomes reality.",
+    integrity: "Integrity",
+    integrityTooltip: "We conduct our business with honesty, transparency, and ethical practices at all times.",
+    collaboration: "Collaboration",
+    collaborationTooltip: "We believe in the power of teamwork and collaborative partnerships to achieve exceptional results.",
+    attentionToDetail: "Attention to Detail",
+    attentionToDetailTooltip: "Every detail matters to us, from the initial concept to the final execution of your project.",
+    flexibility: "Flexibility",
+    flexibilityTooltip: "We adapt to changing needs and circumstances while maintaining our commitment to excellence.",
 
     // DESIGN PAGE
     designTitle: "Design Your Space",
@@ -207,7 +355,6 @@ const translations = {
     basics: "Basics",
     additions: "Additions",
     family: "Family",
-    sustainability: "Sustainability",
     productivity: "Productivity",
     hobbies: "Hobbies",
     interiorDesign: "Interior Design",
@@ -231,14 +378,48 @@ const translations = {
     blogTitle: "Latest News",
     blogSubtitle: "Stay up to date with the latest trends in architecture and design",
     readPost: "Read Article",
-    Todos: "All",
-    Tips: "Tips",
-    News: "News",
-    Articles: "Articles",
+    all: "All",
+    tips: "Tips",
+    news: "News",
+    articles: "Articles",
+    interiorDesignCategory: "Interior Design",
+    sustainabilityCategory: "Sustainability",
+    corporateCategory: "Corporate",
+    residentialCategory: "Residential",
+    viewAllArticles: "View All Articles",
 
     // CONTACT PAGE
-    contactTitle: "Contact",
-    contactSubtitle: "Get in touch with us",
+    contactTitle: "Contact Us",
+    contactSubtitle: "We are here to help you turn your vision into reality. Tell us about your project.",
+    getInTouch: "Get in Touch",
+    office: "Office",
+    moreThan4Years: "More than 4 years of experience",
+    customDesigns: "Custom and unique designs",
+    professionalTeam: "Professional and dedicated team",
+    response24h: "Response within 24 hours",
+    contactInfo: "Contact Information",
+    fillForm: "Fill out this form and our team will contact you within 24 hours to discuss your project.",
+    firstName: "First Name",
+    lastName: "Last Name",
+    firstNamePlaceholder: "John",
+    lastNamePlaceholder: "Doe",
+    emailAddress: "Email Address",
+    emailPlaceholder: "john@example.com",
+    phoneNumber: "Phone Number",
+    phonePlaceholder: "+1 (555) 123-4567",
+    projectLocation: "Project Location",
+    projectLocationPlaceholder: "City, Country",
+    projectTimeline: "Project Timeline",
+    selectTimeline: "Select timeline",
+    asap: "As soon as possible",
+    within3Months: "Within 3 Months",
+    within6Months: "Within 6 Months",
+    within1Year: "Within 1 Year",
+    justPlanning: "Just Planning",
+    additionalComments: "Additional Comments",
+    commentsPlaceholder: "Tell us more about your project...",
+    sendMessage: "Send Message",
+    submitForm: "By submitting this form, you agree to our Terms of Service and Privacy Policy.",
     name: "Name",
     email: "Email",
     message: "Message",
@@ -277,7 +458,6 @@ const translations = {
 
     // ABOUT PAGE - TITLES AND DESCRIPTIONS
     heroTitle: "We are more than architects, we are experience creators",
-    weListen: "We Listen",
     weListenDescription: "We don't make decisions until your vision is clear.",
     weCreateConcept: "We create the concept",
     weCreateConceptDescription:
@@ -289,433 +469,60 @@ const translations = {
     weBuildWithYouDescription:
       "From plans to finishes, you're part of every step. We guide you, keep you informed, and walk with you. Your home isn't built alone it's built with you.",
     startNow: "START NOW",
-  },
-}
-
-// 🔄 MAPA DE TRADUCCIONES AUTOMÁTICAS COMPLETO - CON TODOS LOS TEXTOS DE LAS IMÁGENES
-const autoTranslationMap = {
-  es: {
-    // ===== FOOTER COMPLETO =====
-    Services: "Servicios",
-    "Architectural Design": "Diseño Arquitectónico",
-    Consultoria: "Consultoría",
-    Company: "Empresa",
-    "About Us": "Nosotros",
-    Blog: "Blog",
-    "Panel Admin": "Panel Admin",
-    Contact: "Contacto",
-    "info@u2group.com": "info@u2group.com",
-    "+57 3043001791": "+57 3043001791",
-    "Pasto, Colombia": "Pasto, Colombia",
-    "Privacy Policies": "Políticas de Privacidad",
-    "© 2025 U2 GROUP. All rights reserved.": "© 2025 U2 GROUP. Todos los derechos reservados.",
-    "Follow us": "Síguenos",
-    "Developed by: Jpedroza & Jaraagb Developers inc.": "Desarrollado por: Jpedroza & Jaraagb Developers inc.",
-
-    // ===== NAVEGACIÓN =====
-    Home: "Inicio",
-    Projects: "Proyectos",
-    "About Us": "Nosotros",
-    Design: "Diseña",
-    Blog: "Blog",
-    Contact: "Contacto",
-
-    // ===== VALORES DE LA EMPRESA =====
-    Creativity: "Creatividad",
-    Sustainability: "Sostenibilidad",
-    Quality: "Calidad",
-    Innovation: "Innovación",
-    "Client Centric": "Centrado en el Cliente",
-    Integrity: "Integridad",
-    Collaboration: "Colaboración",
-    "Attention to Detail": "Atención al Detalle",
-    Flexibility: "Flexibilidad",
-
-    // ===== PÁGINA NOSOTROS COMPLETA =====
-    "We are more than architects, we are experience creators":
-      "Somos más que arquitectos, somos creadores de experiencias",
-    "With more than 4 years of experience in the industry, we have worked in different climates, contexts and challenges always with the same goal: to make architecture simpler, smarter and more personal.":
-      "Con más de 4 años de experiencia en la industria, hemos trabajado en diferentes climas, contextos y desafíos siempre con el mismo objetivo: hacer que la arquitectura sea más simple, inteligente y personal.",
-    "Whether you're building in the mountains, the city or by the sea, we help you bring your vision to life wherever you are.":
-      "Ya sea que estés construyendo en las montañas, la ciudad o junto al mar, te ayudamos a dar vida a tu visión donde quiera que estés.",
-
-    // MISIÓN Y VISIÓN
-    "Our Mission": "Nuestra Misión",
-    "Our Vision": "Nuestra Visión",
-    "We believe that architecture should not feel distant, intimidating or reserved for a few. It should feel like home from the first sketch to the last brick. That's why we create spaces that are honest, human and deeply personal.":
-      "Creemos que la arquitectura no debe sentirse distante, intimidante o reservada para unos pocos. Debe sentirse como hogar desde el primer boceto hasta el último ladrillo. Por eso creamos espacios que son honestos, humanos y profundamente personales.",
-    "We aim to become a global reference for architecture that's thoughtful, sustainable, and deeply human inspiring people to build spaces that matter, not just structures that exist.":
-      "Aspiramos a convertirnos en una referencia global para la arquitectura reflexiva, sostenible y profundamente humana, inspirando a las personas a construir espacios que importan, no solo estructuras que existen.",
-
-    // QUÉ HACEMOS
-    "What We Do": "Lo Que Hacemos",
-    "We turn architectural design into a clear and collaborative process, where budget, schedules and creativity work together.":
-      "Convertimos el diseño arquitectónico en un proceso claro y colaborativo, donde presupuesto, cronogramas y creatividad trabajan juntos.",
-    "We Specialize": "Nos Especializamos",
-    "That means we focus 100% on the creative and making your project visually stunning, technically precise and ready to inspire.":
-      "Eso significa que nos enfocamos 100% en lo creativo y en hacer que tu proyecto sea visualmente impresionante, técnicamente preciso y listo para inspirar.",
-    "Global Vision": "Visión Global",
-    "Our plans are detailed, professional and crafted to meet international standards, ready for your local architect or engineer to adapt to your region's codes.":
-      "Nuestros planos son detallados, profesionales y elaborados para cumplir con estándares internacionales, listos para que tu arquitecto o ingeniero local los adapte a los códigos de tu región.",
-    "No Guesswork": "Sin Conjeturas",
-    "You'll know exactly what you get: plans, sections, renders, details organized, polished and ready for presentation.":
-      "Sabrás exactamente lo que obtienes: planos, secciones, renders, detalles organizados, pulidos y listos para presentación.",
-    "Real Team": "Equipo Real",
-    "We are humans, not bots. You can talk to us. Ask questions. Get support. We'll guide you carefully from day one.":
-      "Somos humanos, no bots. Puedes hablar con nosotros. Hacer preguntas. Obtener apoyo. Te guiaremos con cuidado desde el primer día.",
-
-    // CÓMO LO HACEMOS
-    "How We Do": "Cómo Lo Hacemos",
-    "We Listen": "Escuchamos",
-    "We don't make decisions until your vision is clear": "No tomamos decisiones hasta que tu visión esté clara",
-    "We create the concept": "Creamos el concepto",
-    "This is where the magic begins: we blend function, aesthetics, and emotion into a unique concept. Every detail comes from your real needs. No templates only purpose.":
-      "Aquí es donde comienza la magia: combinamos función, estética y emoción en un concepto único. Cada detalle surge de tus necesidades reales. Sin plantillas, solo propósito.",
-    "You visualize in 3D": "Visualizas en 3D",
-    "With our hyper-realistic renders, you'll walk through and feel your home before a single brick is laid. That way, you make decisions with clarity and confidence.":
-      "Con nuestros renders hiperrealistas, caminarás y sentirás tu hogar antes de que se coloque un solo ladrillo. Así, tomas decisiones con claridad y confianza.",
-    "We build it with you": "Lo construimos contigo",
-    "From plans to finishes, you're part of every step. We guide you, keep you informed, and walk with you. Your home isn't built alone it's built with you.":
-      "Desde los planos hasta los acabados, eres parte de cada paso. Te guiamos, te mantenemos informado y caminamos contigo. Tu hogar no se construye solo, se construye contigo.",
-
-    // FUNDADORES
-    "Meet the Founders": "Conoce a los Fundadores",
-    "Sofía Solarte": "Sofía Solarte",
-    "Juan José Lima": "Juan José Lima",
-    "Founder & Architect": "Fundadora y Arquitecta",
-    "Co-Founder & Industrial Designer": "Co-Fundador y Diseñador Industrial",
-    "START NOW": "COMENZAR AHORA",
-
-    // ===== PÁGINA DE INICIO =====
-    "We design the future": "Diseñamos el futuro",
-    "At U2 Group, architecture is our canvas and creativity our most powerful tool. We are a creative studio that transforms bold ideas into built structures, blending contemporary design with visionary functionality.":
-      "En U2 Group, la arquitectura es nuestro lienzo y la creatividad nuestra herramienta más poderosa. Somos un estudio creativo que transforma ideas audaces en estructuras construidas, combinando diseño contemporáneo con funcionalidad visionaria.",
-    "We don't repeat formulas; we reinvent them. Every project begins with innovation, pushing the boundaries of conventional architecture to create spaces that are not just functional, but transformative and deeply personal.":
-      "No repetimos fórmulas; las reinventamos. Cada proyecto comienza con innovación, empujando los límites de la arquitectura convencional para crear espacios que no solo son funcionales, sino transformadores y profundamente personales.",
-    "U2 Group no solo diseña espacios.": "U2 Group no solo diseña espacios.",
-    "los reimaginamos.": "los reimaginamos.",
-    '"Let\'s go group good design, take time, build, cost."':
-      '"Vamos grupo, buen diseño, toma tiempo, construir, costo."',
-
-    // ===== PÁGINA PROYECTOS =====
-    "Our Projects": "Nuestros Proyectos",
-    "Explore our collection of unique architectural projects":
-      "Explora nuestra colección de proyectos arquitectónicos únicos",
-    "More Projects": "Más Proyectos",
-    "Our Featured Projects": "Nuestros Destacados",
-    "Have a project in mind?": "¿Tienes un proyecto en mente?",
-    "Contact our team of experts": "Contacta con nuestro equipo de expertos",
-    "Start Project": "Comenzar Proyecto",
-
-    // ===== PÁGINA BLOG =====
-    "Latest News": "Últimas Noticias",
-    "Stay up to date with the latest trends in architecture and diseño.":
-      "Mantente al día con las últimas tendencias en arquitectura y diseño.",
-    All: "Todos",
-    "Read Article": "Leer Artículo",
-
-    // ===== PÁGINA DISEÑA =====
-    Basics: "Básicos",
-    Additions: "Adiciones",
-    Family: "Family",
-    Productivity: "Productividad",
-    Hobbies: "Pasatiempos",
-    "Interior Design": "Diseño Interior",
-    "Sistemas S2": "S2 Systems",
-    "Get Your Quote": "Obtén tu Cotización",
-    "Choose the": "Elige los",
-    Price: "Precio",
-    "You are interested in": "Estás interesado en",
-    "Diseño Arquitectónico": "Architectural Design",
-    "DESIGN SUMMARY": "RESUMEN DE DISEÑO",
-    "Project Code": "Código de Proyecto",
-    "Design Cost": "Costo del Diseño",
-    "Ready to start your project?": "¿Listo para comenzar tu proyecto?",
-    Back: "Atrás",
-    "Schedule a Consultation": "Agenda una Consulta",
-    "Book a meeting with our team to discuss your project in detail":
-      "Reserva una reunión con nuestro equipo para discutir tu proyecto en detalle",
-    Next: "Siguiente",
-
-    // ===== PÁGINA NOSOTROS - TEXTOS ESPECÍFICOS FALTANTES =====
-    "How We Do": "Cómo Lo Hacemos",
-    "We are more than architects, we are experience creators":
-      "Somos más que arquitectos, somos creadores de experiencias",
-
-    // FUNDADORES ESPECÍFICOS
-    "Sofía Solarte": "Sofía Solarte",
-    "Juan José Lima": "Juan José Lima",
-    "Fundadora y Arquitecta": "Founder & Architect",
-    "Co-Fundador y Diseñador Industrial": "Co-Founder & Industrial Designer",
-
-    // PROCESO PASO A PASO - TEXTOS EXACTOS
-    "We create the concept": "Creamos el concepto",
-    "This is where the magic begins: we blend function, aesthetics, and emotion into a unique concept. Every detail comes from your real needs. No templates only purpose.":
-      "Aquí es donde comienza la magia: combinamos función, estética y emoción en un concepto único. Cada detalle surge de tus necesidades reales. Sin plantillas, solo propósito.",
-
-    "You visualize in 3D": "Visualizas en 3D",
-    "With our hyper-realistic renders, you'll walk through and feel your home before a single brick is laid. That way, you make decisions with clarity and confidence.":
-      "Con nuestros renders hiperrealistas, caminarás y sentirás tu hogar antes de que se coloque un solo ladrillo. Así, tomas decisiones con claridad y confianza.",
-
-    "We build it with you": "Lo construimos contigo",
-    "From plans to finishes, you're part of every step. We guide you, keep you informed, and walk with you. Your home isn't built alone it's built with you.":
-      "Desde los planos hasta los acabados, eres parte de cada paso. Te guiamos, te mantenemos informado y caminamos contigo. Tu hogar no se construye solo, se construye contigo.",
-
-    "START NOW": "COMENZAR AHORA",
-  },
-  en: {
-    // ===== FOOTER COMPLETO =====
-    Servicios: "Services",
-    "Diseño Arquitectónico": "Architectural Design",
-    Consultoría: "Consultoria",
-    Empresa: "Company",
-    Nosotros: "About Us",
-    Blog: "Blog",
-    "Panel Admin": "Panel Admin",
-    Contacto: "Contact",
-    "info@u2group.com": "info@u2group.com",
-    "+57 3043001791": "+57 3043001791",
-    "Pasto, Colombia": "Pasto, Colombia",
-    "Políticas de Privacidad": "Privacy Policies",
-    "© 2025 U2 GROUP. Todos los derechos reservados.": "© 2025 U2 GROUP. All rights reserved.",
-    Síguenos: "Follow us",
-    "Desarrollado por: Jpedroza & Jaraagb Developers inc.": "Developed by: Jpedroza & Jaraagb Developers inc.",
-
-    // ===== NAVEGACIÓN =====
-    Inicio: "Home",
-    Proyectos: "Projects",
-    Nosotros: "About Us",
-    Diseña: "Design",
-    Blog: "Blog",
-    Contacto: "Contact",
-
-    // ===== VALORES DE LA EMPRESA =====
-    Creatividad: "Creativity",
-    Sostenibilidad: "Sustainability",
-    Calidad: "Quality",
-    Innovación: "Innovation",
-    "Centrado en el Cliente": "Client Centric",
-    Integridad: "Integrity",
-    Colaboración: "Collaboration",
-    "Atención al Detalle": "Attention to Detail",
-    Flexibilidad: "Flexibility",
-
-    // ===== PÁGINA NOSOTROS COMPLETA =====
-    "Somos más que arquitectos, somos creadores de experiencias":
-      "We are more than architects, we are experience creators",
-    "Con más de 4 años de experiencia en la industria, hemos trabajado en diferentes climas, contextos y desafíos siempre con el mismo objetivo: hacer que la arquitectura sea más simple, inteligente y personal.":
-      "With more than 4 years of experience in the industry, we have worked in different climates, contexts and challenges always with the same goal: to make architecture simpler, smarter and more personal.",
-    "Ya sea que estés construyendo en las montañas, la ciudad o junto al mar, te ayudamos a dar vida a tu visión donde quiera que estés.":
-      "Whether you're building in the mountains, the city or by the sea, we help you bring your vision to life wherever you are.",
-
-    // MISIÓN Y VISIÓN
-    "Nuestra Misión": "Our Mission",
-    "Nuestra Visión": "Our Vision",
-    "Creemos que la arquitectura no debe sentirse distante, intimidante o reservada para unos pocos. Debe sentirse como hogar desde el primer boceto hasta el último ladrillo. Por eso creamos espacios que son honestos, humanos y profundamente personales.":
-      "We believe that architecture should not feel distant, intimidating or reserved for a few. It should feel like home from the first sketch to the last brick. That's why we create spaces that are honest, human and deeply personal.",
-    "Aspiramos a convertirnos en una referencia global para la arquitectura reflexiva, sostenible y profundamente humana, inspirando a las personas a construir espacios que importan, no solo estructuras que existen.":
-      "We aim to become a global reference for architecture that's thoughtful, sustainable and deeply human inspiring people to build spaces that matter, not just structures that exist.",
-
-    // QUÉ HACEMOS
-    "Lo Que Hacemos": "What We Do",
-    "Convertimos el diseño arquitectónico en un proceso claro y colaborativo, donde presupuesto, cronogramas y creatividad trabajan juntos.":
-      "We turn architectural design into a clear and collaborative process, where budget, schedules and creativity work together.",
-    "Nos Especializamos": "We Specialize",
-    "Eso significa que nos enfocamos 100% en lo creativo y en hacer que tu proyecto sea visualmente impresionante, técnicamente preciso y listo para inspirar.":
-      "That means we focus 100% on the creative and making your project visually stunning, technically precise and ready to inspire.",
-    "Visión Global": "Global Vision",
-    "Nuestros planos son detallados, profesionales y elaborados para cumplir con estándares internacionales, listos para que tu arquitecto o ingeniero local los adapte a los códigos de tu región.":
-      "Our plans are detailed, professional and crafted to meet international standards, ready for your local architect or engineer to adapt to your region's codes.",
-    "Sin Conjeturas": "No Guesswork",
-    "Sabrás exactamente lo que obtienes: planos, secciones, renders, detalles organizados, pulidos y listos para presentación.":
-      "You'll know exactly what you get: plans, sections, renders, details organized, polished and ready for presentation.",
-    "Equipo Real": "Real Team",
-    "Somos humanos, no bots. Puedes hablar con nosotros. Hacer preguntas. Obtener apoyo. Te guiaremos con cuidado desde el primer día.":
-      "We are humans, not bots. You can talk to us. Ask questions. Get support. We'll guide you carefully from day one.",
-
-    // CÓMO LO HACEMOS
-    "Cómo Lo Hacemos": "How We Do",
-    Escuchamos: "We Listen",
-    "No tomamos decisiones hasta que tu visión esté clara": "We don't make decisions until your vision is clear",
-    "Creamos el concepto": "We create the concept",
-    "Aquí es donde comienza la magia: combinamos función, estética y emoción en un concepto único. Cada detalle surge de tus necesidades reales. Sin plantillas, solo propósito.":
-      "This is where the magic begins: we blend function, aesthetics, and emotion into a unique concept. Every detail comes from your real needs. No templates only purpose.",
-    "Visualizas en 3D": "You visualize in 3D",
-    "Con nuestros renders hiperrealistas, caminarás y sentirás tu hogar antes de que se coloque un solo ladrillo. Así, tomas decisiones con claridad y confianza.":
-      "With our hyper-realistic renders, you'll walk through and feel your home before a single brick is laid. That way, you make decisions with clarity and confidence.",
-    "Lo construimos contigo": "We build it with you",
-    "Desde los planos hasta los acabados, eres parte de cada paso. Te guiamos, te mantenemos informado y caminamos contigo. Tu hogar no se construye solo, se construye contigo.":
-      "From plans to finishes, you're part of every step. We guide you, keep you informed, and walk with you. Your home isn't built alone it's built with you.",
-
-    // FUNDADORES
-    "Conoce a los Fundadores": "Meet the Founders",
-    "Sofía Solarte": "Sofía Solarte",
-    "Juan José Lima": "Juan José Lima",
-    "Fundadora y Arquitecta": "Founder & Architect",
-    "Co-Fundador y Diseñador Industrial": "Co-Founder & Industrial Designer",
-    "COMENZAR AHORA": "START NOW",
-
-    // ===== PÁGINA DE INICIO =====
-    "Diseñamos el futuro": "We design the future",
-    "En U2 Group, la arquitectura es nuestro lienzo y la creatividad nuestra herramienta más poderosa. Somos un estudio creativo que transforma ideas audaces en estructuras construidas, combinando diseño contemporáneo con funcionalidad visionaria.":
-      "At U2 Group, architecture is our canvas and creativity our most powerful tool. We are a creative studio that transforms bold ideas into built structures, blending contemporary design with visionary functionality.",
-    "No repetimos fórmulas; las reinventamos. Cada proyecto comienza con innovación, empujando los límites de la arquitectura convencional para crear espacios que no solo son funcionales, sino transformadores y profundamente personales.":
-      "We don't repeat formulas; we reinvent them. Every project begins with innovation, pushing the boundaries of conventional architecture to create spaces that are not just functional, but transformative and deeply personal.",
-    "U2 Group no solo diseña espacios.": "U2 Group doesn't just design spaces.",
-    "los reimaginamos.": "we reimagine them.",
-    '"Vamos grupo, buen diseño, toma tiempo, construir, costo."':
-      '"Let\'s go group good design, take time, build, cost."',
-
-    // ===== PÁGINA PROYECTOS =====
-    "Nuestros Proyectos": "Our Projects",
-    "Explora nuestra colección de proyectos arquitectónicos únicos":
-      "Explore our collection of unique architectural projects",
-    "Más Proyectos": "More Projects",
-    "Nuestros Destacados": "Our Featured Projects",
-    "¿Tienes un proyecto en mente?": "Have a project in mind?",
-    "Contacta con nuestro equipo de expertos": "Contact our team of experts",
-    "Comenzar Proyecto": "Start Project",
-
-    // ===== PÁGINA BLOG =====
-    "Últimas Noticias": "Latest News",
-    "Mantente al día con las últimas tendencias en arquitectura y diseño.":
-      "Stay up to date with the latest trends in architecture and design.",
-    Todos: "All",
-    "Leer Artículo": "Read Article",
-
-    // ===== PÁGINA DISEÑA =====
-    Básicos: "Basics",
-    Additions: "Additions",
-    Family: "Family",
-    Productividad: "Productivity",
-    Hobbies: "Hobbies",
-    "Diseño Interior": "Interior Design",
-    "Sistemas S2": "S2 Systems",
-    "Obtén tu Cotización": "Get Your Quote",
-    "Elige los": "Choose the",
-    Price: "Precio",
-    "Estás interesado en": "You are interested in",
-    "Diseño Arquitectónico": "Architectural Design",
-    "RESUMEN DE DISEÑO": "DESIGN SUMMARY",
-    "Código de Proyecto": "Project Code",
-    "Costo del Diseño": "Design Cost",
-    "¿Listo para comenzar tu proyecto?": "Ready to start your project?",
-    Atrás: "Back",
-    "Agenda una Consulta": "Schedule a Consultation",
-    "Reserva una reunión con nuestro equipo para discutir tu proyecto en detalle":
-      "Book a meeting with our team to discuss your project in detail",
-    Siguiente: "Next",
-
-    // ===== PÁGINA NOSOTROS - TEXTOS ESPECÍFICOS FALTANTES =====
-    "How We Do": "Cómo Lo Hacemos",
-    "We are more than architects, we are experience creators":
-      "Somos más que arquitectos, somos creadores de experiencias",
-
-    // FUNDADORES ESPECÍFICOS
-    "Sofía Solarte": "Sofía Solarte",
-    "Juan José Lima": "Juan José Lima",
-    "Fundadora y Arquitecta": "Founder & Architect",
-    "Co-Fundador y Diseñador Industrial": "Co-Founder & Industrial Designer",
-
-    // PROCESO PASO A PASO - TEXTOS EXACTOS
-    "Creamos el concepto": "We create the concept",
-    "Aquí es donde comienza la magia: combinamos función, estética y emoción en un concepto único. Cada detalle surge de tus necesidades reales. Sin plantillas, solo propósito.":
-      "This is where the magic begins: we blend function, aesthetics, and emotion into a unique concept. Every detail comes from your real needs. No templates only purpose.",
-
-    "You visualize in 3D": "You visualize in 3D",
-    "With our hyper-realistic renders, you'll walk through and feel your home before a single brick is laid. That way, you make decisions with clarity and confidence.":
-      "Con nuestros renders hiperrealistas, caminarás y sentirás tu hogar antes de que se coloque un solo ladrillo. Así, tomas decisiones con claridad y confianza.",
-
-    "We build it with you": "We build it with you",
-    "From plans to finishes, you're part of every step. We guide you, keep you informed, and walk with you. Your home isn't built alone it's built with you.":
-      "Desde los planos hasta los acabados, eres parte de cada paso. Te guiamos, te mantenemos informado y caminamos contigo. Tu hogar no se construye solo, se construye contigo.",
-
-    "COMENZAR AHORA": "START NOW",
+    turnEverySquareMeter: "Turn every square meter into",
+    somethingExtraordinary: "something extraordinary.",
+    startBuildingYourDreamSpaceStartingFrom: "Start building your dream space starting from",
+    withU2Group: "with U2 Group.",
+    usdPerM2: "USD per m²",
+    designWithMe: "Design with me",
+    aboutUs: "About Us",
+    adminPanel: "Admin Panel",
+    developedBy: "Developed by: Jpedroza & Jaraagb Developers inc.",
+    // CALCULADORA DE PRECIOS
+    calculatorTitle1: "Turn every square meter into",
+    calculatorTitle2: "something extraordinary.",
+    calculatorSubtitle1: "Start building your dream space starting from",
+    calculatorSubtitle2: "with U2 Group.",
+    calculatorPerM2: "per m²",
+    calculatorButton: "Design with me",
+    // NOTICIAS/BLOG
+    newsTitle: "Latest News",
+    newsSubtitle: "Stay up to date with the latest trends in architecture and design.",
+    readArticle: "Read Article",
+    // Las categorías y viewAllArticles ya existen
   },
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>("es")
-
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem("u2-language") as Language
-    if (savedLanguage && (savedLanguage === "es" || savedLanguage === "en")) {
-      setLanguage(savedLanguage)
+  // Inicializar idioma desde localStorage si existe, si no, usar 'es'
+  function getInitialLanguage(): Language {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("u2-language") as Language | null
+      if (saved === "es" || saved === "en") return saved
     }
-  }, [])
-
-  // 🔄 FUNCIÓN DE TRADUCCIÓN AUTOMÁTICA MEJORADA Y CORREGIDA
-  const applyAutoTranslations = () => {
-    if (typeof window === "undefined") return
-
-    const currentTranslations = autoTranslationMap[language]
-
-    console.log(`🌐 Aplicando traducciones para idioma: ${language}`)
-
-    // Buscar todos los elementos de texto en la página
-    const walker = document.createTreeWalker(
-      document.body,
-      NodeFilter.SHOW_TEXT,
-      {
-        acceptNode: (node) => {
-          // Filtrar nodos que están dentro de scripts, styles, etc.
-          const parent = node.parentElement
-          if (!parent) return NodeFilter.FILTER_REJECT
-
-          const tagName = parent.tagName.toLowerCase()
-          if (["script", "style", "noscript"].includes(tagName)) {
-            return NodeFilter.FILTER_REJECT
-          }
-
-          return NodeFilter.FILTER_ACCEPT
-        },
-      },
-      false,
-    )
-
-    const textNodes: Text[] = []
-    let node: Text | null
-
-    // Recopilar todos los nodos de texto
-    while ((node = walker.nextNode() as Text)) {
-      if (node.nodeValue && node.nodeValue.trim()) {
-        textNodes.push(node)
-      }
-    }
-
-    let translationsApplied = 0
-
-    // Aplicar traducciones
-    textNodes.forEach((textNode) => {
-      const originalText = textNode.nodeValue?.trim()
-      if (originalText && currentTranslations[originalText]) {
-        textNode.nodeValue = currentTranslations[originalText]
-        translationsApplied++
-        console.log(`✅ Traducido: "${originalText}" → "${currentTranslations[originalText]}"`)
-      }
-    })
-
-    console.log(`🎯 Total traducciones aplicadas: ${translationsApplied}`)
+    return "es"
   }
 
+  const [language, setLanguage] = useState<Language>(getInitialLanguage)
+  // Estado para saber si ya se montó y evitar parpadeo
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Cuando cambia el idioma, guardarlo en localStorage
   const handleSetLanguage = (lang: Language) => {
     setLanguage(lang)
     localStorage.setItem("u2-language", lang)
-
-    // Aplicar traducciones automáticas después de cambiar idioma
-    setTimeout(() => {
-      applyAutoTranslations()
-    }, 100)
   }
-
-  // Aplicar traducciones cuando cambie el idioma
-  useEffect(() => {
-    applyAutoTranslations()
-  }, [language])
 
   const t = (key: string): string => {
-    return translations[language][key] || key
+    return (translations[language] as Record<string, string>)[key] || key
   }
+
+  // Evitar renderizar hijos hasta que esté montado (para evitar parpadeo de idioma)
+  if (!mounted) return null
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t }}>

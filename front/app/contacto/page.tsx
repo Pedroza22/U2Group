@@ -34,27 +34,26 @@ export default function ContactoPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 neutra-font">
+    <div className="min-h-screen bg-white neutra-font">
       <Header currentPage="contacto" />
 
       {/* HERO SECTION */}
       <div className="bg-blue-600 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl neutra-font-black mb-4">{t("Contact Us") || "Contáctanos"}</h1>
-            <p className="text-xl text-blue-100 max-w-3xl mx-auto neutra-font">
-              {t("contactSubtitle") ||
-                "Estamos aquí para ayudarte a convertir tu visión en realidad. Cuéntanos sobre tu proyecto."}
-            </p>
+            <h1 className="text-4xl md:text-5xl neutra-font-black mb-4">{t("contactTitle")}</h1>
+            <p className="text-xl text-blue-100 max-w-3xl mx-auto neutra-font">{t("contactSubtitle")}</p>
           </div>
         </div>
       </div>
+
+      <div className="w-full h-2 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-100 my-8" />
 
       <div className="container mx-auto px-4 py-16">
         <div className="grid lg:grid-cols-2 gap-12">
           {/* INFORMACIÓN DE CONTACTO */}
           <div>
-            <h2 className="text-3xl neutra-font-bold text-gray-900 mb-8">{t("Get in Touch") || "Ponte en Contacto"}</h2>
+            <h2 className="text-3xl neutra-font-bold text-gray-900 mb-8">{t("getInTouch")}</h2>
 
             <div className="space-y-6 mb-8">
               <div className="flex items-start gap-4">
@@ -62,7 +61,7 @@ export default function ContactoPage() {
                   <Mail className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg neutra-font-bold text-gray-900 mb-1">{t("email") || "Email"}</h3>
+                  <h3 className="text-lg neutra-font-bold text-gray-900 mb-1">{t("email")}</h3>
                   <p className="text-gray-600 neutra-font">hello@u2group.com</p>
                 </div>
               </div>
@@ -72,7 +71,7 @@ export default function ContactoPage() {
                   <Phone className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg neutra-font-bold text-gray-900 mb-1">{t("phone") || "Teléfono"}</h3>
+                  <h3 className="text-lg neutra-font-bold text-gray-900 mb-1">{t("phone")}</h3>
                   <p className="text-gray-600 neutra-font">+3043001791</p>
                 </div>
               </div>
@@ -82,7 +81,7 @@ export default function ContactoPage() {
                   <MapPin className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-lg neutra-font-bold text-gray-900 mb-1">{t("Office") || "Oficina"}</h3>
+                  <h3 className="text-lg neutra-font-bold text-gray-900 mb-1">{t("office")}</h3>
                   <p className="text-gray-600 neutra-font">Pasto, Colombia</p>
                 </div>
               </div>
@@ -90,24 +89,24 @@ export default function ContactoPage() {
 
             <div className="bg-white rounded-lg p-6 shadow-lg">
               <h3 className="text-xl neutra-font-bold text-gray-900 mb-4">
-                {t("Why Choose Us") || "¿Por qué elegirnos?"}
+                {t("whyChooseUs")}
               </h3>
               <ul className="space-y-3">
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-                  <span className="text-gray-700 neutra-font">{t("Más de 4 años de experiencia") || "Más de 4 años de experiencia"}</span>
+                  <span className="text-gray-700 neutra-font">{t("moreThan4Years")}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-                  <span className="text-gray-700 neutra-font">{t("Diseños personalizados y únicos") || "Diseños personalizados y únicos"}</span>
+                  <span className="text-gray-700 neutra-font">{t("customDesigns")}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-                  <span className="text-gray-700 neutra-font">{t("Equipo profesional y dedicado") || "Equipo profesional y dedicado"}</span>
+                  <span className="text-gray-700 neutra-font">{t("professionalTeam")}</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
-                  <span className="text-gray-700 neutra-font">{t("Respuesta en 24 horas") || "Respuesta en 24 horas"}</span>
+                  <span className="text-gray-700 neutra-font">{t("response24h")}</span>
                 </li>
               </ul>
             </div>
@@ -117,18 +116,17 @@ export default function ContactoPage() {
           <div>
             <Card className="p-8 shadow-lg">
               <h3 className="text-2xl neutra-font-bold text-gray-900 mb-6">
-                {t("Contact Information") || "Información de Contacto"}
+                {t("contactInfo")}
               </h3>
               <p className="text-gray-600 neutra-font mb-8">
-                {t("Fill Form") ||
-                  "Completa este formulario y nuestro equipo te contactará en 24 horas para discutir tu proyecto."}
+                {t("fillForm")}
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm neutra-font-bold text-gray-700 mb-2">
-                      {t("First Name") || "Nombre"} *
+                      {t("firstName")} *
                     </label>
                     <input
                       type="text"
@@ -137,12 +135,12 @@ export default function ContactoPage() {
                       onChange={handleInputChange}
                       required
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent neutra-font"
-                      placeholder="John"
+                      placeholder={t("firstNamePlaceholder")}
                     />
                   </div>
                   <div>
                     <label className="block text-sm neutra-font-bold text-gray-700 mb-2">
-                      {t("Last Name") || "Apellido"} *
+                      {t("lastName")} *
                     </label>
                     <input
                       type="text"
@@ -151,14 +149,14 @@ export default function ContactoPage() {
                       onChange={handleInputChange}
                       required
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent neutra-font"
-                      placeholder="Doe"
+                      placeholder={t("lastNamePlaceholder")}
                     />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm neutra-font-bold text-gray-700 mb-2">
-                    {t("Email Address") || "Correo Electrónico"} *
+                    {t("emailAddress")} *
                   </label>
                   <input
                     type="email"
@@ -167,13 +165,13 @@ export default function ContactoPage() {
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent neutra-font"
-                    placeholder="john@example.com"
+                    placeholder={t("emailPlaceholder")}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm neutra-font-bold text-gray-700 mb-2">
-                    {t("Phone Number") || "Número de Teléfono"}
+                    {t("phoneNumber")}
                   </label>
                   <input
                     type="tel"
@@ -181,13 +179,13 @@ export default function ContactoPage() {
                     value={formData.phone}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent neutra-font"
-                    placeholder="+1 (555) 123-4567"
+                    placeholder={t("phonePlaceholder")}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm neutra-font-bold text-gray-700 mb-2">
-                    {t("Project Location") || "Ubicación del Proyecto"}
+                    {t("projectLocation")}
                   </label>
                   <input
                     type="text"
@@ -195,13 +193,13 @@ export default function ContactoPage() {
                     value={formData.projectLocation}
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent neutra-font"
-                    placeholder="City, Country"
+                    placeholder={t("projectLocationPlaceholder")}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm neutra-font-bold text-gray-700 mb-2">
-                    {t("Project Time line") || "Cronograma del Proyecto"}
+                    {t("projectTimeline")}
                   </label>
                   <select
                     name="timeline"
@@ -209,18 +207,18 @@ export default function ContactoPage() {
                     onChange={handleInputChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent neutra-font"
                   >
-                    <option value="">{t("Select Time Line") || "Seleccionar cronograma"}</option>
-                    <option value="asap">{t("Asap") || "Lo antes posible"}</option>
-                    <option value="3-months">{t("Within 3 Months") || "Dentro de 3 meses"}</option>
-                    <option value="6-months">{t("Within 6M onths") || "Dentro de 6 meses"}</option>
-                    <option value="1-year">{t("Within 1 Year") || "Dentro de 1 año"}</option>
-                    <option value="planning">{t("Just Planning") || "Solo planeando"}</option>
+                    <option value="">{t("selectTimeline")}</option>
+                    <option value="asap">{t("asap")}</option>
+                    <option value="3-months">{t("within3Months")}</option>
+                    <option value="6-months">{t("within6Months")}</option>
+                    <option value="1-year">{t("within1Year")}</option>
+                    <option value="planning">{t("justPlanning")}</option>
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-sm neutra-font-bold text-gray-700 mb-2">
-                    {t("Additional Comments") || "Comentarios Adicionales"}
+                    {t("additionalComments")}
                   </label>
                   <textarea
                     name="comments"
@@ -228,7 +226,7 @@ export default function ContactoPage() {
                     onChange={handleInputChange}
                     rows={4}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent neutra-font"
-                    placeholder={t("Comments Placeholder") || "Cuéntanos más sobre tu proyecto..."}
+                    placeholder={t("commentsPlaceholder")}
                   />
                 </div>
 
@@ -236,13 +234,12 @@ export default function ContactoPage() {
                   type="submit"
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg neutra-font-bold"
                 >
-                  {t("Send Message") || "Enviar Mensaje"}
+                  {t("sendMessage")}
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
 
                 <p className="text-xs text-gray-500 neutra-font text-center">
-                  {t("Submit Form") ||
-                    "Al enviar este formulario, aceptas nuestros Términos de Servicio y Política de Privacidad."}
+                  {t("submitForm")}
                 </p>
               </form>
             </Card>

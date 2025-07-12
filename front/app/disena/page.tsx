@@ -158,34 +158,17 @@ export default function DisenaPage() {
   // Pantalla de cotización final con Cal.com integrado
   if (showQuote || activeTab === "get-quote") {
     return (
-      <div className="min-h-screen bg-gray-50 neutra-font">
+      <div className="min-h-screen bg-white neutra-font">
         <Header currentPage="disena" />
-
-        {/* Navegación de pestañas */}
-        <div className="bg-white border-b">
+        <section className="w-full py-20 md:py-32 bg-gradient-to-b from-white via-blue-50 to-gray-100">
           <div className="container mx-auto px-4">
-            <div className="flex flex-wrap gap-2 py-4">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id)
-                    if (tab.id === "get-quote") setShowQuote(true)
-                    else setShowQuote(false)
-                  }}
-                  className={`px-4 py-2 rounded-lg text-sm neutra-font transition-colors ${
-                    activeTab === tab.id || (showQuote && tab.id === "get-quote")
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
-                >
-                  {tab.name}
-                </button>
-              ))}
+            <div className="max-w-4xl mx-auto text-center">
+              <h1 className="text-5xl md:text-7xl neutra-font-black text-blue-700 mb-8 drop-shadow-md">{t("getYourQuote")}</h1>
+              <p className="text-2xl text-gray-700 mb-8 neutra-font max-w-2xl mx-auto">{t("readyToStart")}</p>
             </div>
           </div>
-        </div>
-
+        </section>
+        <div className="w-full h-2 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-100 my-8" />
         {/* Contenido de la cotización con Cal.com */}
         <div className="container mx-auto px-4 py-8">
           <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
@@ -199,10 +182,9 @@ export default function DisenaPage() {
                     alt="House Design"
                     width={600}
                     height={300}
-                    className="w-full rounded-lg object-cover"
+                    className="w-full rounded-2xl object-cover border-2 border-blue-100 shadow-lg"
                   />
                 </div>
-
                 {/* Información del proyecto */}
                 <div className="mb-6">
                   <h2 className="text-2xl neutra-font-bold text-blue-600 mb-2">
@@ -210,7 +192,6 @@ export default function DisenaPage() {
                   </h2>
                   <p className="text-xl neutra-font-bold text-gray-900">{t("architecturalDesign")}</p>
                 </div>
-
                 {/* Código del proyecto */}
                 <div className="mb-6">
                   <h3 className="text-lg neutra-font-bold text-gray-900 mb-2">
@@ -220,14 +201,12 @@ export default function DisenaPage() {
                     {t("projectCode") || "Código de Proyecto"}: <span className="neutra-font-bold">U2-84806G</span>
                   </p>
                 </div>
-
                 {/* Desglose de costos por categoría */}
                 <div className="space-y-4 mb-8 text-left">
                   {Object.entries(selectedOptions).map(([categoryId, options]) => {
                     if (options.length === 0) return null
                     const category = designCategories.find((c) => c.id === categoryId)
                     const categoryTotal = options.reduce((sum, opt) => sum + opt.price, 0)
-
                     return (
                       <div key={categoryId} className="border-b pb-2">
                         <div className="flex justify-between items-center">
@@ -243,14 +222,12 @@ export default function DisenaPage() {
                       </div>
                     )
                   })}
-
                   {/* Precio base */}
                   <div className="flex justify-between text-sm text-gray-600">
-                    <span className="neutra-font-bold text-blue-600">{t("basics") || "Basics"}</span>
+                    <span className="neutra-font-bold text-blue-600">{t("basics") || "Básicos"}</span>
                     <span className="neutra-font">${BASE_PRICE}</span>
                   </div>
                 </div>
-
                 {/* Precio total */}
                 <div className="text-center mb-8">
                   <div className="text-4xl neutra-font-black text-blue-600 mb-4">
@@ -260,7 +237,6 @@ export default function DisenaPage() {
                     {t("readyToStart") || "¿Listo para comenzar tu proyecto?"}
                   </p>
                 </div>
-
                 {/* Botones de navegación */}
                 <div className="flex gap-4">
                   <Button onClick={() => setShowQuote(false)} variant="outline" className="flex-1 neutra-font">
@@ -268,7 +244,7 @@ export default function DisenaPage() {
                     {t("back")}
                   </Button>
                   <Link href="/contacto" className="flex-1">
-                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white neutra-font">
+                    <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white neutra-font-black shadow-xl text-lg">
                       {t("contactUs") || "Contáctanos"}
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
@@ -276,7 +252,6 @@ export default function DisenaPage() {
                 </div>
               </div>
             </div>
-
             {/* LADO DERECHO - Calendario Cal.com */}
             <div className="lg:col-span-1">
               <div className="text-center mb-6">
@@ -288,9 +263,8 @@ export default function DisenaPage() {
                   {t("bookMeeting") || "Reserva una reunión con nuestro equipo para discutir tu proyecto en detalle."}
                 </p>
               </div>
-
               {/* Integración de Cal.com */}
-              <div className="bg-white rounded-lg shadow-lg p-4 min-h-[500px]">
+              <div className="bg-white rounded-2xl shadow-lg p-4 min-h-[500px] border-2 border-blue-100">
                 <CalEmbed
                   calLink="jara-u2group-lrzdfm/consulta-arquitectura?overlayCalendar=true"
                   showDemo={false}
@@ -304,7 +278,6 @@ export default function DisenaPage() {
             </div>
           </div>
         </div>
-
         <Footer />
       </div>
     )
@@ -314,13 +287,21 @@ export default function DisenaPage() {
   const currentCategory = designCategories.find((c) => c.id === activeTab)
 
   return (
-    <div className="min-h-screen bg-gray-50 neutra-font">
+    <div className="min-h-screen bg-white neutra-font">
       <Header currentPage="disena" />
-
+      <section className="w-full py-20 md:py-32 bg-gradient-to-b from-white via-blue-50 to-gray-100">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-5xl md:text-7xl neutra-font-black text-blue-700 mb-8 drop-shadow-md">{t("designTitle")}</h1>
+            <p className="text-2xl text-gray-700 mb-8 neutra-font max-w-2xl mx-auto">{t("designSubtitle")}</p>
+          </div>
+        </div>
+      </section>
+      <div className="w-full h-2 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-100 my-8" />
       {/* Navegación de pestañas */}
       <div className="bg-white border-b">
         <div className="container mx-auto px-4">
-          <div className="flex flex-wrap gap-2 py-4">
+          <div className="flex flex-wrap gap-2 py-4 justify-center">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
@@ -328,8 +309,8 @@ export default function DisenaPage() {
                   setActiveTab(tab.id)
                   if (tab.id === "get-quote") setShowQuote(true)
                 }}
-                className={`px-4 py-2 rounded-lg text-sm neutra-font transition-colors ${
-                  activeTab === tab.id ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                className={`px-4 py-2 rounded-lg text-lg neutra-font transition-colors shadow-md mx-1 mb-2 ${
+                  activeTab === tab.id ? "bg-blue-600 text-white scale-105" : "bg-white border border-blue-200 text-blue-700 hover:bg-blue-50"
                 }`}
               >
                 {tab.name}
@@ -338,13 +319,11 @@ export default function DisenaPage() {
           </div>
         </div>
       </div>
-
-      {/* Contenido principal */}
       <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Imagen principal del diseño - DINÁMICA */}
           <div className="lg:col-span-2">
-            <div className="relative aspect-video rounded-lg overflow-hidden mb-8 bg-white border-2 border-gray-200">
+            <div className="relative aspect-video rounded-2xl overflow-hidden mb-8 bg-white border-2 border-blue-100 shadow-lg">
               <Image
                 src={currentMainImage || "/placeholder.svg"}
                 alt="Design Preview"
@@ -352,24 +331,21 @@ export default function DisenaPage() {
                 className="object-contain transition-all duration-500"
                 priority
               />
-
               {/* Indicador de imagen activa */}
-              <div className="absolute bottom-4 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm neutra-font">
+              <div className="absolute bottom-4 left-4 bg-blue-700 bg-opacity-80 text-white px-3 py-1 rounded-full text-sm neutra-font">
                 {currentMainImage === "/images/u2-logo.png" ? "Vista por defecto" : "Vista personalizada"}
               </div>
             </div>
           </div>
-
           {/* Panel de configuración lateral con altura fija y scroll */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-lg sticky top-8 flex flex-col" style={{ height: "555px" }}>
+            <div className="bg-white rounded-2xl shadow-lg sticky top-8 flex flex-col border-2 border-blue-100" style={{ height: "555px" }}>
               {/* Header del panel */}
               <div className="p-4 border-b flex-shrink-0">
                 <h2 className="text-xl neutra-font-bold text-blue-600">
                   {t("chooseThe") || "Elige los"} {currentCategory?.name}
                 </h2>
               </div>
-
               {/* Contenido scrolleable */}
               <div className="flex-1 overflow-y-auto p-4">
                 {currentCategory && (
@@ -462,7 +438,6 @@ export default function DisenaPage() {
                   </div>
                 )}
               </div>
-
               {/* Panel de precio total - FIJO en la parte inferior */}
               <div className="border-t p-4 bg-white rounded-b-lg flex-shrink-0">
                 <div className="text-center mb-4">
@@ -471,17 +446,15 @@ export default function DisenaPage() {
                     ${calculateTotal()} <span className="text-sm neutra-font">USD</span>
                   </div>
                 </div>
-
                 {/* Botones de acción */}
                 <div className="space-y-2">
                   <Button
                     onClick={() => setShowQuote(true)}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 neutra-font-bold text-sm"
+                    className="w-full bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white py-2 neutra-font-black text-sm shadow-xl"
                   >
                     {t("getYourQuote") || "Obtén tu Cotización"}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
-
                   <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 neutra-font-bold text-sm">
                     {t("next") || "Siguiente"}
                     <ArrowRight className="w-4 h-4 ml-2" />
@@ -492,7 +465,6 @@ export default function DisenaPage() {
           </div>
         </div>
       </div>
-
       <Footer />
     </div>
   )
