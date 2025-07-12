@@ -11,6 +11,7 @@ import { useLanguage } from "@/hooks/use-language"
 import { useParams } from "next/navigation"
 import { AdminDataManager } from "@/data/admin-data"
 import { useState, useEffect } from "react"
+import type { AdminBlog } from "@/data/admin-data"
 
 export default function BlogPostPage() {
   const { t } = useLanguage()
@@ -18,9 +19,9 @@ export default function BlogPostPage() {
   const blogId = params.id
 
   // Estado para manejar los datos del blog desde el admin
-  const [blogPost, setBlogPost] = useState(null)
-  const [relatedBlogs, setRelatedBlogs] = useState([])
-  const [latestBlogs, setLatestBlogs] = useState([])
+  const [blogPost, setBlogPost] = useState<AdminBlog | null>(null)
+  const [relatedBlogs, setRelatedBlogs] = useState<AdminBlog[]>([])
+  const [latestBlogs, setLatestBlogs] = useState<AdminBlog[]>([])
 
   // Cargar datos del blog cuando el componente se monta
   useEffect(() => {
@@ -77,7 +78,7 @@ export default function BlogPostPage() {
               {/* Imagen principal del artículo */}
               <div className="relative aspect-video mb-8 rounded-lg overflow-hidden">
                 <Image
-                  src={blogPost.image || "/placeholder.svg"}
+                  src={blogPost.images && blogPost.images[0] ? blogPost.images[0] : "/placeholder.svg"}
                   alt={blogPost.title || "Imagen del blog"}
                   fill
                   className="object-cover"
@@ -87,9 +88,37 @@ export default function BlogPostPage() {
 
             {/* Contenido del artículo */}
             <div className="prose max-w-none">
-              <p className="text-lg text-gray-700 mb-6 neutra-font leading-relaxed">
-                {blogPost.content || "(Por llenar)"}
-              </p>
+              {typeof blogPost?.content === "string" ? (
+                <p className="text-lg text-gray-700 mb-6 neutra-font leading-relaxed">
+                  {blogPost?.content}
+                </p>
+              ) : blogPost?.content && typeof blogPost?.content === "object" ? (
+                <div className="mb-6">
+                  {typeof blogPost.content.intro === "string" && blogPost.content.intro && (
+                    <p className="text-lg text-gray-700 mb-4 neutra-font leading-relaxed">{blogPost.content.intro}</p>
+                  )}
+                  {typeof blogPost.content.mainText === "string" && blogPost.content.mainText && (
+                    <p className="text-base text-gray-800 mb-4 neutra-font">{blogPost.content.mainText}</p>
+                  )}
+                  {Array.isArray(blogPost.content.sections) && blogPost.content.sections.length > 0
+                    ? blogPost.content.sections.map((section, idx) => (
+                        <div key={idx} className="mb-4">
+                          {typeof section.title === "string" && section.title && (
+                            <h3 className="text-xl text-blue-600 neutra-font-bold mb-2">{section.title}</h3>
+                          )}
+                          {typeof section.content === "string" && section.content && (
+                            <p className="text-gray-700 neutra-font mb-2">{section.content}</p>
+                          )}
+                        </div>
+                      ))
+                    : null}
+                  {!blogPost.content.intro && !blogPost.content.mainText && (!blogPost.content.sections || blogPost.content.sections.length === 0) && (
+                    <p className="text-lg text-gray-700 mb-6 neutra-font leading-relaxed">(Sin contenido disponible)</p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-lg text-gray-700 mb-6 neutra-font leading-relaxed">(Por llenar)</p>
+              )}
 
               {/* Espacio para contenido adicional que se agregará manualmente */}
               <div className="min-h-[20rem] mb-8 p-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
@@ -153,13 +182,22 @@ export default function BlogPostPage() {
               <h3 className="text-2xl neutra-font-bold text-gray-900 mb-6">Sobre el Autor</h3>
               <div className="flex gap-6">
                 <div className="relative w-32 h-32 rounded-lg overflow-hidden flex-shrink-0 bg-gray-200">
-                  <div className="flex items-center justify-center h-full">
-                    <span className="text-gray-500 neutra-font text-sm">(Por llenar)</span>
-                  </div>
+                  {blogPost.author?.image ? (
+                    <Image
+                      src={blogPost.author.image}
+                      alt={blogPost.author.name || "Autor"}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <span className="text-gray-500 neutra-font text-sm">(Por llenar)</span>
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <h4 className="text-xl neutra-font-bold text-gray-900 mb-2">{blogPost.author || "(Por llenar)"}</h4>
-                  <p className="text-gray-700 neutra-font leading-relaxed">(Por llenar - Biografía del autor)</p>
+                  <h4 className="text-xl neutra-font-bold text-gray-900 mb-2">{blogPost.author?.name || "(Por llenar)"}</h4>
+                  <p className="text-gray-700 neutra-font leading-relaxed">{blogPost.author?.bio || "(Por llenar - Biografía del autor)"}</p>
                 </div>
               </div>
             </div>
@@ -176,7 +214,7 @@ export default function BlogPostPage() {
                     <div key={blog.id} className="flex gap-4">
                       <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
                         <Image
-                          src={blog.image || "/placeholder.svg"}
+                          src={blog.images && blog.images[0] ? blog.images[0] : "/placeholder.svg"}
                           alt={blog.title || "Blog"}
                           fill
                           className="object-cover"
@@ -235,7 +273,7 @@ export default function BlogPostPage() {
                 <Card key={blog.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="relative aspect-video">
                     <Image
-                      src={blog.image || "/placeholder.svg"}
+                      src={blog.images && blog.images[0] ? blog.images[0] : "/placeholder.svg"}
                       alt={blog.title || "Blog relacionado"}
                       fill
                       className="object-cover"

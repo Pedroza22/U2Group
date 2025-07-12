@@ -13,7 +13,7 @@ import { getDesignCategories, getBasicCategories, BASE_PRICE, type DesignOption 
 import { CalEmbed } from "@/components/cal-embed"
 
 export default function DisenaPage() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
 
   // Scroll al inicio cuando se carga la página
   useEffect(() => {
@@ -343,7 +343,7 @@ export default function DisenaPage() {
               {/* Header del panel */}
               <div className="p-4 border-b flex-shrink-0">
                 <h2 className="text-xl neutra-font-bold text-blue-600">
-                  {t("chooseThe") || "Elige los"} {currentCategory?.name}
+                  {t("chooseThe") || "Elige los"} {language === "es" ? currentCategory?.nameEs : currentCategory?.nameEn}
                 </h2>
               </div>
               {/* Contenido scrolleable */}
@@ -405,17 +405,18 @@ export default function DisenaPage() {
                             onClick={() => handleOptionSelect(currentCategory.id, option)}
                           >
                             <div className="flex items-center gap-3">
+                              {/* Imagen */}
                               {option.image && (
                                 <Image
                                   src={option.image || "/placeholder.svg"}
-                                  alt={option.name}
+                                  alt={language === "es" && option.nameEs ? option.nameEs : option.nameEn || option.name}
                                   width={40}
                                   height={40}
                                   className="rounded object-cover"
                                 />
                               )}
                               <div className="flex-1">
-                                <h4 className="neutra-font-bold text-gray-900 text-sm">{option.name}</h4>
+                                <h4 className="neutra-font-bold text-gray-900 text-sm">{language === "es" && option.nameEs ? option.nameEs : option.nameEn || option.name}</h4>
                                 <p className="text-xs text-blue-600 neutra-font">${option.price} USD</p>
                               </div>
                               {/* Checkmark para opciones seleccionadas */}

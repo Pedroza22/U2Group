@@ -11,6 +11,7 @@ import Footer from "@/components/layout/footer"
 import GoogleMapsWorking from "@/components/google-maps-working"
 import IntroVideo from "@/components/intro-video"
 import { useLanguage } from "@/hooks/use-language"
+import PriceCalculator from "@/components/price-calculator"
 
 // Componente simple de calculadora
 function SimpleCalculator() {
@@ -244,7 +245,7 @@ export default function HomePage() {
           <section className="w-full py-8 md:py-12 bg-white">
             <div className="container mx-auto px-4">
               <div className="max-w-4xl mx-auto">
-                <SimpleCalculator />
+                <PriceCalculator />
               </div>
             </div>
           </section>

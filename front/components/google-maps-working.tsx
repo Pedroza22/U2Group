@@ -98,30 +98,46 @@ export default function GoogleMapsWorking({
       return
     }
 
-    const callbackName: string = `initMap_${Date.now()}`
-    window[callbackName] = () => {
-      setIsLoaded(true)
-      setIsLoading(false)
-    }
+    // Verificar si ya existe el script de Google Maps
+    const existingScript = document.querySelector('script[src^="https://maps.googleapis.com/maps/api/js"]')
+    let script: HTMLScriptElement | null = null
+    let callbackName: string | null = null
+    let scriptJustAdded = false
 
-    const script = document.createElement("script")
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=${callbackName}`
-    script.async = true
-    script.defer = true
-    script.onerror = () => {
-      setIsLoading(false)
-      setError("Error al cargar Google Maps")
-      console.error("Google Maps API load error")
+    if (!existingScript) {
+      callbackName = `initMap_${Date.now()}`
+      window[callbackName] = () => {
+        setIsLoaded(true)
+        setIsLoading(false)
+      }
+      script = document.createElement("script")
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=${callbackName}`
+      script.async = true
+      script.defer = true
+      script.onerror = () => {
+        setIsLoading(false)
+        setError("Error al cargar Google Maps")
+        console.error("Google Maps API load error")
+      }
+      document.head.appendChild(script)
+      scriptJustAdded = true
+    } else {
+      // Si ya existe, esperar a que Google Maps esté disponible
+      const checkLoaded = setInterval(() => {
+        if (window.google && window.google.maps) {
+          setIsLoaded(true)
+          setIsLoading(false)
+          clearInterval(checkLoaded)
+        }
+      }, 100)
+      // Limpiar el intervalo si el componente se desmonta
+      return () => clearInterval(checkLoaded)
     }
-
-    document.head.appendChild(script)
 
     return () => {
-      const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`)
-      if (existingScript?.parentNode) {
-        existingScript.parentNode.removeChild(existingScript)
-      }
-      delete window[callbackName]
+      // No eliminar el callback aquí para evitar el error de Google Maps
+      // Solo limpiar el intervalo si aplica (ya está arriba)
+      // No eliminar el script para evitar conflictos con otras instancias
     }
   }, [apiKey])
 
