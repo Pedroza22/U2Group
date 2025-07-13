@@ -42,8 +42,13 @@ export interface AdminBlog {
     title: string
     bio: string
     image: string
-  }
+  } | string
   featured: boolean
+  // Compatibilidad API
+  image?: string
+  summary?: string
+  read_time?: string
+  tags?: string[]
 }
 
 // NUEVAS INTERFACES PARA OPCIONES DE DISEÑO

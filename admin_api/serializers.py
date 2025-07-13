@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Project, ProjectImage
+from .models import Project, ProjectImage, Blog, BlogLikeFavorite
 
 class ProjectImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -15,4 +15,16 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'display_title', 'color', 'image', 'utilization', 'services', 'year',
             'category', 'type', 'size', 'location', 'status', 'featured', 'description', 'features', 'images'
-        ] 
+        ]
+
+class BlogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Blog
+        fields = [
+            'id', 'title', 'author', 'date', 'category', 'read_time', 'image', 'summary', 'content', 'tags', 'featured', 'like_count', 'favorite_count'
+        ]
+
+class BlogLikeFavoriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogLikeFavorite
+        fields = ['id', 'user', 'blog', 'liked', 'favorited'] 

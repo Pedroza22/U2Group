@@ -40,6 +40,12 @@ import {
   deleteProject,
   uploadProjectImage,
 } from "@/lib/api-projects";
+import {
+  getBlogs,
+  createBlog,
+  updateBlog,
+  deleteBlog,
+} from "@/lib/api-blogs";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/admin";
 
@@ -78,6 +84,16 @@ export default function AdminDashboardPage() {
     setIsLoading(false);
   };
 
+  // Lógica de blogs con API real
+  const loadBlogs = async () => {
+    try {
+      const data = await getBlogs();
+      setBlogs(data as AdminBlog[]); // Cast explícito para evitar error de tipo
+    } catch (error) {
+      // Manejo de error opcional
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("u2-admin-token");
     if (!token) {
@@ -85,6 +101,7 @@ export default function AdminDashboardPage() {
       return;
     }
     loadProjects();
+    loadBlogs();
   }, [router]);
 
   const handleDeleteProject = async (id: number) => {
@@ -226,21 +243,37 @@ export default function AdminDashboardPage() {
     setEditingBlog(blog);
     setShowBlogEditor(true);
   };
-  const handleDeleteBlog = (id: number) => {
+  const handleDeleteBlog = async (id: number) => {
     if (confirm("¿Estás seguro de que quieres eliminar este blog?")) {
-      AdminDataManager.deleteBlog(id);
-      // Si tienes lógica para recargar blogs, agrégala aquí
+      await deleteBlog(id);
+      await loadBlogs();
     }
   };
-  const handleSaveBlog = (blog: AdminBlog) => {
+  const handleSaveBlog = async (formData: any) => {
+    let fd = new FormData();
+    fd.append("title", formData.title);
+    fd.append("author", formData.author);
+    fd.append("date", formData.date);
+    fd.append("category", formData.category);
+    fd.append("read_time", formData.read_time || "");
+    fd.append("summary", formData.summary || "");
+    fd.append("content", typeof formData.content === "string" ? formData.content : JSON.stringify(formData.content));
+    fd.append("featured", formData.featured ? "true" : "false");
+    // Imagen principal
+    if (formData.image instanceof File) {
+      fd.append("image", formData.image);
+    }
+    // Tags como JSON string
+    fd.append("tags", JSON.stringify(formData.tags || []));
+    let blog;
     if (editingBlog) {
-      AdminDataManager.updateBlog(blog.id, blog);
+      blog = await updateBlog(editingBlog.id, fd);
     } else {
-      AdminDataManager.addBlog(blog);
+      blog = await createBlog(fd);
     }
     setShowBlogEditor(false);
     setEditingBlog(null);
-    // Si tienes lógica para recargar blogs, agrégala aquí
+    await loadBlogs();
   };
 
   // 2. Definir handleLogout (se usaba en el header)
@@ -418,70 +451,101 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="space-y-4">
-              {blogs.map((blog) => (
-                <Card key={blog.id} className="p-6 hover:shadow-lg transition-shadow">
-                  <div className="flex gap-6">
-                    <div className="relative w-32 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                      <Image
-                        src={blog.images[0] || "/placeholder.svg"}
-                        alt={blog.title}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
+              {blogs.length === 0 ? (
+                <div className="text-center text-gray-500 neutra-font py-12">
+                  No hay blogs registrados. ¡Crea el primero!
+                </div>
+              ) : (
+                blogs.map((blog: any) => {
+                  // Compatibilidad: blog.images (array), blog.image (string), blog.tags (array), blog.author (objeto o string)
+                  const mainImage = Array.isArray(blog.images) && blog.images.length > 0 ? blog.images[0] : (blog.image || "/placeholder.svg");
+                  const extraImages = Array.isArray(blog.images) && blog.images.length > 1 ? blog.images.slice(1) : [];
+                  const tags = Array.isArray(blog.tags) ? blog.tags : [];
+                  const authorName = typeof blog.author === "object" && blog.author !== null ? blog.author.name : (blog.author || "");
+                  const summary = blog.excerpt || blog.summary || (typeof blog.content === "object" && blog.content?.intro) || "";
+                  const readTime = blog.readTime || blog.read_time || "";
+                  return (
+                    <Card key={blog.id} className="p-6 hover:shadow-lg transition-shadow">
+                      <div className="flex gap-6 flex-col md:flex-row">
+                        <div className="relative w-32 h-24 rounded-lg overflow-hidden flex-shrink-0 mb-4 md:mb-0">
+                          <Image
+                            src={mainImage}
+                            alt={blog.title}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
 
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs neutra-font">
-                          {blog.category}
-                        </span>
-                        {blog.featured && <Star className="w-4 h-4 text-yellow-500" />}
+                        <div className="flex-1 flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs neutra-font">
+                                {blog.category}
+                              </span>
+                              {blog.featured && <Star className="w-4 h-4 text-yellow-500" />}
+                            </div>
+                            <h3 className="text-lg neutra-font-bold text-gray-900 mb-2">{blog.title}</h3>
+                            <p className="text-gray-600 neutra-font text-sm mb-2 line-clamp-2">{summary}</p>
+                            <div className="flex items-center gap-4 text-sm text-gray-500 neutra-font flex-wrap">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-4 h-4" />
+                                {blog.date}
+                              </span>
+                              <span>{readTime}</span>
+                              <span>Por {authorName}</span>
+                            </div>
+                            {tags.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {tags.map((tag: string, idx: number) => (
+                                  <span key={idx} className="bg-gray-200 text-xs px-2 py-1 rounded neutra-font">{tag}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col md:flex-row gap-2 mt-4 md:mt-0">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="neutra-font bg-transparent"
+                              onClick={() => router.push(`/blog/${blog.id}`)}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              Ver
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="neutra-font bg-transparent"
+                              onClick={() => handleEditBlog(blog)}
+                            >
+                              <Edit className="w-4 h-4 mr-1" />
+                              Editar
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDeleteBlog(blog.id)}
+                              className="text-red-600 border-red-200 hover:bg-red-50"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-
-                      <h3 className="text-lg neutra-font-bold text-gray-900 mb-2">{blog.title}</h3>
-                      <p className="text-gray-600 neutra-font text-sm mb-2 line-clamp-2">{blog.excerpt}</p>
-
-                      <div className="flex items-center gap-4 text-sm text-gray-500 neutra-font">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          {blog.date}
-                        </span>
-                        <span>{blog.readTime}</span>
-                        <span>Por {blog.author.name}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="neutra-font bg-transparent"
-                        onClick={() => router.push(`/blog/${blog.id}`)}
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        Ver
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="neutra-font bg-transparent"
-                        onClick={() => handleEditBlog(blog)}
-                      >
-                        <Edit className="w-4 h-4 mr-1" />
-                        Editar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDeleteBlog(blog.id)}
-                        className="text-red-600 border-red-200 hover:bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+                      {/* Galería de imágenes adicionales */}
+                      {extraImages.length > 0 && (
+                        <div className="flex gap-2 mt-4 flex-wrap">
+                          {extraImages.map((img: string, idx: number) => (
+                            <div key={idx} className="relative w-20 h-16 rounded overflow-hidden border">
+                              <Image src={img} alt={`Imagen extra ${idx + 2}`} fill className="object-cover" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </Card>
+                  );
+                })
+              )}
             </div>
           </div>
         )}
@@ -724,7 +788,7 @@ function DesignOptionEditor({
     id: option?.id || "",
     name: option?.name || "",
     price: option?.price || 0,
-    image: option?.image || "",
+    image: typeof option?.image === "string" ? option.image : "",
     description: option?.description || "",
   })
 
@@ -741,10 +805,10 @@ function DesignOptionEditor({
     }))
   }
 
-  const handleImageChange = (imageUrl: string) => {
+  const handleImageChange = (imageUrl: string | File | null) => {
     setFormData((prev) => ({
       ...prev,
-      image: imageUrl,
+      image: typeof imageUrl === "string" ? imageUrl : "",
     }))
   }
 
@@ -826,13 +890,13 @@ function BasicCategoryEditor({
 }) {
   const [formData, setFormData] = useState<AdminBasicCategory>({
     id: category?.id || "",
-    name: category?.nameEs || "", // Asegúrate de incluir el campo 'name'
+    name: category?.nameEs || "",
     nameEs: category?.nameEs || "",
     nameEn: category?.nameEn || "",
     pricePerUnit: category?.pricePerUnit || 0,
     minQuantity: category?.minQuantity || 0,
     maxQuantity: category?.maxQuantity || 0,
-    image: category?.image || "",
+    image: (category?.image as string) || "",
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -848,10 +912,10 @@ function BasicCategoryEditor({
     }))
   }
 
-  const handleImageChange = (imageUrl: string) => {
+  const handleImageChange = (imageUrl: string | File | null) => {
     setFormData((prev) => ({
       ...prev,
-      image: imageUrl,
+      image: typeof imageUrl === "string" ? imageUrl : "",
     }))
   }
 
