@@ -12,6 +12,10 @@ import { useParams } from "next/navigation"
 import { AdminDataManager } from "@/data/admin-data"
 import { useState, useEffect } from "react"
 import type { AdminBlog } from "@/data/admin-data"
+import axios from "axios";
+import { getBlogLikeFavorite, setBlogLikeFavorite, getBlogLikeFavoriteCount } from "@/lib/api-blogs";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/admin";
 
 export default function BlogPostPage() {
   const { t } = useLanguage()
@@ -22,28 +26,82 @@ export default function BlogPostPage() {
   const [blogPost, setBlogPost] = useState<AdminBlog | null>(null)
   const [relatedBlogs, setRelatedBlogs] = useState<AdminBlog[]>([])
   const [latestBlogs, setLatestBlogs] = useState<AdminBlog[]>([])
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Cargar datos del blog cuando el componente se monta
+  // Estado para likes/favoritos
+  const [likeState, setLikeState] = useState<{ liked: boolean; favorited: boolean } | null>(null);
+  const [likeCount, setLikeCount] = useState<{ likes: number; favorites: number }>({ likes: 0, favorites: 0 });
+  const [likeLoading, setLikeLoading] = useState(false);
+
   useEffect(() => {
-    const blogs = AdminDataManager.getBlogs()
-    const currentBlog = blogs.find((b) => b.id === Number(blogId))
+    const fetchBlog = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get(`${API_URL}/blogs/${blogId}/`);
+        setBlogPost(res.data as AdminBlog);
+        setError("");
+      } catch (err: any) {
+        setError("No se pudo cargar el blog.");
+        setBlogPost(null);
+      }
+      setLoading(false);
+    };
+    if (blogId) fetchBlog();
+  }, [blogId]);
 
-    if (currentBlog) {
-      setBlogPost(currentBlog)
-      // Blogs relacionados por categoría (excluyendo el actual)
-      const related = blogs.filter((b) => b.category === currentBlog.category && b.id !== currentBlog.id).slice(0, 3)
-      setRelatedBlogs(related)
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/blogs/`);
+        const blogs: AdminBlog[] = res.data as AdminBlog[];
+        if (blogPost) {
+          setRelatedBlogs(blogs.filter((b) => b.category === blogPost.category && b.id !== blogPost.id).slice(0, 3));
+          setLatestBlogs(blogs.filter((b) => b.id !== blogPost.id).slice(0, 4));
+        }
+      } catch {}
+    };
+    if (blogPost) fetchBlogs();
+  }, [blogPost]);
 
-      // Últimos blogs publicados (excluyendo el actual)
-      const latest = blogs.filter((b) => b.id !== currentBlog.id).slice(0, 4)
-      setLatestBlogs(latest)
+  // Cargar estado de like/favorito y conteo
+  useEffect(() => {
+    if (blogPost) {
+      getBlogLikeFavorite(blogPost.id).then((data) => {
+        setLikeState(data ? { liked: data.liked, favorited: data.favorited } : { liked: false, favorited: false });
+      });
+      getBlogLikeFavoriteCount(blogPost.id).then(setLikeCount);
     }
-  }, [blogId])
+  }, [blogPost]);
 
-  // Mostrar loading mientras carga el blog
-  if (!blogPost) {
-    return <div>Cargando blog...</div>
+  const handleLike = async () => {
+    if (!blogPost || likeLoading) return;
+    setLikeLoading(true);
+    const newLiked = !(likeState?.liked);
+    await setBlogLikeFavorite(blogPost.id, newLiked, likeState?.favorited || false);
+    setLikeState((prev) => ({ liked: newLiked, favorited: prev?.favorited ?? false }));
+    getBlogLikeFavoriteCount(blogPost.id).then(setLikeCount);
+    setLikeLoading(false);
+  };
+  const handleFavorite = async () => {
+    if (!blogPost || likeLoading) return;
+    setLikeLoading(true);
+    const newFav = !(likeState?.favorited);
+    await setBlogLikeFavorite(blogPost.id, likeState?.liked || false, newFav);
+    setLikeState((prev) => ({ favorited: newFav, liked: prev?.liked ?? false }));
+    getBlogLikeFavoriteCount(blogPost.id).then(setLikeCount);
+    setLikeLoading(false);
+  };
+
+  if (loading) {
+    return <div>Cargando blog...</div>;
   }
+  if (error || !blogPost) {
+    return <div className="text-red-600">{error || "Blog no encontrado."}</div>;
+  }
+
+  // Antes del render principal, define una función para checar si falta algún campo obligatorio
+  const isBlogIncomplete = !blogPost.title || !blogPost.summary || !blogPost.content || !blogPost.author || !blogPost.date || !blogPost.category || !blogPost.read_time || !blogPost.image;
 
   return (
     <div className="min-h-screen bg-white neutra-font">
@@ -51,13 +109,20 @@ export default function BlogPostPage() {
       <Header currentPage="blog" />
 
       {/* Contenido principal del blog */}
+      {isBlogIncomplete && (
+        <div className="container mx-auto px-4 py-2">
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6 rounded">
+            <p>Este blog está incompleto. Faltan uno o más campos obligatorios. Por favor, edítalo para completarlo.</p>
+          </div>
+        </div>
+      )}
       <div className="container mx-auto px-4 py-8">
         <div className="grid lg:grid-cols-3 gap-12">
           {/* Columna principal - contenido del blog */}
           <div className="lg:col-span-2">
             {/* Encabezado del artículo */}
             <div className="mb-8">
-              <p className="text-gray-600 text-center mb-4 neutra-font">{blogPost.excerpt || "(Por llenar)"}</p>
+              <p className="text-gray-600 text-center mb-4 neutra-font">{blogPost.summary || "(Por llenar)"}</p>
 
               <h1 className="text-4xl md:text-6xl neutra-font-black text-blue-600 leading-tight mb-6">
                 {blogPost.title || "(Por llenar)"}
@@ -71,14 +136,18 @@ export default function BlogPostPage() {
                   </span>
                 )}
                 <span className="text-gray-500 neutra-font">
-                  {blogPost.date && `• ${blogPost.date}`} {blogPost.readTime && `• ${blogPost.readTime}`}
+                  {blogPost.date && `• ${blogPost.date}`} {blogPost.read_time && `• ${blogPost.read_time}`}
+                </span>
+                <span className="ml-auto flex items-center gap-2">
+                  <span title="Me gusta">👍 {likeCount.likes}</span>
+                  <span title="Favoritos">⭐ {likeCount.favorites}</span>
                 </span>
               </div>
 
               {/* Imagen principal del artículo */}
               <div className="relative aspect-video mb-8 rounded-lg overflow-hidden">
                 <Image
-                  src={blogPost.images && blogPost.images[0] ? blogPost.images[0] : "/placeholder.svg"}
+                  src={blogPost.image || "/placeholder.svg"}
                   alt={blogPost.title || "Imagen del blog"}
                   fill
                   className="object-cover"
@@ -88,119 +157,37 @@ export default function BlogPostPage() {
 
             {/* Contenido del artículo */}
             <div className="prose max-w-none">
-              {typeof blogPost?.content === "string" ? (
+              {typeof blogPost.content === "string" ? (
                 <p className="text-lg text-gray-700 mb-6 neutra-font leading-relaxed">
-                  {blogPost?.content}
+                  {blogPost.content}
                 </p>
-              ) : blogPost?.content && typeof blogPost?.content === "object" ? (
-                <div className="mb-6">
-                  {typeof blogPost.content.intro === "string" && blogPost.content.intro && (
-                    <p className="text-lg text-gray-700 mb-4 neutra-font leading-relaxed">{blogPost.content.intro}</p>
-                  )}
-                  {typeof blogPost.content.mainText === "string" && blogPost.content.mainText && (
-                    <p className="text-base text-gray-800 mb-4 neutra-font">{blogPost.content.mainText}</p>
-                  )}
-                  {Array.isArray(blogPost.content.sections) && blogPost.content.sections.length > 0
-                    ? blogPost.content.sections.map((section, idx) => (
-                        <div key={idx} className="mb-4">
-                          {typeof section.title === "string" && section.title && (
-                            <h3 className="text-xl text-blue-600 neutra-font-bold mb-2">{section.title}</h3>
-                          )}
-                          {typeof section.content === "string" && section.content && (
-                            <p className="text-gray-700 neutra-font mb-2">{section.content}</p>
-                          )}
-                        </div>
-                      ))
-                    : null}
-                  {!blogPost.content.intro && !blogPost.content.mainText && (!blogPost.content.sections || blogPost.content.sections.length === 0) && (
-                    <p className="text-lg text-gray-700 mb-6 neutra-font leading-relaxed">(Sin contenido disponible)</p>
-                  )}
-                </div>
               ) : (
                 <p className="text-lg text-gray-700 mb-6 neutra-font leading-relaxed">(Por llenar)</p>
               )}
 
-              {/* Espacio para contenido adicional que se agregará manualmente */}
-              <div className="min-h-[20rem] mb-8 p-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                <p className="text-center text-gray-500 neutra-font">(Por llenar - Contenido adicional del artículo)</p>
-              </div>
+              {/* Galería de imágenes adicionales (oculta si no hay imágenes extra) */}
+              {Array.isArray(blogPost.images) && blogPost.images.length > 1 && (
+                <div className="my-12">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    {blogPost.images.slice(1, 3).map((img, idx) => (
+                      <div key={idx} className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
+                        <Image src={img} alt={`Imagen extra ${idx + 2}`} fill className="object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    {blogPost.images.slice(3).map((img, idx) => (
+                      <div key={idx} className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
+                        <Image src={img} alt={`Imagen extra ${idx + 4}`} fill className="object-cover" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Galería de imágenes adicionales */}
-            <div className="my-12">
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
-                  <div className="flex items-center justify-center h-full">
-                    <span className="text-gray-500 neutra-font">(Por llenar)</span>
-                  </div>
-                </div>
-                <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
-                  <div className="flex items-center justify-center h-full">
-                    <span className="text-gray-500 neutra-font">(Por llenar)</span>
-                  </div>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
-                  <div className="flex items-center justify-center h-full">
-                    <span className="text-gray-500 neutra-font">(Por llenar)</span>
-                  </div>
-                </div>
-                <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
-                  <div className="flex items-center justify-center h-full">
-                    <span className="text-gray-500 neutra-font">(Por llenar)</span>
-                  </div>
-                </div>
-                <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-100">
-                  <div className="flex items-center justify-center h-full">
-                    <span className="text-gray-500 neutra-font">(Por llenar)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Botones de interacción */}
-              <div className="flex justify-center gap-4 mt-6">
-                <Button
-                  variant="outline"
-                  className="bg-gray-800 text-white border-gray-800 hover:bg-gray-700 neutra-font"
-                >
-                  <Heart className="w-4 h-4 mr-2" />
-                  Me gusta 0
-                </Button>
-                <Button
-                  variant="outline"
-                  className="bg-gray-800 text-white border-gray-800 hover:bg-gray-700 neutra-font"
-                >
-                  <Star className="w-4 h-4 mr-2" />
-                  Favorito 0
-                </Button>
-              </div>
-            </div>
-
-            {/* Información del autor */}
-            <div className="bg-gray-50 rounded-lg p-8 my-12">
-              <h3 className="text-2xl neutra-font-bold text-gray-900 mb-6">Sobre el Autor</h3>
-              <div className="flex gap-6">
-                <div className="relative w-32 h-32 rounded-lg overflow-hidden flex-shrink-0 bg-gray-200">
-                  {blogPost.author?.image ? (
-                    <Image
-                      src={blogPost.author.image}
-                      alt={blogPost.author.name || "Autor"}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <span className="text-gray-500 neutra-font text-sm">(Por llenar)</span>
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <h4 className="text-xl neutra-font-bold text-gray-900 mb-2">{blogPost.author?.name || "(Por llenar)"}</h4>
-                  <p className="text-gray-700 neutra-font leading-relaxed">{blogPost.author?.bio || "(Por llenar - Biografía del autor)"}</p>
-                </div>
-              </div>
-            </div>
+            {/* Botones de interacción (ahora funcionales) */}
+            {/* Elimina los botones de interacción (handleLike, handleFavorite) en el render principal */}
           </div>
 
           {/* Sidebar derecho */}
@@ -299,7 +286,7 @@ export default function BlogPostPage() {
             </div>
           ) : (
             <div className="text-center text-gray-500 neutra-font mb-8">
-              (Por llenar - No hay blogs relacionados disponibles)
+              No hay blogs relacionados disponibles
             </div>
           )}
 

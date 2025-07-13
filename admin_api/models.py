@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 
@@ -28,3 +29,29 @@ class ProjectImage(models.Model):
 
     def __str__(self):
         return f"Imagen de {self.project.name}"
+
+class Blog(models.Model):
+    title = models.CharField(max_length=255)
+    author = models.CharField(max_length=255)
+    date = models.DateField()
+    category = models.CharField(max_length=100)
+    read_time = models.CharField(max_length=50)
+    image = models.ImageField(upload_to='blogs/main_images/')
+    summary = models.TextField()
+    content = models.TextField()
+    tags = models.JSONField(blank=True, null=True)
+    featured = models.BooleanField(default=False)
+    like_count = models.PositiveIntegerField(default=0)
+    favorite_count = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return self.title
+
+class BlogLikeFavorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
+    liked = models.BooleanField(default=False)
+    favorited = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('user', 'blog')
