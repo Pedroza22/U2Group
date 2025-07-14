@@ -274,6 +274,9 @@ export default function AdminDashboardPage() {
     setShowBlogEditor(false);
     setEditingBlog(null);
     await loadBlogs();
+    
+    // Redirigir a la vista de blogs filtrada por categoría
+    router.push(`/blog?category=${formData.category}`);
   };
 
   // 2. Definir handleLogout (se usaba en el header)

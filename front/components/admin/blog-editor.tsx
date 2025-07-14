@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card"
 import { X, Plus, Trash2 } from "lucide-react"
 import type { AdminBlog } from "@/data/admin-data"
 import ImageUploader from "./image-uploader"
+import { BLOG_CATEGORIES } from "@/data/blog-categories";
 
 interface BlogEditorProps {
   blog?: AdminBlog
@@ -62,6 +63,7 @@ export default function BlogEditor({ blog, onSave, onCancel }: BlogEditorProps) 
   );
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [apiError, setApiError] = useState<string>("");
+  const [showCustomCategory, setShowCustomCategory] = useState(false);
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -82,6 +84,9 @@ export default function BlogEditor({ blog, onSave, onCancel }: BlogEditorProps) 
     if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData((prev) => ({ ...prev, [name]: checked }));
+    } else if (name === "category" && value === "custom") {
+      setShowCustomCategory(true);
+      setFormData((prev) => ({ ...prev, category: "" }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -176,14 +181,47 @@ export default function BlogEditor({ blog, onSave, onCancel }: BlogEditorProps) 
             </div>
             <div>
               <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Categoría *</label>
-              <input
-                type="text"
-                name="category"
-                value={formData.category}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 neutra-font"
-              />
+              {!showCustomCategory ? (
+                <>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 neutra-font mb-2"
+                  >
+                    <option value="">Selecciona una categoría</option>
+                    {BLOG_CATEGORIES.filter((cat, idx, arr) => arr.indexOf(cat) === idx).map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                    <option value="custom">Otra categoría...</option>
+                  </select>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    name="category"
+                    value={formData.category}
+                    onChange={handleInputChange}
+                    placeholder="Escribe una nueva categoría"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 neutra-font"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowCustomCategory(false);
+                      setFormData(prev => ({ ...prev, category: "" }));
+                    }}
+                  >
+                    Volver a categorías predefinidas
+                  </Button>
+                </div>
+              )}
               {errors.category && <div className="text-red-600 text-xs mt-1">{errors.category}</div>}
             </div>
             <div>

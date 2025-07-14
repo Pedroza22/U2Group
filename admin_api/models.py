@@ -1,5 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import User
+import uuid
+
+def generate_default_visitor_id():
+    return f'legacy_{uuid.uuid4().hex[:8]}'
 
 # Create your models here.
 
@@ -48,10 +51,14 @@ class Blog(models.Model):
         return self.title
 
 class BlogLikeFavorite(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='likes_favorites')
+    visitor_id = models.CharField(max_length=100, default=generate_default_visitor_id)  # Identificador único del visitante
     liked = models.BooleanField(default=False)
     favorited = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ('user', 'blog')
+        indexes = [
+            models.Index(fields=['blog']),
+            models.Index(fields=['visitor_id']),
+        ]
+        unique_together = ('blog', 'visitor_id')  # Un visitante solo puede tener un registro por blog

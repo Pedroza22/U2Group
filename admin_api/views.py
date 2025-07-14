@@ -49,17 +49,60 @@ class BlogViewSet(viewsets.ModelViewSet):
 class BlogLikeFavoriteViewSet(viewsets.ModelViewSet):
     queryset = BlogLikeFavorite.objects.all()
     serializer_class = BlogLikeFavoriteSerializer
-
-    def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
-            return [AllowAny()]
-        return [permissions.IsAuthenticated()]
+    permission_classes = [AllowAny]
 
     def get_queryset(self):
-        if self.request.method == 'GET':
-            # Permitir filtrar por blog para el contador global
-            blog_id = self.request.query_params.get('blog')
-            if blog_id:
-                return BlogLikeFavorite.objects.filter(blog=blog_id)
-            return BlogLikeFavorite.objects.all()
-        return BlogLikeFavorite.objects.filter(user=self.request.user)
+        blog_id = self.request.query_params.get('blog')
+        visitor_id = self.request.query_params.get('visitor_id')
+        
+        queryset = BlogLikeFavorite.objects.all()
+        
+        if blog_id:
+            queryset = queryset.filter(blog=blog_id)
+        if visitor_id:
+            queryset = queryset.filter(visitor_id=visitor_id)
+            
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        blog_id = request.data.get('blog')
+        visitor_id = request.data.get('visitor_id')
+        action_type = request.data.get('action_type')  # 'like' o 'favorite'
+        
+        if not all([blog_id, visitor_id, action_type]):
+            return Response(
+                {'error': 'Se requiere blog_id, visitor_id y action_type'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Obtener o crear el registro
+        like_favorite, created = BlogLikeFavorite.objects.get_or_create(
+            blog_id=blog_id,
+            visitor_id=visitor_id,
+            defaults={'liked': False, 'favorited': False}
+        )
+
+        # Actualizar el estado según la acción
+        if action_type == 'like':
+            like_favorite.liked = not like_favorite.liked
+        elif action_type == 'favorite':
+            like_favorite.favorited = not like_favorite.favorited
+
+        like_favorite.save()
+
+        # Actualizar los contadores en el blog
+        blog = like_favorite.blog
+        blog.like_count = BlogLikeFavorite.objects.filter(blog=blog, liked=True).count()
+        blog.favorite_count = BlogLikeFavorite.objects.filter(blog=blog, favorited=True).count()
+        blog.save()
+
+        # Devolver el nuevo estado
+        return Response({
+            'id': like_favorite.id,
+            'blog': blog_id,
+            'visitor_id': visitor_id,
+            'liked': like_favorite.liked,
+            'favorited': like_favorite.favorited,
+            'like_count': blog.like_count,
+            'favorite_count': blog.favorite_count
+        })
