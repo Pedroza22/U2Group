@@ -391,7 +391,7 @@ export default function AdminDashboardPage() {
     <div className="min-h-screen bg-gray-50">
       {/* HEADER */}
       <header className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-4">
+        <div className="w-full px-2 md:container md:mx-auto md:px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="bg-blue-600 p-2 rounded-lg">
@@ -427,9 +427,9 @@ export default function AdminDashboardPage() {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="w-full px-2 py-4 md:container md:mx-auto md:px-4 md:py-8">
         {/* NAVEGACIÓN DE PESTAÑAS */}
-        <div className="flex gap-2 mb-8">
+        <div className="flex gap-2 mb-8 overflow-x-auto flex-nowrap whitespace-nowrap scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent">
           <Button
             onClick={() => setActiveTab("projects")}
             variant={activeTab === "projects" ? "default" : "outline"}
@@ -792,22 +792,23 @@ export default function AdminDashboardPage() {
               <h2 className="text-2xl neutra-font-bold text-gray-900">Gestión de Servicios de Diseño</h2>
               <Button onClick={handleNewService} variant="default"><Plus className="w-4 h-4 mr-2" />Nuevo Servicio</Button>
             </div>
+            {/* Cambios en la tabla de servicios para responsividad */}
             <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border border-gray-200 rounded">
+              <table className="min-w-full bg-white border border-gray-200 rounded text-xs md:text-sm">
                 <thead>
                   <tr>
-                    <th className="px-4 py-2 border-b">Imagen</th>
-                    <th className="px-4 py-2 border-b">Nombre (ES)</th>
-                    <th className="px-4 py-2 border-b">Nombre (EN)</th>
-                    <th className="px-4 py-2 border-b">Precio</th>
-                    <th className="px-4 py-2 border-b">Área máx</th>
-                    <th className="px-4 py-2 border-b">Acciones</th>
+                    <th className="px-2 md:px-4 py-2 border-b">Imagen</th>
+                    <th className="px-2 md:px-4 py-2 border-b">Nombre (ES)</th>
+                    <th className="px-2 md:px-4 py-2 border-b">Nombre (EN)</th>
+                    <th className="px-2 md:px-4 py-2 border-b">Precio</th>
+                    <th className="px-2 md:px-4 py-2 border-b">Área máx</th>
+                    <th className="px-2 md:px-4 py-2 border-b">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {services.map((service) => (
                     <tr key={service.id}>
-                      <td className="px-4 py-2 border-b">
+                      <td className="px-2 md:px-4 py-2 border-b">
                         {service.image ? (
                           <Image 
                             src={
@@ -824,11 +825,11 @@ export default function AdminDashboardPage() {
                           <span className="text-gray-400">Sin imagen</span>
                         )}
                       </td>
-                      <td className="px-4 py-2 border-b">{service.name_es}</td>
-                      <td className="px-4 py-2 border-b">{service.name_en}</td>
-                      <td className="px-4 py-2 border-b">${service.price_min_usd || 0}</td>
-                      <td className="px-4 py-2 border-b">{service.area_max_m2 ? `${service.area_max_m2} m²` : '-'}</td>
-                      <td className="px-4 py-2 border-b">
+                      <td className="px-2 md:px-4 py-2 border-b">{service.name_es}</td>
+                      <td className="px-2 md:px-4 py-2 border-b">{service.name_en}</td>
+                      <td className="px-2 md:px-4 py-2 border-b">${service.price_min_usd || 0}</td>
+                      <td className="px-2 md:px-4 py-2 border-b">{service.area_max_m2 ? `${service.area_max_m2} m²` : '-'}</td>
+                      <td className="px-2 md:px-4 py-2 border-b">
                         <Button size="sm" variant="outline" onClick={() => handleEditService(service)}><Edit className="w-4 h-4" /></Button>
                         <Button size="sm" variant="destructive" onClick={() => handleDeleteService(service.id)} className="ml-2"><Trash2 className="w-4 h-4" /></Button>
                       </td>
@@ -843,13 +844,13 @@ export default function AdminDashboardPage() {
                 <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full relative">
                   <button className="absolute top-3 right-3 text-gray-400 hover:text-blue-600 text-2xl font-bold" onClick={() => setShowServiceEditor(false)} aria-label="Cerrar">×</button>
                   <h3 className="text-xl neutra-font-bold text-gray-900 mb-4">{editingService ? "Editar Servicio" : "Nuevo Servicio"}</h3>
-                  {/* Aquí va el formulario de edición/creación de servicio */}
+                  {/* Cambios en el formulario de edición/creación de servicio */}
                   <form onSubmit={(e) => {
                     e.preventDefault();
                     console.log("Submit formulario servicio", editingService);
                     handleSaveService(editingService);
                   }} className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Nombre (Español)</label>
                         <input
@@ -875,7 +876,7 @@ export default function AdminDashboardPage() {
                         />
                       </div>
                     </div>
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Precio (USD)</label>
                         <input
@@ -902,7 +903,7 @@ export default function AdminDashboardPage() {
                         />
                       </div>
                     </div>
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Categoría</label>
                         <select
@@ -921,7 +922,7 @@ export default function AdminDashboardPage() {
                         </select>
                       </div>
                     </div>
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Imagen</label>
                         <ImageUploader
@@ -931,7 +932,7 @@ export default function AdminDashboardPage() {
                         />
                       </div>
                     </div>
-                    <div className="flex gap-4 pt-4">
+                    <div className="flex flex-col md:flex-row gap-4 pt-4">
                       <Button type="button" variant="outline" onClick={() => setShowServiceEditor(false)} className="flex-1 neutra-font bg-transparent">
                         Cancelar
                       </Button>
