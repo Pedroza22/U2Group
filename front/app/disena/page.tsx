@@ -159,9 +159,22 @@ export default function DisenaPage() {
     })
   }
 
-  // Actualizar imagen principal (puedes mejorar esto si tienes imágenes en los servicios)
+  // Actualizar imagen principal (muestra la imagen del último servicio seleccionado)
   const updateMainImage = (options: Record<number, any[]>) => {
-      setCurrentMainImage("/images/u2-logo.png")
+    // Buscar el último servicio seleccionado en cualquier categoría
+    const allSelected = Object.values(options).flat();
+    if (allSelected.length > 0) {
+      const lastSelected = allSelected[allSelected.length - 1];
+      if (lastSelected.image) {
+        setCurrentMainImage(
+          lastSelected.image.startsWith('http')
+            ? lastSelected.image
+            : `http://localhost:8000/media/${lastSelected.image.startsWith('services/') ? lastSelected.image : 'services/' + lastSelected.image}`
+        );
+        return;
+      }
+    }
+    setCurrentMainImage("/images/u2-logo.png");
   }
 
   // Calcular precio total
@@ -344,8 +357,8 @@ export default function DisenaPage() {
   return (
     <div className="min-h-screen bg-white neutra-font">
       <Header currentPage="disena" />
-      <section className="w-full py-20 md:py-32 bg-gradient-to-b from-white via-blue-50 to-gray-100">
-        <div className="container mx-auto px-4">
+      <section className="w-full py-10 md:py-20 bg-gradient-to-b from-white via-blue-50 to-gray-100">
+        <div className="w-full px-2 md:container md:mx-auto md:px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl md:text-7xl neutra-font-black text-blue-700 mb-8 drop-shadow-md">{t("designTitle")}</h1>
             <p className="text-2xl text-gray-700 mb-8 neutra-font max-w-2xl mx-auto">{t("designSubtitle")}</p>
@@ -355,8 +368,8 @@ export default function DisenaPage() {
       <div className="w-full h-2 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-100 my-8" />
       {/* Navegación de pestañas */}
       <div className="bg-white border-b">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-wrap gap-2 py-4 justify-center">
+        <div className="w-full px-2 md:container md:mx-auto md:px-4">
+          <div className="flex gap-2 py-4 overflow-x-auto flex-nowrap whitespace-nowrap scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent justify-center">
             {categories.map((cat) => (
               <button
                 key={cat.id}
@@ -372,7 +385,7 @@ export default function DisenaPage() {
         </div>
       </div>
       <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Imagen principal del diseño - DINÁMICA */}
           <div className="lg:col-span-2">
             {/* Input para el área total */}
@@ -439,7 +452,7 @@ export default function DisenaPage() {
                                 return (
                           <Card
                         key={service.id}
-                          className={`p-3 cursor-pointer transition-all hover:shadow-md ${
+                            className={`p-3 cursor-pointer transition-all hover:shadow-md ${
                           selectedOptions[service.category_id]?.some((o: any) => o.id === service.id)
                                 ? "border-blue-600 bg-blue-50"
                                 : "border-gray-200 hover:border-gray-300"
@@ -447,8 +460,20 @@ export default function DisenaPage() {
                         onClick={() => handleOptionSelect(service.category_id, service)}
                           >
                             <div className="flex items-center gap-3">
-                          <span className="text-2xl">{categories.find((c) => c.id === service.category_id)?.emoji || ''}</span>
-                          <div className="flex-1">
+                          {service.image && (
+                                <Image
+                              src={
+                                service.image.startsWith('http')
+                                  ? service.image
+                                  : `http://localhost:8000/media/${service.image.startsWith('services/') ? service.image : 'services/' + service.image}`
+                              }
+                              alt={service.name_es}
+                                  width={40}
+                                  height={40}
+                                  className="rounded object-cover"
+                                />
+                              )}
+                              <div className="flex-1">
                             <h4 className="neutra-font-bold text-gray-900 text-sm">{language === "es" ? service.name_es : service.name_en}</h4>
                             <p className="text-xs text-blue-600 neutra-font">${service.price_min_usd || 0} USD</p>
                             {SERVICE_AREA_MAX[service.name_en] && (
