@@ -27,23 +27,23 @@ export default function ProjectEditor({ project, onSave, onCancel }: ProjectEdit
     project
       ? { ...project, image: project.image, images: project.images || [] }
       : {
-          id: 0,
+      id: 0,
           name: "",
           displayTitle: "",
-          color: COMPANY_COLORS.PRIMARY_BLUE,
-          image: "",
-          utilization: "",
-          services: "",
-          year: new Date().getFullYear().toString(),
-          category: "",
-          type: "",
-          size: "",
-          location: "",
-          status: "Planning",
-          featured: false,
-          description: "",
-          features: [],
-          images: [],
+      color: COMPANY_COLORS.PRIMARY_BLUE,
+      image: "",
+      utilization: "",
+      services: "",
+      year: new Date().getFullYear().toString(),
+      category: "",
+      type: "",
+      size: "",
+      location: "",
+      status: "Planning",
+      featured: false,
+      description: "",
+      features: [],
+      images: [],
         }
   );
 

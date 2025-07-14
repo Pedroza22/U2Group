@@ -1,0 +1,175 @@
+# U2 Group - Contenido del Archivo Excel
+
+Este documento contiene la información extraída del archivo `u2grop.xlsx`, organizada por hojas y separada por tabulaciones para facilitar su lectura.
+
+## Estructura del Archivo
+
+### Hoja: Hoja1
+
+-  |  | 🏷️ Categoría General |  | ✅ Servicio Agrupado | 💰 Precio Mínimo (USD) | 📐 Área Máxima (m²) |  |  |  |  |  | 
+-  |  |  |  |  |  |  |  |  |  |  |  | 
+-  |  | ✏️ Metro cuadrado |  | Se suma de 2 en 2 | 1 | 80-1000 |  |  |  |  |  | 
+-  |  |  |  |  |  |  |  |  |  |  |  | 
+-  |  | 🧱 Porcentajes casa basicos |  |  |  |  |  |  |  |  |  | 
+-  |  |  |  | 25% Muros+Circulaciones |  |  |  |  |  |  |  | 
+-  |  |  |  | 12% Cocina+Comedor |  |  |  |  |  |  |  | 
+-  |  |  |  | 13% Sala |  |  |  |  |  |  |  | 
+-  |  |  |  | -50% de los metros cuadrados totales ej 80m2 = 40 m2 elegibles en la tabla |  |  |  |  |  |  |  | 
+-  |  |  |  |  |  |  |  |  |  |  |  | 
+-  |  | Grupos | ingles | español |  | area a tener en cuenta | maximos  |  |  |  | Predeterminado no suman nada al precio | 
+-  |  | 🛏️ Espacios básicos |  |  |  |  |  |  |  |  |  | 
+-  |  |  | Large room | Habitación grande | 70 | 18 | 5 max |  |  |  |  | 
+-  |  |  | Medium room | Habitación mediana | 60 | 14 |  |  |  |  |  | 
+-  |  |  | Small room | Habitación pequeña | 50 | 10 |  |  |  |  | predeterminada 1 habitacion peque | 
+-  |  |  | Large full bathroom | Baño completo grande | 20 | 16 | 5 max |  |  |  |  | 
+-  |  |  | Medium full bathroom | Baño completo mediano | 15 | 14 |  |  |  |  |  | 
+-  |  |  | Small full bathroom | Baño completo pequeño | 10 | 6 |  |  |  |  | predeterminada 1 baño completo peque | 
+-  |  |  | Large social bathroom (half bath) | Baño social (medio baño) grande | 10 | 6 | 3 max |  |  |  |  | 
+-  |  |  | Small social bathroom (half bath) | Baño social (medio baño) pequeño | 5 | 2 |  |  |  |  | predeterminada 1 baño social peque | 
+-  |  |  | Floor | Pisos | 300 |  | 2+ |  |  |  | 1 piso | 
+-  |  |  | Attic | Atico | 200 |  | yes/no |  |  |  | no | 
+-  |  |  | Basement | Sotano | 200 |  | yes/no |  |  |  | no | 
+-  |  |  | Parking | Parqueadero | 40 | 14 | 5 max |  |  |  | predeterminada 1 parqueadero | 
+-  |  |  | Laundry and storage room | Cuarto de lavado y almacenamiento | 40 | 8 | 2 max |  |  |  | predeterminada 1 Cuarto de lavado y almacenamiento | 
+-  |  |  |  |  |  |  |  |  |  |  |  | 
+-  |  | 🏡 Funcionalidad del hogar |  |  |  |  |  |  |  |  |  | 
+-  |  |  | Multifunctional garage | Garage multifuncional | 70 | 40 |  |  |  |  |  | 
+-  |  |  | Walking closet / vestidor inteligente | Walking closet / vestidor inteligente | 30 | 10 |  |  |  |  |  | 
+-  |  |  | Accessible room for the elderly | Cuarto accesible adulto mayor | 70 | 14 |  |  |  |  |  | 
+-  |  |  | Space for pets | Espacio para mascotas | 30 | 6 |  |  |  |  |  | 
+-  |  |  |  |  |  |  |  |  |  |  |  | 
+-  |  | 🎯 Trabajo & Creatividad |  |  |  |  |  |  |  |  |  | 
+-  |  |  | Personal office or hybrid coworking | Oficina personal o coworking híbrido | 150 | 16 |  |  |  |  |  | 
+-  |  |  | Executive or board room | Sala ejecutiva o de juntas | 150 | 20 |  |  |  |  |  | 
+-  |  |  | Recording studio / podcast | Estudio de grabación / podcast | 100 | 16 |  |  |  |  |  | 
+-  |  |  | Creative craft workshop | Taller creativo artesanal | 90 | 18 |  |  |  |  |  | 
+-  |  |  | Mini warehouse / e-commerce logistics | Mini bodega / logística e-commerce | 40 | 10 |  |  |  |  |  | 
+-  |  |  | Convertible flexible space | Espacio flexible convertible | 70 | 12 |  |  |  |  |  | 
+-  |  |  |  |  |  |  |  |  |  |  |  | 
+-  |  | 🧠 Bienestar & Salud |  |  |  |  |  |  |  |  |  | 
+-  |  |  | Home gym | Gimnasio en casa | 200 | 20 |  |  |  |  |  | 
+-  |  |  | Sauna or steam bath | Sauna o baño de vapor | 60 | 6 |  |  |  |  |  | 
+-  |  |  | Meditation / yoga / mindfulness | Meditación / yoga / mindfulness | 60 | 10 |  |  |  |  |  | 
+-  |  |  | Library or reading room | Biblioteca o sala de lectura | 40 | 14 |  |  |  |  |  | 
+-  |  |  | Sensory / therapeutic room | Cuarto sensorial / terapéutico | 60 | 14 |  |  |  |  |  | 
+-  |  |  |  |  |  |  |  |  |  |  |  | 
+-  |  | 🌿 Naturaleza & Sustentabilidad |  |  |  |  |  |  |  |  |  | 
+-  |  |  | Indoor garden / green wall | Jardín interior / muro verde | 60 |  |  |  |  |  |  | 
+-  |  |  | Green roof or living terrace | Azotea verde o terraza viva | 100 |  |  |  |  |  |  | 
+-  |  |  | Urban vegetable garden (outdoor/indoor) | Huerta urbana (exterior/interior) | 90 |  |  |  |  |  |  | 
+-  |  |  | Rainwater harvesting system | Sistema de recolección de agua lluvia | 100 |  |  |  |  |  |  | 
+-  |  |  | Outdoor multifunctional space (gardening) | Espacio multifuncional exterior (jardineria)(va con descripcion) |  |  |  |  |  |  |  | 
+-  |  |  | Composting | Compostaje | 80 | 12 |  |  |  |  |  | 
+-  |  |  | Drying | Secado | 80 | 12 |  |  |  |  |  | 
+-  |  |  | Greenhouse | Invernadero | 100 | 12 |  |  |  |  |  | 
+-  |  |  | Solar panels + backup | Paneles solares + backup | 200 |  |  |  |  |  |  | 
+-  |  |  |  |  |  |  |  |  |  |  |  | 
+-  |  | 🎬 Entretenimiento & Social |  |  |  |  |  |  |  |  |  | 
+-  |  |  | Game room / indoor cinema | Sala de juegos / cine interior | 150 | 20 |  |  |  |  |  | 
+-  |  |  | Integrated bar or cellar | Bar o cava integrada | 90 | 8 |  |  |  |  |  | 
+-  |  |  | BBQ + outdoor kitchen + covered dining room | BBQ + cocina exterior + comedor techado | 200 | 26 |  |  |  |  |  | 
+-  |  |  | Firepit + chill zone | Firepit + zona chill | 80 | 12 |  |  |  |  |  | 
+-  |  |  | Social rooftop with veranda | Rooftop social con mirador | 110 |  |  |  |  |  |  | 
+-  |  |  | Projector or outdoor cinema | Proyector o cine al aire libre | 40 | 18 |  |  |  |  |  | 
+-  |  |  | Outdoor playground | Zona de juegos infantiles exterior | 50 | 20 |  |  |  |  |  | 
+-  |  |  | Swimming pool | Piscina | 250 | 18 |  |  |  |  |  | 
+-  |  |  |  |  |  |  |  |  |  |  |  | 
+-  |  |  |  |  | 3 | 492 |  |  |  |  |  | 
+-  |  |  |  |  |  |  |  |  |  |  |  | 
+-  |  |  |  |  |  |  |  |  |  |  |  | 
+-  |  |  |  |  |  |  |  |  |  |  |  | 
+
+### Hoja: Hoja2
+
+-  |  |  |  |  | 
+-  | 🏷️ Categoría General |  |  |  | 
+-  |  |  |  |  | 
+-  | Categoría | ✅ Servicio Agrupado | 💰 Precio Mínimo (USD) | 📐 Área Máxima (m²) | 
+-  | ✏️ Metro cuadrado | Se suma de 2 en 2 | 1 | 80-1000 | 
+-  |  |  |  |  | 
+-  |  |  |  |  | 
+-  | 🧱 Porcentajes casa básicos |  |  |  | 
+-  |  |  |  |  | 
+-  | Concepto | Porcentaje |  |  | 
+-  | Muros + Circulaciones | 0.25 |  |  | 
+-  | Cocina + Comedor | 0.12 |  |  | 
+-  | Sala | 0.13 |  |  | 
+-  | Elegibles (ejemplo 80 m²) | -50% → 40 m² |  |  | 
+-  |  |  |  |  | 
+-  |  |  |  |  | 
+-  | 📦 Grupos de Espacios |  |  |  | 
+-  |  |  |  |  | 
+-  | 🛏️ Espacios básicos |  |  |  | 
+-  |  |  |  |  | 
+-  | Inglés | Español | 💰 Precio | 📐 Área Máx | Máx unidades
+-  | Large room | Habitación grande | 70 | 18 m² | 5
+-  | Medium room | Habitación mediana | 60 | 14 m² | 
+-  | Small room | Habitación pequeña | 50 | 10 m² | 
+-  | Large full bathroom | Baño completo grande | 20 | 16 m² | 5
+-  | Medium full bathroom | Baño completo mediano | 15 | 14 m² | 
+-  | Small full bathroom | Baño completo pequeño | 10 | 6 m² | 
+-  | Large social bathroom (half) | Baño social (medio baño) grande | 10 | 6 m² | 3
+-  | Small social bathroom (half) | Baño social (medio baño) pequeño | 5 | 2 m² | 
+-  | Floor | Pisos | 300 | - | 2+
+-  | Attic | Ático | 200 | - | yes/no
+-  | Basement | Sótano | 200 | - | yes/no
+-  | Parking | Parqueadero | 40 | 14 m² | 5
+-  | Laundry and storage room | Cuarto de lavado y almacenamiento | 40 | 8 m² | 2
+-  |  |  |  |  | 
+-  |  |  |  |  | 
+-  | 🏡 Funcionalidad del hogar |  |  |  | 
+-  |  |  |  |  | 
+-  | Inglés | Español | 💰 Precio | 📐 Área Máx | 
+-  | Multifunctional garage | Garage multifuncional | 70 | 40 m² | 
+-  | Walking closet | Walking closet / vestidor inteligente | 30 | 10 m² | 
+-  | Accessible room for the elderly | Cuarto accesible adulto mayor | 70 | 14 m² | 
+-  | Space for pets | Espacio para mascotas | 30 | 6 m² | 
+-  |  |  |  |  | 
+-  |  |  |  |  | 
+-  | 🎯 Trabajo & Creatividad |  |  |  | 
+-  |  |  |  |  | 
+-  | Inglés | Español | 💰 Precio | 📐 Área Máx | 
+-  | Personal office or hybrid coworking | Oficina personal o coworking híbrido | 150 | 16 m² | 
+-  | Executive or board room | Sala ejecutiva o de juntas | 150 | 20 m² | 
+-  | Recording studio / podcast | Estudio de grabación / podcast | 100 | 16 m² | 
+-  | Creative craft workshop | Taller creativo artesanal | 90 | 18 m² | 
+-  | Mini warehouse / e-commerce logistics | Mini bodega / logística e-commerce | 40 | 10 m² | 
+-  | Convertible flexible space | Espacio flexible convertible | 70 | 12 m² | 
+-  |  |  |  |  | 
+-  |  |  |  |  | 
+-  | 🧠 Bienestar & Salud |  |  |  | 
+-  |  |  |  |  | 
+-  | Inglés | Español | 💰 Precio | 📐 Área Máx | 
+-  | Home gym | Gimnasio en casa | 200 | 20 m² | 
+-  | Sauna or steam bath | Sauna o baño de vapor | 60 | 6 m² | 
+-  | Meditation / yoga / mindfulness | Meditación / yoga / mindfulness | 60 | 10 m² | 
+-  | Library or reading room | Biblioteca o sala de lectura | 40 | 14 m² | 
+-  | Sensory / therapeutic room | Cuarto sensorial / terapéutico | 60 | 14 m² | 
+-  |  |  |  |  | 
+-  |  |  |  |  | 
+-  | 🌿 Naturaleza & Sustentabilidad |  |  |  | 
+-  |  |  |  |  | 
+-  | Inglés | Español | 💰 Precio | 📐 Área Máx | 
+-  | Indoor garden / green wall | Jardín interior / muro verde | 60 | - | 
+-  | Green roof or living terrace | Azotea verde o terraza viva | 100 | - | 
+-  | Urban vegetable garden (outdoor/indoor) | Huerta urbana (exterior/interior) | 90 | - | 
+-  | Rainwater harvesting system | Sistema de recolección de agua lluvia | 100 | - | 
+-  | Outdoor multifunctional space (gardening) | Espacio multifuncional exterior (jardinería) | - | - | 
+-  | Composting | Compostaje | 80 | 12 m² | 
+-  | Drying | Secado | 80 | 12 m² | 
+-  | Greenhouse | Invernadero | 100 | 12 m² | 
+-  | Solar panels + backup | Paneles solares + backup | 200 | - | 
+-  |  |  |  |  | 
+-  |  |  |  |  | 
+-  | 🎬 Entretenimiento & Social |  |  |  | 
+-  |  |  |  |  | 
+-  | Inglés | Español | 💰 Precio | 📐 Área Máx | 
+-  | Game room / indoor cinema | Sala de juegos / cine interior | 150 | 20 m² | 
+-  | Integrated bar or cellar | Bar o cava integrada | 90 | 8 m² | 
+-  | BBQ + outdoor kitchen + covered dining | BBQ + cocina exterior + comedor techado | 200 | 26 m² | 
+-  | Firepit + chill zone | Firepit + zona chill | 80 | 12 m² | 
+-  | Social rooftop with veranda | Rooftop social con mirador | 110 | - | 
+-  | Projector or outdoor cinema | Proyector o cine al aire libre | 40 | 18 m² | 
+-  | Outdoor playground | Zona de juegos infantiles exterior | 50 | 20 m² | 
+-  | Swimming pool | Piscina | 250 | 18 m² | 
+

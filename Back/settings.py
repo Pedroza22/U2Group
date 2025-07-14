@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'home',
     'project',
     'admin_api',
+    'design',
 ]
 
 MIDDLEWARE = [
