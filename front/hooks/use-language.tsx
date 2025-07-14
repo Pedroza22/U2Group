@@ -34,7 +34,7 @@ const translations = {
     ourServices: "Nuestros Servicios",
     whyChooseUs: "¿Por qué elegirnos?",
     featuredProjects: "Proyectos Destacados",
-    latestNews: "Últimas Noticias",
+    latestNews: "Blogs",
     readMore: "Leer Más",
     getStarted: "Comenzar",
     weDesignTheFuture: "Diseñamos el futuro",
@@ -136,12 +136,12 @@ const translations = {
     bookMeeting: "Reserva una reunión con nuestro equipo para discutir tu proyecto en detalle",
 
     // BLOG PAGE
-    blogTitle: "Últimas Noticias",
+    blogTitle: "Blogs",
     blogSubtitle: "Mantente al día con las últimas tendencias en arquitectura y diseño",
     readPost: "Leer Artículo",
     all: "Todos",
     tips: "Tips",
-    news: "Noticias",
+    news: "Blogs",
     articles: "Artículos",
     interiorDesignCategory: "Diseño Interior",
     sustainabilityCategory: "Sostenibilidad",
@@ -247,7 +247,7 @@ const translations = {
     calculatorPerM2: "por m²",
     calculatorButton: "Diseña conmigo",
     // NOTICIAS/BLOG
-    newsTitle: "Últimas Noticias",
+    newsTitle: "Blogs",
     newsSubtitle: "Mantente al día con las últimas tendencias en arquitectura y diseño.",
     readArticle: "Leer Artículo",
     // Las categorías ya existen: interiorDesignCategory, sustainabilityCategory, corporateCategory, residentialCategory
@@ -274,7 +274,7 @@ const translations = {
     ourServices: "Our Services",
     whyChooseUs: "Why Choose Us?",
     featuredProjects: "Featured Projects",
-    latestNews: "Latest News",
+    latestNews: "Blogs",
     readMore: "Read More",
     getStarted: "Get Started",
     weDesignTheFuture: "We design the future",
@@ -376,12 +376,12 @@ const translations = {
     bookMeeting: "Book a meeting with our team to discuss your project in detail",
 
     // BLOG PAGE
-    blogTitle: "Latest News",
+    blogTitle: "Blogs",
     blogSubtitle: "Stay up to date with the latest trends in architecture and design",
     readPost: "Read Article",
     all: "All",
     tips: "Tips",
-    news: "News",
+    news: "Blogs",
     articles: "Articles",
     interiorDesignCategory: "Interior Design",
     sustainabilityCategory: "Sustainability",
@@ -487,7 +487,7 @@ const translations = {
     calculatorPerM2: "per m²",
     calculatorButton: "Design with me",
     // NOTICIAS/BLOG
-    newsTitle: "Latest News",
+    newsTitle: "Blogs",
     newsSubtitle: "Stay up to date with the latest trends in architecture and design.",
     readArticle: "Read Article",
     // Las categorías y viewAllArticles ya existen

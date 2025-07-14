@@ -9,7 +9,7 @@ import Header from "@/components/layout/header"
 import Footer from "@/components/layout/footer"
 import { useLanguage } from "@/hooks/use-language"
 import { AdminDataManager, AdminBlog } from "@/data/admin-data"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import axios from "axios";
 import { getBlogLikeFavoriteCount, toggleBlogLike, toggleBlogFavorite } from "@/lib/api-blogs";
 import { Heart, Star } from "lucide-react"
@@ -27,6 +27,8 @@ export default function BlogPage() {
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get("category") || "all")
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const categoryRef = useRef<HTMLDivElement>(null);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/admin";
 
@@ -106,6 +108,9 @@ export default function BlogPage() {
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
     window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => {
+      categoryRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
   };
 
   return (
@@ -125,7 +130,10 @@ export default function BlogPage() {
       <section className="w-full py-20 md:py-28 bg-white">
         <div className="container mx-auto px-4">
           {/* Filtro de categorías */}
-          <div className="flex flex-wrap gap-2 justify-center mb-8">
+          <div
+            ref={categoryRef}
+            className="flex flex-wrap gap-4 justify-center mb-10"
+          >
             <Button
               className={`px-6 py-2 rounded-full neutra-font text-sm shadow-md ${selectedCategory === "all" ? "bg-blue-600 text-white" : "bg-white border border-blue-200 text-blue-700 hover:bg-blue-50"}`}
               onClick={() => handleCategoryChange("all")}
