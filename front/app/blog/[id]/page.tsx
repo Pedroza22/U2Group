@@ -258,7 +258,7 @@ export default function BlogPostPage() {
             <div className="bg-gray-800 text-white rounded-lg p-6 mb-8">
               <h3 className="text-xl neutra-font-bold mb-2">Únete al Newsletter</h3>
               <p className="text-gray-300 text-sm mb-4 neutra-font">
-                Recibe las últimas noticias y artículos directamente en tu email
+                Recibe los últimos blogs y artículos directamente en tu email
               </p>
               <div className="space-y-3">
                 <input
