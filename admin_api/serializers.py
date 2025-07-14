@@ -27,4 +27,4 @@ class BlogSerializer(serializers.ModelSerializer):
 class BlogLikeFavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogLikeFavorite
-        fields = ['id', 'user', 'blog', 'liked', 'favorited'] 
+        fields = ['id', 'blog', 'visitor_id', 'liked', 'favorited'] 

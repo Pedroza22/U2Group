@@ -1,6 +1,17 @@
 import axios from "axios";
+import { getVisitorId } from "./utils";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/admin";
+
+interface BlogLikeFavoriteResponse {
+  id: number;
+  blog: number;
+  visitor_id: string;
+  liked: boolean;
+  favorited: boolean;
+  like_count: number;
+  favorite_count: number;
+}
 
 export async function getBlogs() {
   const res = await axios.get(`${API_URL}/blogs/`);
@@ -32,27 +43,33 @@ export async function deleteBlog(id: number) {
 }
 
 // LIKE/FAVORITE API
-export async function getBlogLikeFavorite(blogId: number) {
-  const res = await axios.get(`${API_URL}/blog-likes-favorites/?blog=${blogId}`);
-  return res.data[0]; // Solo uno por usuario+blog
+export async function getBlogLikeFavorite(blogId: number): Promise<BlogLikeFavoriteResponse | null> {
+  const visitorId = getVisitorId();
+  const res = await axios.get<BlogLikeFavoriteResponse[]>(`${API_URL}/blog-likes-favorites/?blog=${blogId}&visitor_id=${visitorId}`);
+  return res.data[0] || null;
 }
 
-export async function setBlogLikeFavorite(blogId: number, liked: boolean, favorited: boolean) {
-  // Intenta obtener el registro existente
-  const existing = await getBlogLikeFavorite(blogId);
-  if (existing) {
-    // Actualiza
-    const res = await axios.patch(`${API_URL}/blog-likes-favorites/${existing.id}/`, { liked, favorited });
-    return res.data;
-  } else {
-    // Crea
-    const res = await axios.post(`${API_URL}/blog-likes-favorites/`, { blog: blogId, liked, favorited });
-    return res.data;
-  }
+export async function toggleBlogLike(blogId: number): Promise<BlogLikeFavoriteResponse> {
+  const visitorId = getVisitorId();
+  const res = await axios.post<BlogLikeFavoriteResponse>(`${API_URL}/blog-likes-favorites/`, {
+    blog: blogId,
+    visitor_id: visitorId,
+    action_type: 'like'
+  });
+  return res.data;
+}
+
+export async function toggleBlogFavorite(blogId: number): Promise<BlogLikeFavoriteResponse> {
+  const visitorId = getVisitorId();
+  const res = await axios.post<BlogLikeFavoriteResponse>(`${API_URL}/blog-likes-favorites/`, {
+    blog: blogId,
+    visitor_id: visitorId,
+    action_type: 'favorite'
+  });
+  return res.data;
 }
 
 export async function getBlogLikeFavoriteCount(blogId: number) {
-  // Obtiene el conteo de likes y favoritos para un blog
   const res = await axios.get(`${API_URL}/blog-likes-favorites/?blog=${blogId}`);
   const all = res.data;
   return {

@@ -13,7 +13,7 @@ import { AdminDataManager } from "@/data/admin-data"
 import { useState, useEffect } from "react"
 import type { AdminBlog } from "@/data/admin-data"
 import axios from "axios";
-import { getBlogLikeFavorite, setBlogLikeFavorite, getBlogLikeFavoriteCount } from "@/lib/api-blogs";
+import { getBlogLikeFavorite, toggleBlogLike, toggleBlogFavorite, getBlogLikeFavoriteCount } from "@/lib/api-blogs";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/admin";
 
@@ -69,27 +69,58 @@ export default function BlogPostPage() {
     if (blogPost) {
       getBlogLikeFavorite(blogPost.id).then((data) => {
         setLikeState(data ? { liked: data.liked, favorited: data.favorited } : { liked: false, favorited: false });
+      }).catch(error => {
+        console.error('Error al cargar estado de like/favorito:', error);
+        setLikeState({ liked: false, favorited: false });
       });
-      getBlogLikeFavoriteCount(blogPost.id).then(setLikeCount);
+      getBlogLikeFavoriteCount(blogPost.id).then(setLikeCount).catch(error => {
+        console.error('Error al cargar conteo de likes/favoritos:', error);
+        setLikeCount({ likes: 0, favorites: 0 });
+      });
     }
   }, [blogPost]);
 
   const handleLike = async () => {
     if (!blogPost || likeLoading) return;
     setLikeLoading(true);
-    const newLiked = !(likeState?.liked);
-    await setBlogLikeFavorite(blogPost.id, newLiked, likeState?.favorited || false);
-    setLikeState((prev) => ({ liked: newLiked, favorited: prev?.favorited ?? false }));
-    getBlogLikeFavoriteCount(blogPost.id).then(setLikeCount);
+    try {
+      const result = await toggleBlogLike(blogPost.id);
+      setLikeState(prev => prev ? { 
+        ...prev, 
+        liked: result.liked 
+      } : { 
+        liked: result.liked, 
+        favorited: false 
+      });
+      setLikeCount({
+        likes: result.like_count,
+        favorites: result.favorite_count
+      });
+    } catch (error) {
+      console.error('Error al dar like:', error);
+    }
     setLikeLoading(false);
   };
+
   const handleFavorite = async () => {
     if (!blogPost || likeLoading) return;
     setLikeLoading(true);
-    const newFav = !(likeState?.favorited);
-    await setBlogLikeFavorite(blogPost.id, likeState?.liked || false, newFav);
-    setLikeState((prev) => ({ favorited: newFav, liked: prev?.liked ?? false }));
-    getBlogLikeFavoriteCount(blogPost.id).then(setLikeCount);
+    try {
+      const result = await toggleBlogFavorite(blogPost.id);
+      setLikeState(prev => prev ? { 
+        ...prev, 
+        favorited: result.favorited 
+      } : { 
+        liked: false, 
+        favorited: result.favorited 
+      });
+      setLikeCount({
+        likes: result.like_count,
+        favorites: result.favorite_count
+      });
+    } catch (error) {
+      console.error('Error al marcar como favorito:', error);
+    }
     setLikeLoading(false);
   };
 
