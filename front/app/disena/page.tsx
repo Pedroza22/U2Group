@@ -11,152 +11,206 @@ import Footer from "@/components/layout/footer"
 import { useLanguage } from "@/hooks/use-language"
 import { getDesignCategories, getBasicCategories, BASE_PRICE, type DesignOption } from "@/data/design-options"
 import { CalEmbed } from "@/components/cal-embed"
+import axios from "axios"
+import { useRouter } from "next/navigation"
+
+// Tipos para los datos de la API
+interface Category {
+  id: number;
+  name: string;
+  emoji?: string;
+}
+interface Service {
+  id: number;
+  category_id: number;
+  name_en: string;
+  name_es: string;
+  price_min_usd: number | null;
+  area_max_m2: number | null;
+  max_units: number | null;
+  notes?: string;
+  image?: string;
+}
+interface ConfigItem {
+  key: string;
+  value: string;
+}
+
+// Mapeo de áreas máximas y máximos permitidos por servicio (extraído de README_U2Group.md)
+const SERVICE_AREA_MAX: Record<string, number | undefined> = {
+  // Espacios básicos
+  "Large room": 18,
+  "Medium room": 14,
+  "Small room": 10,
+  "Large full bathroom": 16,
+  "Medium full bathroom": 14,
+  "Small full bathroom": 6,
+  "Large social bathroom (half bath)": 6,
+  "Small social bathroom (half bath)": 2,
+  "Floor": undefined,
+  "Attic": undefined,
+  "Basement": undefined,
+  "Parking": 14,
+  "Laundry and storage room": 8,
+  // Funcionalidad del hogar
+  "Multifunctional garage": 40,
+  "Walking closet": 10,
+  "Accessible room for the elderly": 14,
+  "Space for pets": 6,
+  // Trabajo & Creatividad
+  "Personal office or hybrid coworking": 16,
+  "Executive or board room": 20,
+  "Recording studio / podcast": 16,
+  "Creative craft workshop": 18,
+  "Mini warehouse / e-commerce logistics": 10,
+  "Convertible flexible space": 12,
+  // Bienestar & Salud
+  "Home gym": 20,
+  "Sauna or steam bath": 6,
+  "Meditation / yoga / mindfulness": 10,
+  "Library or reading room": 14,
+  "Sensory / therapeutic room": 14,
+  // Naturaleza & Sustentabilidad
+  "Indoor garden / green wall": undefined,
+  "Green roof or living terrace": undefined,
+  "Urban vegetable garden (outdoor/indoor)": undefined,
+  "Rainwater harvesting system": undefined,
+  "Outdoor multifunctional space (gardening)": undefined,
+  "Composting": 12,
+  "Drying": 12,
+  "Greenhouse": 12,
+  "Solar panels + backup": undefined,
+  // Entretenimiento & Social
+  "Game room / indoor cinema": 20,
+  "Integrated bar or cellar": 8,
+  "BBQ + outdoor kitchen + covered dining room": 26,
+  "Firepit + chill zone": 12,
+  "Social rooftop with veranda": undefined,
+  "Projector or outdoor cinema": 18,
+  "Outdoor playground": 20,
+  "Swimming pool": 18,
+};
+const SERVICE_MAX_UNITS: Record<string, number | undefined> = {
+  "Large room": 5,
+  "Large full bathroom": 5,
+  "Large social bathroom (half bath)": 3,
+  "Parking": 5,
+  "Laundry and storage room": 2,
+  // ... puedes agregar más si lo deseas ...
+};
 
 export default function DisenaPage() {
   const { t, language } = useLanguage()
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+  const router = useRouter();
 
-  // Scroll al inicio cuando se carga la página
-  useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [])
+  // Estado para datos dinámicos
+  const [categories, setCategories] = useState<Category[]>([])
+  const [services, setServices] = useState<Service[]>([])
+  const [config, setConfig] = useState<ConfigItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
 
-  // Estado para la navegación entre pestañas
-  const [activeTab, setActiveTab] = useState("basics")
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, DesignOption[]>>({})
+  // Estado para selección
+  const [activeTab, setActiveTab] = useState<string>("")
+  const [selectedOptions, setSelectedOptions] = useState<Record<number, any[]>>({})
   const [showQuote, setShowQuote] = useState(false)
   const [currentMainImage, setCurrentMainImage] = useState<string>("/images/u2-logo.png")
+  // Estado para el área total
+  const [areaTotal, setAreaTotal] = useState<number>(0)
+  // Estado para mostrar alerta de área insuficiente al intentar cotizar
+  const [showAreaAlert, setShowAreaAlert] = useState(false)
+  // Estado para mostrar alerta de área excedida al intentar cotizar
+  const [showAreaExceededAlert, setShowAreaExceededAlert] = useState(false)
 
-  // Obtener categorías dinámicamente
-  const [designCategories, setDesignCategories] = useState(getDesignCategories())
-  const [basicCategories, setBasicCategories] = useState(getBasicCategories())
-  const [selectedBasics, setSelectedBasics] = useState<Record<string, number>>({
-    floors: 1,
-    rooms: 1,
-    bathrooms: 1,
-    parking: 0,
-  })
-
-  // Refrescar categorías cuando se monta el componente
+  // Cargar datos desde la API
   useEffect(() => {
-    setDesignCategories(getDesignCategories())
-    setBasicCategories(getBasicCategories())
+    setLoading(true)
+    Promise.all([
+      axios.get(`${API_URL}/categorias/`),
+      axios.get(`${API_URL}/servicios/`),
+      axios.get(`${API_URL}/configuracion/`)
+    ])
+      .then(([catRes, servRes, confRes]) => {
+        setCategories(catRes.data as Category[])
+        setServices(servRes.data as Service[])
+        setConfig(confRes.data as ConfigItem[])
+        setActiveTab((catRes.data as Category[])[0]?.id?.toString() || "")
+      })
+      .catch((err) => {
+        setError("Error al cargar datos de diseño")
+      })
+      .finally(() => setLoading(false))
   }, [])
 
-  // Función para manejar selección de opciones de diseño
-  const handleOptionSelect = (categoryId: string, option: DesignOption) => {
-    const category = designCategories.find((c) => c.id === categoryId)
-    if (!category) return
-
+  // Función para manejar selección de servicios
+  const handleOptionSelect = (categoryId: number, service: any) => {
     setSelectedOptions((prev) => {
       const current = prev[categoryId] || []
-
-      if (category.allowMultiple) {
-        const exists = current.find((o) => o.id === option.id)
+      const exists = current.find((o: any) => o.id === service.id)
+      let newOptions
         if (exists) {
-          const newOptions = { ...prev, [categoryId]: current.filter((o) => o.id !== option.id) }
-          updateMainImage(newOptions)
-          return newOptions
-        } else {
-          const newOptions = { ...prev, [categoryId]: [...current, option] }
-          updateMainImage(newOptions)
-          return newOptions
-        }
+        newOptions = { ...prev, [categoryId]: current.filter((o: any) => o.id !== service.id) }
       } else {
-        const newOptions = { ...prev, [categoryId]: [option] }
-        updateMainImage(newOptions)
-        return newOptions
+        newOptions = { ...prev, [categoryId]: [...current, service] }
       }
+      updateMainImage(newOptions)
+      return newOptions
     })
   }
 
-  // Función para manejar selección de categorías básicas
-  const handleBasicSelect = (categoryId: string, quantity: number) => {
-    setSelectedBasics((prev) => ({
-      ...prev,
-      [categoryId]: quantity,
-    }))
-
-    const category = basicCategories.find((c) => c.id === categoryId)
-    if (category && category.image && quantity > 0) {
-      setCurrentMainImage(category.image)
-    }
-  }
-
-  // Función para actualizar la imagen principal según las selecciones
-  const updateMainImage = (options: Record<string, DesignOption[]>) => {
-    let latestImageOption: DesignOption | null = null
-
-    const priorityCategories = [
-      "additions",
-      "family",
-      "hobbies",
-      "sustainability",
-      "productivity",
-      "interior-design",
-      "s2-systems",
-    ]
-
-    for (const categoryId of priorityCategories) {
-      const categoryOptions = options[categoryId] || []
-      if (categoryOptions.length > 0) {
-        const lastOption = categoryOptions[categoryOptions.length - 1]
-        if (lastOption.image && lastOption.image !== "/placeholder.svg?height=100&width=100") {
-          latestImageOption = lastOption
-          break
-        }
-      }
-    }
-
-    if (latestImageOption && latestImageOption.image) {
-      setCurrentMainImage(latestImageOption.image)
-    } else {
+  // Actualizar imagen principal (puedes mejorar esto si tienes imágenes en los servicios)
+  const updateMainImage = (options: Record<number, any[]>) => {
       setCurrentMainImage("/images/u2-logo.png")
-    }
   }
 
-  // Calcular precio total del diseño
+  // Calcular precio total
   const calculateTotal = () => {
-    let total = BASE_PRICE
-
-    basicCategories.forEach((category) => {
-      const quantity = selectedBasics[category.id] || 0
-      total += quantity * category.pricePerUnit
-    })
-
-    Object.values(selectedOptions).forEach((options) => {
-      options.forEach((option) => {
-        total += option.price
+    let total = 0
+    Object.values(selectedOptions).forEach((options: any) => {
+      options.forEach((option: any) => {
+        total += option.price_min_usd || 0
       })
     })
     return total
   }
 
-  // Obtener opciones seleccionadas para una categoría específica
-  const getSelectedForCategory = (categoryId: string) => {
-    return selectedOptions[categoryId] || []
+  // Calcular área ocupada
+  const calculateAreaUsed = () => {
+    let total = 0
+    Object.values(selectedOptions).forEach((options: any) => {
+      options.forEach((option: any) => {
+        const area = SERVICE_AREA_MAX[option.name_en] || 0
+        total += area
+      })
+    })
+    return total
   }
 
-  // Verificar si una opción específica está seleccionada
-  const isOptionSelected = (categoryId: string, optionId: string) => {
-    const selected = getSelectedForCategory(categoryId)
-    return selected.some((option) => option.id === optionId)
-  }
+  // Calcular porcentaje de área ocupada
+  const areaUsed = calculateAreaUsed()
+  const areaPercent = areaTotal > 0 ? Math.round((areaUsed / areaTotal) * 100) : 0
+  const areaMissing = areaTotal > 0 ? Math.max(areaTotal - areaUsed, 0) : 0
 
-  // Pestañas de navegación con traducciones
-  const tabs = [
-    { id: "basics", name: t("basics") || "Basics" },
-    { id: "additions", name: t("additions") || "Additions" },
-    { id: "family", name: t("family") || "Family" },
-    { id: "sustainability", name: t("sustainability") || "Sustainability" },
-    { id: "productivity", name: t("productivity") || "Productivity" },
-    { id: "hobbies", name: t("hobbies") || "Hobbies" },
-    { id: "interior-design", name: t("interiorDesign") || "Interior Design" },
-    { id: "s2-systems", name: t("s2Systems") || "S2 Systems" },
-    { id: "get-quote", name: t("getYourQuote") || "Get Your Quote" },
-  ]
+  // Sugerencias de servicios que caben en el área faltante
+  const serviceSuggestions = Object.entries(SERVICE_AREA_MAX)
+    .filter(([name, area]) => area && areaMissing >= area)
+    .map(([name, area]) => {
+      // Buscar el servicio en la lista para obtener el nombre en español
+      const service = services.find(s => s.name_en === name)
+      return service ? `${service.name_es} (${service.name_en}, ${area} m²)` : `${name} (${area} m²)`
+    })
+
+  // Renderizado
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Cargando datos de diseño...</div>
+  }
+  if (error) {
+    return <div className="min-h-screen flex items-center justify-center text-red-600">{error}</div>
+  }
 
   // Pantalla de cotización final con Cal.com integrado
-  if (showQuote || activeTab === "get-quote") {
+  if (showQuote) {
     return (
       <div className="min-h-screen bg-white neutra-font">
         <Header currentPage="disena" />
@@ -203,30 +257,25 @@ export default function DisenaPage() {
                 </div>
                 {/* Desglose de costos por categoría */}
                 <div className="space-y-4 mb-8 text-left">
-                  {Object.entries(selectedOptions).map(([categoryId, options]) => {
+                  {Object.entries(selectedOptions).map(([categoryId, options]: any) => {
                     if (options.length === 0) return null
-                    const category = designCategories.find((c) => c.id === categoryId)
-                    const categoryTotal = options.reduce((sum, opt) => sum + opt.price, 0)
+                    const category = categories.find((c) => c.id.toString() === categoryId)
+                    const categoryTotal = options.reduce((sum: number, opt: any) => sum + (opt.price_min_usd || 0), 0)
                     return (
                       <div key={categoryId} className="border-b pb-2">
                         <div className="flex justify-between items-center">
                           <h4 className="neutra-font-bold text-blue-600 capitalize">{category?.name}</h4>
                           <span className="neutra-font-bold">${categoryTotal}</span>
                         </div>
-                        {options.map((option) => (
+                        {options.map((option: any) => (
                           <div key={option.id} className="flex justify-between text-sm text-gray-600 ml-4">
-                            <span className="neutra-font">{option.name}</span>
-                            <span className="neutra-font">${option.price}</span>
+                            <span className="neutra-font">{language === "es" ? option.name_es : option.name_en}</span>
+                            <span className="neutra-font">${option.price_min_usd || 0}</span>
                           </div>
                         ))}
                       </div>
                     )
                   })}
-                  {/* Precio base */}
-                  <div className="flex justify-between text-sm text-gray-600">
-                    <span className="neutra-font-bold text-blue-600">{t("basics") || "Básicos"}</span>
-                    <span className="neutra-font">${BASE_PRICE}</span>
-                  </div>
                 </div>
                 {/* Precio total */}
                 <div className="text-center mb-8">
@@ -237,11 +286,24 @@ export default function DisenaPage() {
                     {t("readyToStart") || "¿Listo para comenzar tu proyecto?"}
                   </p>
                 </div>
+                {/* Input para el correo Gmail en la cotización */}
+                <div className="mt-6 mb-6 max-w-md mx-auto">
+                  <label htmlFor="cotizacionEmail" className="block text-blue-700 font-bold mb-2">Correo Gmail para recibir la factura:</label>
+                  <input
+                    id="cotizacionEmail"
+                    type="email"
+                    placeholder="tucorreo@gmail.com"
+                    className="w-full border border-blue-200 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
                 {/* Botones de navegación */}
                 <div className="flex gap-4">
-                  <Button onClick={() => setShowQuote(false)} variant="outline" className="flex-1 neutra-font">
+                  <Button onClick={() => {
+                    setShowQuote(false);
+                    router.push('/');
+                  }} variant="outline" className="flex-1 neutra-font">
                     <ArrowLeft className="w-4 h-4 mr-2" />
-                    {t("back")}
+                    {t("back") || "Atrás"}
                   </Button>
                   <Link href="/contacto" className="flex-1">
                     <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white neutra-font-black shadow-xl text-lg">
@@ -268,11 +330,6 @@ export default function DisenaPage() {
                 <CalEmbed
                   calLink="jara-u2group-lrzdfm/consulta-arquitectura?overlayCalendar=true"
                   showDemo={false}
-                  config={{
-                    theme: "light",
-                    hideEventTypeDetails: false,
-                    layout: "month_view",
-                  }}
                 />
               </div>
             </div>
@@ -284,8 +341,6 @@ export default function DisenaPage() {
   }
 
   // Pantalla principal de configuración
-  const currentCategory = designCategories.find((c) => c.id === activeTab)
-
   return (
     <div className="min-h-screen bg-white neutra-font">
       <Header currentPage="disena" />
@@ -302,18 +357,15 @@ export default function DisenaPage() {
       <div className="bg-white border-b">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap gap-2 py-4 justify-center">
-            {tabs.map((tab) => (
+            {categories.map((cat) => (
               <button
-                key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id)
-                  if (tab.id === "get-quote") setShowQuote(true)
-                }}
+                key={cat.id}
+                onClick={() => setActiveTab(cat.id.toString())}
                 className={`px-4 py-2 rounded-lg text-lg neutra-font transition-colors shadow-md mx-1 mb-2 ${
-                  activeTab === tab.id ? "bg-blue-600 text-white scale-105" : "bg-white border border-blue-200 text-blue-700 hover:bg-blue-50"
+                  activeTab === cat.id.toString() ? "bg-blue-600 text-white scale-105" : "bg-white border border-blue-200 text-blue-700 hover:bg-blue-50"
                 }`}
               >
-                {tab.name}
+                <span className="mr-2">{cat.emoji}</span> {cat.name}
               </button>
             ))}
           </div>
@@ -323,7 +375,20 @@ export default function DisenaPage() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Imagen principal del diseño - DINÁMICA */}
           <div className="lg:col-span-2">
-            <div className="relative aspect-video rounded-2xl overflow-hidden mb-8 bg-white border-2 border-blue-100 shadow-lg">
+            {/* Input para el área total */}
+            <div className="mb-4 flex items-center gap-4">
+              <label htmlFor="areaTotal" className="font-bold text-blue-700">Área total de la casa (m²):</label>
+              <input
+                id="areaTotal"
+                type="number"
+                min={1}
+                className="border border-blue-200 rounded px-3 py-1 w-32 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={areaTotal > 0 ? areaTotal : ""}
+                onChange={e => setAreaTotal(Number(e.target.value))}
+                placeholder="Ej: 120"
+              />
+            </div>
+            <div className="relative h-[500px] rounded-2xl overflow-hidden mb-8 bg-white border-2 border-blue-100 shadow-lg">
               <Image
                 src={currentMainImage || "/placeholder.svg"}
                 alt="Design Preview"
@@ -336,91 +401,62 @@ export default function DisenaPage() {
                 {currentMainImage === "/images/u2-logo.png" ? "Vista por defecto" : "Vista personalizada"}
               </div>
             </div>
+            {/* Barra de progreso de selección de categorías */}
+            <div className="flex items-center gap-2 mb-2 px-2">
+              <div className="text-2xl">🔥</div>
+              <div className="flex-1 h-4 bg-blue-100 rounded-full overflow-hidden relative">
+                <div className="h-4 bg-gradient-to-r from-blue-500 to-orange-400 rounded-full transition-all duration-500" style={{ width: `${areaPercent}%` }} />
+                <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-blue-700">
+                  {areaPercent}% completado
+                </div>
+              </div>
+            </div>
+            {/* Alerta visual si falta área */}
+            {areaTotal > 0 && areaUsed < areaTotal && (
+              <div className="text-red-600 font-bold text-sm mb-4 px-2">Te falta llenar {areaMissing} m² del área total</div>
+            )}
+            {/* Alerta visual si excede el área total */}
+            {areaTotal > 0 && areaUsed > areaTotal && (
+              <div className="text-red-600 font-bold text-sm mb-4 px-2">Has excedido el área total disponible. Reduce la selección o ajusta el área.</div>
+            )}
           </div>
           {/* Panel de configuración lateral con altura fija y scroll */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg sticky top-8 flex flex-col border-2 border-blue-100" style={{ height: "555px" }}>
+            <div className="bg-white rounded-2xl shadow-lg flex flex-col border-2 border-blue-100 h-[630px] overflow-y-auto">
               {/* Header del panel */}
               <div className="p-4 border-b flex-shrink-0">
                 <h2 className="text-xl neutra-font-bold text-blue-600">
-                  {t("chooseThe") || "Elige los"} {language === "es" ? currentCategory?.nameEs : currentCategory?.nameEn}
+                  {t("chooseThe") || "Elige los"} {categories.find((c) => c.id.toString() === activeTab)?.name}
                 </h2>
               </div>
               {/* Contenido scrolleable */}
               <div className="flex-1 overflow-y-auto p-4">
-                {currentCategory && (
                   <div className="space-y-4">
-                    {/* Categoría especial "basics" con opciones agrupadas */}
-                    {activeTab === "basics" ? (
-                      <>
-                        {basicCategories.map((category) => (
-                          <div key={category.id} className="mb-6">
-                            <h3 className="text-sm neutra-font-bold text-gray-900 mb-3 flex items-center">
-                              {category.image && (
-                                <Image
-                                  src={category.image || "/placeholder.svg"}
-                                  alt={category.nameEs}
-                                  width={30}
-                                  height={30}
-                                  className="mr-2 rounded"
-                                />
-                              )}
-                              {category.nameEs}
-                            </h3>
-                            <div className="grid grid-cols-5 gap-2">
-                              {Array.from({ length: category.maxQuantity - category.minQuantity + 1 }, (_, i) => {
-                                const quantity = category.minQuantity + i
+                  {services.filter((s) => s.category_id.toString() === activeTab).map((service) => {
+                    // Calcular cantidad seleccionada de este servicio
+                    const selectedCount = (selectedOptions[service.category_id] || []).filter((o: any) => o.id === service.id).length
+                    const maxUnits = SERVICE_MAX_UNITS[service.name_en];
                                 return (
-                                  <button
-                                    key={quantity}
-                                    onClick={() => handleBasicSelect(category.id, quantity)}
-                                    className={`px-2 py-2 rounded-lg border-2 transition-colors neutra-font text-sm ${
-                                      selectedBasics[category.id] === quantity
-                                        ? "border-blue-600 bg-blue-50 text-blue-600"
-                                        : "border-gray-300 hover:border-gray-400"
-                                    }`}
-                                  >
-                                    {quantity}
-                                  </button>
-                                )
-                              })}
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1 neutra-font">
-                              {t("price") || "Precio"}: ${category.pricePerUnit} USD por unidad
-                            </p>
-                          </div>
-                        ))}
-                      </>
-                    ) : (
-                      /* Otras categorías con opciones estándar */
-                      <div className="space-y-3">
-                        {currentCategory.options.map((option) => (
                           <Card
-                            key={option.id}
-                            className={`p-3 cursor-pointer transition-all hover:shadow-md ${
-                              isOptionSelected(currentCategory.id, option.id)
+                        key={service.id}
+                          className={`p-3 cursor-pointer transition-all hover:shadow-md ${
+                          selectedOptions[service.category_id]?.some((o: any) => o.id === service.id)
                                 ? "border-blue-600 bg-blue-50"
                                 : "border-gray-200 hover:border-gray-300"
                             }`}
-                            onClick={() => handleOptionSelect(currentCategory.id, option)}
+                        onClick={() => handleOptionSelect(service.category_id, service)}
                           >
                             <div className="flex items-center gap-3">
-                              {/* Imagen */}
-                              {option.image && (
-                                <Image
-                                  src={option.image || "/placeholder.svg"}
-                                  alt={language === "es" && option.nameEs ? option.nameEs : option.nameEn || option.name}
-                                  width={40}
-                                  height={40}
-                                  className="rounded object-cover"
-                                />
-                              )}
-                              <div className="flex-1">
-                                <h4 className="neutra-font-bold text-gray-900 text-sm">{language === "es" && option.nameEs ? option.nameEs : option.nameEn || option.name}</h4>
-                                <p className="text-xs text-blue-600 neutra-font">${option.price} USD</p>
+                          <span className="text-2xl">{categories.find((c) => c.id === service.category_id)?.emoji || ''}</span>
+                          <div className="flex-1">
+                            <h4 className="neutra-font-bold text-gray-900 text-sm">{language === "es" ? service.name_es : service.name_en}</h4>
+                            <p className="text-xs text-blue-600 neutra-font">${service.price_min_usd || 0} USD</p>
+                            {SERVICE_AREA_MAX[service.name_en] && (
+                              <p className="text-xs text-gray-500">Área: {SERVICE_AREA_MAX[service.name_en]} m²</p>
+                            )}
                               </div>
                               {/* Checkmark para opciones seleccionadas */}
-                              {isOptionSelected(currentCategory.id, option.id) && (
+                          {selectedOptions[service.category_id]?.some((o: any) => o.id === service.id) && (
                                 <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
                                   <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                                     <path
@@ -432,12 +468,14 @@ export default function DisenaPage() {
                                 </div>
                               )}
                             </div>
+                        {/* Alerta visual si excede el máximo */}
+                        {maxUnits && selectedCount > maxUnits && (
+                          <div className="text-red-600 font-bold text-xs mt-2">Excediste el máximo permitido para este servicio ({maxUnits})</div>
+                        )}
                           </Card>
-                        ))}
-                      </div>
-                    )}
+                    );
+                  })}
                   </div>
-                )}
               </div>
               {/* Panel de precio total - FIJO en la parte inferior */}
               <div className="border-t p-4 bg-white rounded-b-lg flex-shrink-0">
@@ -450,16 +488,90 @@ export default function DisenaPage() {
                 {/* Botones de acción */}
                 <div className="space-y-2">
                   <Button
-                    onClick={() => setShowQuote(true)}
+                    onClick={() => {
+                      if (areaTotal > 0 && areaUsed < areaTotal) {
+                        setShowAreaAlert(true);
+                        setShowAreaExceededAlert(false);
+                        return;
+                      }
+                      if (areaTotal > 0 && areaUsed > areaTotal) {
+                        setShowAreaAlert(false);
+                        setShowAreaExceededAlert(true);
+                        return;
+                      }
+                      setShowAreaAlert(false);
+                      setShowAreaExceededAlert(false);
+                      setShowQuote(true);
+                    }}
                     className="w-full bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white py-2 neutra-font-black text-sm shadow-xl"
                   >
                     {t("getYourQuote") || "Obtén tu Cotización"}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 neutra-font-bold text-sm">
-                    {t("next") || "Siguiente"}
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
+                  {/* Modal de alerta visual si falta área, solo al intentar cotizar */}
+                  {showAreaAlert && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full relative animate-fade-in">
+                        <button
+                          className="absolute top-3 right-3 text-gray-400 hover:text-blue-600 text-2xl font-bold"
+                          onClick={() => setShowAreaAlert(false)}
+                          aria-label="Cerrar"
+                        >
+                          ×
+                        </button>
+                        <div className="text-red-600 font-bold text-lg mb-2 text-center">
+                          Te falta llenar <b>{areaMissing} m²</b> del área total para poder cotizar.
+                        </div>
+                        {serviceSuggestions.length > 0 ? (
+                          <div className="mt-4">
+                            <div className="text-blue-700 font-semibold mb-2 text-center">Puedes agregar alguno de estos espacios:</div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[350px] overflow-y-auto">
+                              {Object.entries(SERVICE_AREA_MAX)
+                                .filter(([name, area]) => area && areaMissing >= area)
+                                .map(([name, area], i) => {
+                                  const service = services.find(s => s.name_en === name)
+                                  return (
+                                    <div key={i} className="flex items-center gap-3 bg-blue-50 rounded p-2">
+                                      {service?.image && (
+                                        <Image src={service.image} alt={service.name_es} width={40} height={40} className="rounded object-cover" />
+                                      )}
+                                      <div>
+                                        <div className="font-bold text-gray-800 text-sm">{service ? service.name_es : name}</div>
+                                        <div className="text-xs text-gray-500">{service ? service.name_en : name}</div>
+                                        <div className="text-xs text-blue-700">Área: {area} m²</div>
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="mt-4 text-center text-blue-700">O reduce el área total para ajustarla al área ocupada.</div>
+                        )}
+                        <div className="flex flex-col sm:flex-row gap-3 mt-6 justify-center">
+                          <button
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition font-bold"
+                            onClick={() => {
+                              setAreaTotal(areaUsed);
+                              setShowAreaAlert(false);
+                            }}
+                          >
+                            Reducir área total a {areaUsed} m²
+                          </button>
+                          <button
+                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition font-bold"
+                            onClick={() => setShowAreaAlert(false)}
+                          >
+                            Cerrar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {/* Alerta visual si excede el área, solo al intentar cotizar */}
+                  {showAreaExceededAlert && (
+                    <div className="text-red-600 font-bold text-sm mt-2">Has excedido el área total disponible. Reduce la selección o ajusta el área para poder cotizar.</div>
+                  )}
                 </div>
               </div>
             </div>

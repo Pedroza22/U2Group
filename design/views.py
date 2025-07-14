@@ -1,9 +1,34 @@
+from .models import DesignEntry, Category, Service, GeneralConfig
+from .serializers import DesignEntrySerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import DesignEntry
-from .serializers import DesignEntrySerializer
 from .services import calcular_datos_diseño
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from .serializers import ServiceSerializer
+
+class CategoryListView(APIView):
+    def get(self, request):
+        categories = Category.objects.all().values('id', 'name', 'emoji')
+        return Response(list(categories))
+
+class ServiceListView(APIView):
+    def get(self, request):
+        category_id = request.query_params.get('category_id')
+        qs = Service.objects.all()
+        if category_id:
+            qs = qs.filter(category_id=category_id)
+        services = qs.values('id', 'category_id', 'name_en', 'name_es', 'price_min_usd', 'area_max_m2', 'max_units', 'notes')
+        return Response(list(services))
+
+class GeneralConfigListView(APIView):
+    def get(self, request):
+        configs = GeneralConfig.objects.all().values('key', 'value')
+        return Response(list(configs))
+
+class ServiceDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = Service.objects.all()
+    serializer_class = ServiceSerializer
 
 class DesignEntryView(APIView):
     def post(self, request):

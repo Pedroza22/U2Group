@@ -46,12 +46,14 @@ import {
   updateBlog,
   deleteBlog,
 } from "@/lib/api-blogs";
+import { useToast } from "@/hooks/use-toast";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/admin";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 export default function AdminDashboardPage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<"projects" | "blogs" | "design-options" | "settings">("projects")
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState<"projects" | "blogs" | "design-options" | "services" | "settings">("projects")
   const [projects, setProjects] = useState<AdminProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingProject, setEditingProject] = useState<AdminProject | null>(null);
@@ -68,6 +70,14 @@ export default function AdminDashboardPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("")
   const [editingOption, setEditingOption] = useState<AdminDesignOption | null>(null)
   const [showOptionEditor, setShowOptionEditor] = useState(false)
+
+  // Estado para servicios de diseño
+  const [services, setServices] = useState<any[]>([]);
+  const [editingService, setEditingService] = useState<any | null>(null);
+  const [showServiceEditor, setShowServiceEditor] = useState(false);
+
+  // Estado para categorías de servicios
+  const [categories, setCategories] = useState<any[]>([]);
 
   // --- LÓGICA DE PROYECTOS CON API REAL ---
   // Corrección de tipado y referencias obsoletas
@@ -94,6 +104,26 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Cargar servicios desde el backend
+  const loadServices = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/servicios/`);
+      setServices(res.data as any[]);
+    } catch (error) {
+      // Manejo de error opcional
+    }
+  };
+
+  // Cargar categorías desde el backend
+  const loadCategories = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/categorias/`);
+      setCategories(res.data as any[]);
+    } catch (error) {
+      // Manejo de error opcional
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("u2-admin-token");
     if (!token) {
@@ -102,6 +132,8 @@ export default function AdminDashboardPage() {
     }
     loadProjects();
     loadBlogs();
+    loadServices();
+    loadCategories();
   }, [router]);
 
   const handleDeleteProject = async (id: number) => {
@@ -279,6 +311,65 @@ export default function AdminDashboardPage() {
     router.push(`/blog?category=${formData.category}`);
   };
 
+  // CRUD de servicios
+  const handleEditService = (service: any) => {
+    setEditingService(service);
+    setShowServiceEditor(true);
+  };
+  const handleNewService = () => {
+    setEditingService(null);
+    setShowServiceEditor(true);
+  };
+  const handleDeleteService = async (id: number) => {
+    if (confirm("¿Estás seguro de que quieres eliminar este servicio?")) {
+      await axios.delete(`${API_URL}/servicios/${id}/`);
+      await loadServices();
+    }
+  };
+  const handleSaveService = async (formData: any) => {
+    console.log("Intentando guardar servicio:", formData);
+    try {
+      let dataToSend: any = formData;
+      let config = {};
+      // Agregado para depuración:
+      console.log("Valor de formData.image antes de enviar:", formData.image);
+      if (formData.image instanceof File) {
+        const fd = new FormData();
+        Object.keys(formData).forEach(key => {
+          if (formData[key] !== undefined && formData[key] !== null) {
+            if (key === 'image') {
+              if (formData.image instanceof File) {
+                fd.append('image', formData.image);
+              }
+              // Si es string (URL), no lo agregues
+            } else {
+              fd.append(key, formData[key]);
+            }
+          }
+        });
+        dataToSend = fd;
+        config = { headers: { 'Content-Type': 'multipart/form-data' } };
+      }
+      if (formData.id) {
+        await axios.patch(`${API_URL}/servicios/${formData.id}/`, dataToSend, config);
+        toast({ title: "Servicio actualizado", description: "El servicio se actualizó correctamente." });
+      } else {
+        await axios.post(`${API_URL}/servicios/`, dataToSend, config);
+        toast({ title: "Servicio creado", description: "El servicio se creó correctamente." });
+      }
+      setShowServiceEditor(false);
+      setEditingService(null);
+      await loadServices();
+    } catch (error) {
+      console.error("Error al guardar servicio:", error);
+      if (typeof error === "object" && error !== null && 'response' in error) {
+        // @ts-ignore
+        console.error("Respuesta del backend:", error.response?.data);
+      }
+      toast({ title: "Error", description: "No se pudo guardar el servicio." });
+    }
+  };
+
   // 2. Definir handleLogout (se usaba en el header)
   const handleLogout = () => {
     localStorage.removeItem("u2-admin-token");
@@ -362,6 +453,14 @@ export default function AdminDashboardPage() {
           >
             <Palette className="w-4 h-4 mr-2" />
             Opciones de Diseño ({designOptions.length})
+          </Button>
+          <Button
+            onClick={() => setActiveTab("services")}
+            variant={activeTab === "services" ? "default" : "outline"}
+            className="neutra-font"
+          >
+            <FileText className="w-4 h-4 mr-2" />
+            Servicios de Diseño ({services.length})
           </Button>
           <Button
             onClick={() => setActiveTab("settings")}
@@ -468,72 +567,72 @@ export default function AdminDashboardPage() {
                   const summary = blog.excerpt || blog.summary || (typeof blog.content === "object" && blog.content?.intro) || "";
                   const readTime = blog.readTime || blog.read_time || "";
                   return (
-                    <Card key={blog.id} className="p-6 hover:shadow-lg transition-shadow">
+                <Card key={blog.id} className="p-6 hover:shadow-lg transition-shadow">
                       <div className="flex gap-6 flex-col md:flex-row">
                         <div className="relative w-32 h-24 rounded-lg overflow-hidden flex-shrink-0 mb-4 md:mb-0">
-                          <Image
+                      <Image
                             src={mainImage}
-                            alt={blog.title}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
+                        alt={blog.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
 
                         <div className="flex-1 flex flex-col justify-between">
                           <div>
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs neutra-font">
-                                {blog.category}
-                              </span>
-                              {blog.featured && <Star className="w-4 h-4 text-yellow-500" />}
-                            </div>
-                            <h3 className="text-lg neutra-font-bold text-gray-900 mb-2">{blog.title}</h3>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs neutra-font">
+                          {blog.category}
+                        </span>
+                        {blog.featured && <Star className="w-4 h-4 text-yellow-500" />}
+                      </div>
+                      <h3 className="text-lg neutra-font-bold text-gray-900 mb-2">{blog.title}</h3>
                             <p className="text-gray-600 neutra-font text-sm mb-2 line-clamp-2">{summary}</p>
                             <div className="flex items-center gap-4 text-sm text-gray-500 neutra-font flex-wrap">
-                              <span className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                {blog.date}
-                              </span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {blog.date}
+                        </span>
                               <span>{readTime}</span>
                               <span>Por {authorName}</span>
-                            </div>
+                      </div>
                             {tags.length > 0 && (
                               <div className="mt-2 flex flex-wrap gap-2">
                                 {tags.map((tag: string, idx: number) => (
                                   <span key={idx} className="bg-gray-200 text-xs px-2 py-1 rounded neutra-font">{tag}</span>
                                 ))}
-                              </div>
+                    </div>
                             )}
                           </div>
                           <div className="flex flex-col md:flex-row gap-2 mt-4 md:mt-0">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="neutra-font bg-transparent"
-                              onClick={() => router.push(`/blog/${blog.id}`)}
-                            >
-                              <Eye className="w-4 h-4 mr-1" />
-                              Ver
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="neutra-font bg-transparent"
-                              onClick={() => handleEditBlog(blog)}
-                            >
-                              <Edit className="w-4 h-4 mr-1" />
-                              Editar
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleDeleteBlog(blog.id)}
-                              className="text-red-600 border-red-200 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="neutra-font bg-transparent"
+                        onClick={() => router.push(`/blog/${blog.id}`)}
+                      >
+                        <Eye className="w-4 h-4 mr-1" />
+                        Ver
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="neutra-font bg-transparent"
+                        onClick={() => handleEditBlog(blog)}
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        Editar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDeleteBlog(blog.id)}
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                       </div>
                       {/* Galería de imágenes adicionales */}
                       {extraImages.length > 0 && (
@@ -683,6 +782,167 @@ export default function AdminDashboardPage() {
                 </Card>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* CONTENIDO DE SERVICIOS DE DISEÑO */}
+        {activeTab === "services" && (
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl neutra-font-bold text-gray-900">Gestión de Servicios de Diseño</h2>
+              <Button onClick={handleNewService} variant="default"><Plus className="w-4 h-4 mr-2" />Nuevo Servicio</Button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white border border-gray-200 rounded">
+                <thead>
+                  <tr>
+                    <th className="px-4 py-2 border-b">Imagen</th>
+                    <th className="px-4 py-2 border-b">Nombre (ES)</th>
+                    <th className="px-4 py-2 border-b">Nombre (EN)</th>
+                    <th className="px-4 py-2 border-b">Precio</th>
+                    <th className="px-4 py-2 border-b">Área máx</th>
+                    <th className="px-4 py-2 border-b">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {services.map((service) => (
+                    <tr key={service.id}>
+                      <td className="px-4 py-2 border-b">
+                        {service.image ? (
+                          <Image 
+                            src={
+                              service.image.startsWith('http')
+                                ? service.image
+                                : `http://localhost:8000/media/${service.image.startsWith('services/') ? service.image : 'services/' + service.image}`
+                            }
+                            alt={service.name_es}
+                            width={40}
+                            height={40}
+                            className="rounded object-cover" 
+                          />
+                        ) : (
+                          <span className="text-gray-400">Sin imagen</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2 border-b">{service.name_es}</td>
+                      <td className="px-4 py-2 border-b">{service.name_en}</td>
+                      <td className="px-4 py-2 border-b">${service.price_min_usd || 0}</td>
+                      <td className="px-4 py-2 border-b">{service.area_max_m2 ? `${service.area_max_m2} m²` : '-'}</td>
+                      <td className="px-4 py-2 border-b">
+                        <Button size="sm" variant="outline" onClick={() => handleEditService(service)}><Edit className="w-4 h-4" /></Button>
+                        <Button size="sm" variant="destructive" onClick={() => handleDeleteService(service.id)} className="ml-2"><Trash2 className="w-4 h-4" /></Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {/* Aquí puedes agregar el modal/editor para crear/editar servicios */}
+            {showServiceEditor && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full relative">
+                  <button className="absolute top-3 right-3 text-gray-400 hover:text-blue-600 text-2xl font-bold" onClick={() => setShowServiceEditor(false)} aria-label="Cerrar">×</button>
+                  <h3 className="text-xl neutra-font-bold text-gray-900 mb-4">{editingService ? "Editar Servicio" : "Nuevo Servicio"}</h3>
+                  {/* Aquí va el formulario de edición/creación de servicio */}
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    console.log("Submit formulario servicio", editingService);
+                    handleSaveService(editingService);
+                  }} className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Nombre (Español)</label>
+                        <input
+                          type="text"
+                          name="nameEs"
+                          value={editingService?.name_es || ""}
+                          onChange={(e) => setEditingService({ ...editingService, name_es: e.target.value })}
+                          required
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 neutra-font"
+                          placeholder="Ej: Puerta"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Nombre (Inglés)</label>
+                        <input
+                          type="text"
+                          name="nameEn"
+                          value={editingService?.name_en || ""}
+                          onChange={(e) => setEditingService({ ...editingService, name_en: e.target.value })}
+                          required
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 neutra-font"
+                          placeholder="Ej: Door"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Precio (USD)</label>
+                        <input
+                          type="number"
+                          name="price"
+                          value={editingService?.price_min_usd || ""}
+                          onChange={(e) => setEditingService({ ...editingService, price_min_usd: Number(e.target.value) })}
+                          min="0"
+                          required
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 neutra-font"
+                          placeholder="0"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Área Máxima (m²)</label>
+                        <input
+                          type="number"
+                          name="areaMax"
+                          value={editingService?.area_max_m2 || ""}
+                          onChange={(e) => setEditingService({ ...editingService, area_max_m2: Number(e.target.value) })}
+                          min="0"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 neutra-font"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Categoría</label>
+                        <select
+                          name="category_id"
+                          value={editingService?.category_id || ""}
+                          onChange={e => setEditingService({ ...editingService, category_id: Number(e.target.value) })}
+                          required
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 neutra-font"
+                        >
+                          <option value="">Selecciona una categoría</option>
+                          {categories.map(cat => (
+                            <option key={cat.id} value={cat.id}>
+                              {cat.emoji ? `${cat.emoji} ` : ""}{cat.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Imagen</label>
+                        <ImageUploader
+                          value={editingService?.image || ""}
+                          onChange={(imageUrl) => setEditingService({ ...editingService, image: imageUrl })}
+                          label="Imagen del Servicio"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-4 pt-4">
+                      <Button type="button" variant="outline" onClick={() => setShowServiceEditor(false)} className="flex-1 neutra-font bg-transparent">
+                        Cancelar
+                      </Button>
+                      <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 neutra-font">
+                        {editingService ? "Actualizar" : "Crear"} Servicio
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
