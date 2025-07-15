@@ -123,6 +123,12 @@ export default function DisenaPage() {
   // Estado para mostrar alerta de área excedida al intentar cotizar
   const [showAreaExceededAlert, setShowAreaExceededAlert] = useState(false)
 
+  // Estado para el email y feedback
+  const [cotizacionEmail, setCotizacionEmail] = useState("");
+  const [enviandoFactura, setEnviandoFactura] = useState(false);
+  const [facturaEnviada, setFacturaEnviada] = useState(false);
+  const [errorEnvioFactura, setErrorEnvioFactura] = useState("");
+
   // Cargar datos desde la API
   useEffect(() => {
     setLoading(true)
@@ -307,7 +313,39 @@ export default function DisenaPage() {
                     type="email"
                     placeholder="tucorreo@gmail.com"
                     className="w-full border border-blue-200 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    value={cotizacionEmail}
+                    onChange={e => setCotizacionEmail(e.target.value)}
+                    disabled={enviandoFactura}
                   />
+                  <button
+                    className="mt-4 w-full bg-blue-600 text-white rounded px-4 py-2 font-bold hover:bg-blue-700 disabled:opacity-50"
+                    onClick={async () => {
+                      setEnviandoFactura(true);
+                      setFacturaEnviada(false);
+                      setErrorEnvioFactura("");
+                      try {
+                        // Construir productos a partir de los servicios seleccionados
+                        const productos = Object.values(selectedOptions).flat().map(s => ({
+                          name: s.name_es,
+                          price: s.price_min_usd || 0,
+                        }));
+                        await axios.post("http://localhost:8000/api/send-invoice/", {
+                          email: cotizacionEmail,
+                          products: productos,
+                        });
+                        setFacturaEnviada(true);
+                      } catch (err) {
+                        setErrorEnvioFactura("No se pudo enviar la factura. Verifica el correo o intenta de nuevo.");
+                      } finally {
+                        setEnviandoFactura(false);
+                      }
+                    }}
+                    disabled={enviandoFactura || !cotizacionEmail || Object.values(selectedOptions).flat().length === 0}
+                  >
+                    {enviandoFactura ? "Enviando..." : "Enviar factura"}
+                  </button>
+                  {facturaEnviada && <p className="text-green-600 mt-2">¡Factura enviada correctamente!</p>}
+                  {errorEnvioFactura && <p className="text-red-600 mt-2">{errorEnvioFactura}</p>}
                 </div>
                 {/* Botones de navegación */}
                 <div className="flex gap-4">

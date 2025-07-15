@@ -22,6 +22,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-3l6op#xiyozj!wm3nnt!y4^q8=w!b4&+1ignirz2gv*f4bt7j7'
 
+#Para lo de la factura
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 465
+EMAIL_USE_SSL = True
+EMAIL_USE_TLS = False
+EMAIL_HOST_USER = 'consutoriafacturacion@gmail.com'
+EMAIL_HOST_PASSWORD = 'qfyc phas mmnu zyur'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
