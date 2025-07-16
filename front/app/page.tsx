@@ -278,34 +278,34 @@ export default function HomePage() {
                   <div className="col-span-2 text-center py-10 text-gray-500">No hay blogs disponibles</div>
                 ) : (
                   blogs.map((post) => (
-                    <Card key={post.id} className="bg-white border-2 border-blue-100 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow">
-                      <div className="flex flex-col md:flex-row items-center">
-                        <div className="w-full md:w-1/3 flex items-center justify-center p-6">
+                  <Card key={post.id} className="bg-white border-2 border-blue-100 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow">
+                    <div className="flex flex-col md:flex-row items-center">
+                      <div className="w-full md:w-1/3 flex items-center justify-center p-6">
                           <Image src={post.image || (post.images && post.images[0]) || "/placeholder.svg"} alt={post.title} width={150} height={120} className="rounded-xl object-cover border border-blue-100" />
-                        </div>
-                        <div className="w-full md:w-2/3 p-6">
-                          <div className="mb-3">
-                            <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white">
-                              {categoryTranslationMap[post.category] || post.category}
-                            </span>
-                            <span className="text-gray-500 text-sm ml-2">
-                              • {post.date} • {post.read_time || post.readTime}
-                            </span>
-                          </div>
-                          <h3 className="font-bold text-gray-900 mb-4 text-lg leading-tight">{post.title}</h3>
-                          <Link href={`/blog/${post.id}`}>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent shadow-md"
-                            >
-                              {t("readArticle")}
-                              <ArrowRight className="w-4 h-4 ml-2" />
-                            </Button>
-                          </Link>
-                        </div>
                       </div>
-                    </Card>
+                      <div className="w-full md:w-2/3 p-6">
+                        <div className="mb-3">
+                          <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white">
+                            {categoryTranslationMap[post.category] || post.category}
+                          </span>
+                          <span className="text-gray-500 text-sm ml-2">
+                              • {post.date} • {post.read_time || post.readTime}
+                          </span>
+                        </div>
+                        <h3 className="font-bold text-gray-900 mb-4 text-lg leading-tight">{post.title}</h3>
+                        <Link href={`/blog/${post.id}`}>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white bg-transparent shadow-md"
+                          >
+                            {t("readArticle")}
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  </Card>
                   ))
                 )}
               </div>

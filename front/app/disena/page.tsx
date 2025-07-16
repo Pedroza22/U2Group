@@ -160,8 +160,8 @@ export default function DisenaPage() {
       } else {
         newOptions = { ...prev, [categoryId]: [...current, service] }
       }
-      updateMainImage(newOptions)
-      return newOptions
+        updateMainImage(newOptions)
+        return newOptions
     })
   }
 
@@ -407,16 +407,18 @@ export default function DisenaPage() {
       {/* Navegación de pestañas */}
       <div className="bg-white border-b">
         <div className="w-full px-2 md:container md:mx-auto md:px-4">
-          <div className="flex gap-2 py-4 overflow-x-auto flex-nowrap whitespace-nowrap scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent justify-center">
+          <div className="flex flex-wrap gap-2 py-4 justify-center">
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveTab(cat.id.toString())}
-                className={`px-4 py-2 rounded-lg text-lg neutra-font transition-colors shadow-md mx-1 mb-2 ${
-                  activeTab === cat.id.toString() ? "bg-blue-600 text-white scale-105" : "bg-white border border-blue-200 text-blue-700 hover:bg-blue-50"
+                className={`px-3 py-1 rounded-md text-sm neutra-font transition-colors shadow-sm ${
+                  activeTab === cat.id.toString()
+                    ? "bg-blue-600 text-white scale-100"
+                    : "bg-white border border-blue-200 text-blue-700 hover:bg-blue-50"
                 }`}
               >
-                <span className="mr-2">{cat.emoji}</span> {cat.name}
+                {cat.name}
               </button>
             ))}
           </div>
