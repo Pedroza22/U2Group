@@ -54,7 +54,7 @@ export default function NosotrosPage() {
       id: 1,
       title: t("weListen") || "We listen",
       description: t("weListenDescription") || "No tomamos decisiones hasta que tu visión esté clara.",
-      image: "",
+      image: "/animacion4.jpg",
     },
     {
       id: 2,
@@ -62,7 +62,7 @@ export default function NosotrosPage() {
       description:
         t("weCreateConceptDescription") ||
         "This is where the magic begins: we blend function, aesthetics, and emotion into a unique concept. Every detail comes from your real needs. No templates only purpose.",
-      image: "",
+      image: "/animacion3.png",
     },
     {
       id: 3,
@@ -70,7 +70,7 @@ export default function NosotrosPage() {
       description:
         t("youVisualize3DDescription") ||
         "With our hyper-realistic renders, you'll walk through and feel your home before a single brick is laid. That way, you make decisions with clarity and confidence.",
-      image: "",
+      image: "/animacion2.jpeg",
     },
     {
       id: 4,
@@ -78,7 +78,7 @@ export default function NosotrosPage() {
       description:
         t("weBuildWithYouDescription") ||
         "From plans to finishes, you're part of every step. We guide you, keep you informed, and walk with you. Your home isn't built alone it's built with you.",
-      image: "",
+      image: "/animacion1.png",
     },
   ]
 
@@ -233,25 +233,56 @@ export default function NosotrosPage() {
       <section className="w-full py-20 md:py-32 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-5xl md:text-7xl neutra-font-black text-blue-600 mb-12 text-center drop-shadow-md">{t("howWeDo")}</h2>
-            <div className="grid md:grid-cols-2 gap-16 items-center">
+            <h2 className="text-5xl md:text-7xl neutra-font-black text-blue-600 mb-12 text-center drop-shadow-md">
+              {t("howWeDo")}
+            </h2>
+            <div className="grid md:grid-cols-2 gap-12 items-center">
               {/* Imagen del paso actual */}
               <div className="relative">
                 <Image
-                  src={processSteps[currentStep - 1].image || "/placeholder.svg"}
+                  src={processSteps[currentStep - 1].image || "/animacion1.png"}
                   alt={processSteps[currentStep - 1].title}
                   width={600}
                   height={400}
                   className="rounded-2xl object-cover w-full h-[400px] border-2 border-blue-100 shadow-lg"
                 />
+
+                {/* Galería de miniaturas */}
+                <div className="flex justify-center mt-6 gap-4 flex-wrap">
+                  {processSteps.map((step, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentStep(index + 1)}
+                      className={`border-2 rounded-xl overflow-hidden transition-all duration-300 ${
+                        currentStep === index + 1
+                          ? "border-blue-600 ring-2 ring-blue-300 scale-105"
+                          : "border-gray-200 hover:border-blue-400"
+                      }`}
+                    >
+                      <Image
+                        src={step.image || "/placeholder.svg"}
+                        alt={step.title}
+                        width={100}
+                        height={66}
+                        className="object-cover w-[100px] h-[66px]"
+                      />
+                    </button>
+                  ))}
+                </div>
               </div>
+
               {/* Contenido del paso actual */}
               <div>
-                <div className="text-7xl neutra-font-black text-blue-100 mb-4 text-center md:text-left">{currentStep}.</div>
+                <div className="text-7xl neutra-font-black text-blue-100 mb-4 text-center md:text-left">
+                  {currentStep}.
+                </div>
                 <h3 className="text-4xl md:text-5xl neutra-font-bold text-blue-700 mb-6 text-center md:text-left">
                   {processSteps[currentStep - 1].title}
                 </h3>
-                <p className="text-xl text-gray-700 mb-8 neutra-font text-center md:text-left">{processSteps[currentStep - 1].description}</p>
+                <p className="text-xl text-gray-700 mb-8 neutra-font text-center md:text-left">
+                  {processSteps[currentStep - 1].description}
+                </p>
+
                 {/* Botones de navegación */}
                 <div className="flex items-center gap-4 justify-center md:justify-start">
                   <Button
@@ -266,6 +297,7 @@ export default function NosotrosPage() {
                   >
                     <ChevronRight className="w-7 h-7" />
                   </Button>
+
                   {/* Botón Start Now solo en el último paso */}
                   {currentStep === 4 && (
                     <Link href="/disena" onClick={scrollToTop}>
@@ -299,7 +331,7 @@ export default function NosotrosPage() {
               <div className="bg-white rounded-2xl p-10 shadow-2xl text-center border-2 border-blue-100 hover:shadow-blue-200 transition-shadow">
                 <div className="mb-6">
                   <Image
-                    src="/placeholder.svg?height=120&width=120"
+                    src="https://avataaars.io/?avatarStyle=Circle&topType=LongHairStraight&accessoriesType=Blank&hairColor=Brown&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Default&mouthType=Default&skinColor=Light"
                     alt="Sofía Solarte"
                     width={120}
                     height={120}
@@ -310,22 +342,22 @@ export default function NosotrosPage() {
                 </div>
                 {/* Redes sociales */}
                 <div className="flex justify-center gap-4">
-                  <Link href="#" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
+                  <Link href="https://www.linkedin.com/in/sofia-solarte-cabrera-0143b4157/" target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
                     <Linkedin className="w-5 h-5 text-blue-600" />
                   </Link>
-                  <Link href="#" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
-                    <Facebook className="w-5 h-5 text-blue-600" />
-                  </Link>
-                  <Link href="#" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
-                    <Twitter className="w-5 h-5 text-blue-600" />
+                  <Link href="https://www.instagram.com/sosolarte?igsh=MXhtZmFsamlnOXRxMQ%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
+                    <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M7.75 2h8.5C19.55 2 22 4.45 22 7.75v8.5C22 19.55 19.55 22 16.25 22h-8.5C4.45 22 2 19.55 2 16.25v-8.5C2 4.45 4.45 2 7.75 2zm0 2C5.68 4 4 5.68 4 7.75v8.5C4 18.32 5.68 20 7.75 20h8.5c2.07 0 3.75-1.68 3.75-3.75v-8.5C20 5.68 18.32 4 16.25 4h-8.5zM12 7a5 5 0 110 10 5 5 0 010-10zm0 2a3 3 0 100 6 3 3 0 000-6zm5.5-.25a1.25 1.25 0 110 2.5 1.25 1.25 0 010-2.5z" />
+                    </svg>
                   </Link>
                 </div>
               </div>
+
               {/* Juan José Lima */}
               <div className="bg-white rounded-2xl p-10 shadow-2xl text-center border-2 border-blue-100 hover:shadow-blue-200 transition-shadow">
                 <div className="mb-6">
                   <Image
-                    src="/placeholder.svg?height=120&width=120"
+                    src="https://avataaars.io/?avatarStyle=Circle&topType=ShortHairShortCurly&accessoriesType=Blank&hairColor=Black&facialHairType=BeardLight&facialHairColor=Black&clotheType=CollarSweater&eyeType=Happy&eyebrowType=Default&mouthType=Smile&skinColor=Light"
                     alt="Juan José Lima"
                     width={120}
                     height={120}
@@ -336,14 +368,13 @@ export default function NosotrosPage() {
                 </div>
                 {/* Redes sociales */}
                 <div className="flex justify-center gap-4">
-                  <Link href="#" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
+                  <Link href="https://www.linkedin.com/in/juanjose-lima/" target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
                     <Linkedin className="w-5 h-5 text-blue-600" />
                   </Link>
-                  <Link href="#" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
-                    <Facebook className="w-5 h-5 text-blue-600" />
-                  </Link>
-                  <Link href="#" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
-                    <Twitter className="w-5 h-5 text-blue-600" />
+                  <Link href="https://www.instagram.com/limao9?igsh=eXB3dHU4cGdxcHRp" target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
+                    <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M7.75 2h8.5C19.55 2 22 4.45 22 7.75v8.5C22 19.55 19.55 22 16.25 22h-8.5C4.45 22 2 19.55 2 16.25v-8.5C2 4.45 4.45 2 7.75 2zm0 2C5.68 4 4 5.68 4 7.75v8.5C4 18.32 5.68 20 7.75 20h8.5c2.07 0 3.75-1.68 3.75-3.75v-8.5C20 5.68 18.32 4 16.25 4h-8.5zM12 7a5 5 0 110 10 5 5 0 010-10zm0 2a3 3 0 100 6 3 3 0 000-6zm5.5-.25a1.25 1.25 0 110 2.5 1.25 1.25 0 010-2.5z" />
+                    </svg>
                   </Link>
                 </div>
               </div>
