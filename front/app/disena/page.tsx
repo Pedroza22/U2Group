@@ -129,6 +129,44 @@ export default function DisenaPage() {
   const [facturaEnviada, setFacturaEnviada] = useState(false);
   const [errorEnvioFactura, setErrorEnvioFactura] = useState("");
 
+  const [totalArea, setTotalArea] = useState(80);
+  const [showMaxAreaAlert, setShowMaxAreaAlert] = useState(false);
+
+  // Estado para mostrar el modal de sugerencias
+  const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
+
+  const handleAreaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (value > 1000) {
+      setTotalArea(1000);
+      setShowMaxAreaAlert(true);
+    } else if (value < 80) {
+      setTotalArea(80); // mínimo
+      setShowMaxAreaAlert(false);
+    } else {
+      setTotalArea(value);
+      setShowMaxAreaAlert(false);
+    }
+  };
+
+  // Botón de cotizar: mostrar modal de sugerencias si falta área
+  const handleCotizar = () => {
+    if (areaPercent !== 100) {
+      setShowSuggestionsModal(true);
+      setShowAreaAlert(false);
+      setShowAreaExceededAlert(false);
+      return;
+    }
+    if (areaTotal > 0 && areaUsed > areaTotal) {
+      setShowAreaAlert(false);
+      setShowAreaExceededAlert(true);
+      return;
+    }
+    setShowAreaAlert(false);
+    setShowAreaExceededAlert(false);
+    setShowQuote(true);
+  };
+
   // Cargar datos desde la API
   useEffect(() => {
     setLoading(true)
@@ -148,6 +186,28 @@ export default function DisenaPage() {
       })
       .finally(() => setLoading(false))
   }, [])
+
+  // Selección por defecto de espacios básicos (suma 40m²)
+  useEffect(() => {
+    if (services.length === 0) return;
+    // Nombres de los servicios a seleccionar por defecto
+    const defaultNames = [
+      "Small room",
+      "Small full bathroom",
+      "Small social bathroom (half bath)",
+      "Parking",
+      "Laundry and storage room"
+    ];
+    // Filtrar los servicios por nombre
+    const defaultServices = services.filter(s => defaultNames.includes(s.name_en));
+    // Agrupar por categoría
+    const grouped: Record<number, any[]> = {};
+    defaultServices.forEach(s => {
+      if (!grouped[s.category_id]) grouped[s.category_id] = [];
+      grouped[s.category_id].push(s);
+    });
+    setSelectedOptions(grouped);
+  }, [services]);
 
   // Función para manejar selección de servicios
   const handleOptionSelect = (categoryId: number, service: any) => {
@@ -194,7 +254,7 @@ export default function DisenaPage() {
     return total
   }
 
-  // Calcular área ocupada
+  // Calcular área ocupada por los servicios seleccionados
   const calculateAreaUsed = () => {
     let total = 0
     Object.values(selectedOptions).forEach((options: any) => {
@@ -206,9 +266,27 @@ export default function DisenaPage() {
     return total
   }
 
-  // Calcular porcentaje de área ocupada
-  const areaUsed = calculateAreaUsed()
-  const areaPercent = areaTotal > 0 ? Math.round((areaUsed / areaTotal) * 100) : 0
+  // Área ocupada por los servicios por defecto (40m²)
+  const DEFAULT_AREA = 40;
+  // Calcular área ocupada por otros servicios (excluyendo los por defecto)
+  const defaultNames = [
+    "Small room",
+    "Small full bathroom",
+    "Small social bathroom (half bath)",
+    "Parking",
+    "Laundry and storage room"
+  ];
+  const areaUsed = calculateAreaUsed();
+  const areaUsedByDefaults = selectedOptions
+    ? Object.values(selectedOptions).flat().filter((option: any) => defaultNames.includes(option.name_en)).reduce((sum: number, option: any) => sum + (SERVICE_AREA_MAX[option.name_en] || 0), 0)
+    : 0;
+  const areaUsedByOthers = areaUsed - areaUsedByDefaults;
+  // Área restante para el usuario (descontando los 40m² por defecto)
+  const areaRestante = totalArea - DEFAULT_AREA - areaUsedByOthers;
+
+  // Calcular porcentaje de área ocupada SOLO del área adicional
+  const areaAdicional = totalArea - DEFAULT_AREA;
+  const areaPercent = areaAdicional > 0 ? Math.round((areaUsedByOthers / areaAdicional) * 100) : 0;
   const areaMissing = areaTotal > 0 ? Math.max(areaTotal - areaUsed, 0) : 0
 
   // Sugerencias de servicios que caben en el área faltante
@@ -434,12 +512,14 @@ export default function DisenaPage() {
               <input
                 id="areaTotal"
                 type="number"
-                min={1}
-                className="border border-blue-200 rounded px-3 py-1 w-32 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                value={areaTotal > 0 ? areaTotal : ""}
-                onChange={e => setAreaTotal(Number(e.target.value))}
-                placeholder="Ej: 120"
+                value={totalArea}
+                min={80}
+                max={1000}
+                onChange={handleAreaChange}
               />
+              {showMaxAreaAlert && (
+                <div className="text-red-600 font-bold text-xs mt-1">El área máxima es 1000 m²</div>
+              )}
             </div>
             <div className="relative h-[500px] rounded-2xl overflow-hidden mb-8 bg-white border-2 border-blue-100 shadow-lg">
               <Image
@@ -460,18 +540,11 @@ export default function DisenaPage() {
               <div className="flex-1 h-4 bg-blue-100 rounded-full overflow-hidden relative">
                 <div className="h-4 bg-gradient-to-r from-blue-500 to-orange-400 rounded-full transition-all duration-500" style={{ width: `${areaPercent}%` }} />
                 <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-blue-700">
-                  {areaPercent}% completado
+                  {areaPercent}% completado del área adicional
                 </div>
               </div>
             </div>
             {/* Alerta visual si falta área */}
-            {areaTotal > 0 && areaUsed < areaTotal && (
-              <div className="text-red-600 font-bold text-sm mb-4 px-2">Te falta llenar {areaMissing} m² del área total</div>
-            )}
-            {/* Alerta visual si excede el área total */}
-            {areaTotal > 0 && areaUsed > areaTotal && (
-              <div className="text-red-600 font-bold text-sm mb-4 px-2">Has excedido el área total disponible. Reduce la selección o ajusta el área.</div>
-            )}
           </div>
           {/* Panel de configuración lateral con altura fija y scroll */}
           <div className="lg:col-span-1">
@@ -553,79 +626,95 @@ export default function DisenaPage() {
                 {/* Botones de acción */}
                 <div className="space-y-2">
                   <Button
-                    onClick={() => {
-                      if (areaTotal > 0 && areaUsed < areaTotal) {
-                        setShowAreaAlert(true);
-                        setShowAreaExceededAlert(false);
-                        return;
-                      }
-                      if (areaTotal > 0 && areaUsed > areaTotal) {
-                        setShowAreaAlert(false);
-                        setShowAreaExceededAlert(true);
-                        return;
-                      }
-                      setShowAreaAlert(false);
-                      setShowAreaExceededAlert(false);
-                      setShowQuote(true);
-                    }}
+                    onClick={handleCotizar}
                     className="w-full bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white py-2 neutra-font-black text-sm shadow-xl"
                   >
                     {t("getYourQuote") || "Obtén tu Cotización"}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
-                  {/* Modal de alerta visual si falta área, solo al intentar cotizar */}
-                  {showAreaAlert && (
+                  {/* Modal flotante de sugerencias al intentar cotizar si falta área */}
+                  {showSuggestionsModal && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full relative animate-fade-in">
+                      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full relative animate-fade-in border-2 border-blue-100">
                         <button
                           className="absolute top-3 right-3 text-gray-400 hover:text-blue-600 text-2xl font-bold"
-                          onClick={() => setShowAreaAlert(false)}
+                          onClick={() => setShowSuggestionsModal(false)}
                           aria-label="Cerrar"
                         >
-                          ×
                         </button>
-                        <div className="text-red-600 font-bold text-lg mb-2 text-center">
-                          Te falta llenar <b>{areaMissing} m²</b> del área total para poder cotizar.
-                        </div>
-                        {serviceSuggestions.length > 0 ? (
-                          <div className="mt-4">
-                            <div className="text-blue-700 font-semibold mb-2 text-center">Puedes agregar alguno de estos espacios:</div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[350px] overflow-y-auto">
-                              {Object.entries(SERVICE_AREA_MAX)
-                                .filter(([name, area]) => area && areaMissing >= area)
-                                .map(([name, area], i) => {
-                                  const service = services.find(s => s.name_en === name)
-                                  return (
-                                    <div key={i} className="flex items-center gap-3 bg-blue-50 rounded p-2">
-                                      {service?.image && (
-                                        <Image src={service.image} alt={service.name_es} width={40} height={40} className="rounded object-cover" />
-                                      )}
-                                      <div>
-                                        <div className="font-bold text-gray-800 text-sm">{service ? service.name_es : name}</div>
-                                        <div className="text-xs text-gray-500">{service ? service.name_en : name}</div>
-                                        <div className="text-xs text-blue-700">Área: {area} m²</div>
-                                      </div>
+                        <h2 className="text-xl font-bold text-blue-700 mb-4 text-center">Sugerencias para llenar el área</h2>
+                        <p className="text-gray-700 mb-4 text-center">Selecciona productos que caben en el área restante:</p>
+                        <ul className="space-y-3 max-h-80 overflow-y-auto">
+                          {services
+                            .filter(s => {
+                              const area = SERVICE_AREA_MAX[s.name_en] || 0;
+                              // No sugerir los que ya están seleccionados ni los de los defaults
+                              const yaSeleccionado = Object.values(selectedOptions).flat().some((o: any) => o.id === s.id);
+                              const esDefault = defaultNames.includes(s.name_en);
+                              return area > 0 && area <= (totalArea - DEFAULT_AREA - (Object.values(selectedOptions).flat().filter((option: any) => !defaultNames.includes(option.name_en)).reduce((sum: number, option: any) => sum + (SERVICE_AREA_MAX[option.name_en] || 0), 0))) && !yaSeleccionado && !esDefault;
+                            })
+                            .length === 0 ? (
+                              <li className="text-center text-gray-500 flex flex-col items-center gap-4">
+                                No hay más productos que quepan en el área restante. Puedes disminuir el área restante o aumentar el área total.
+                                <div className="flex gap-3 justify-center mt-2">
+                                  {areaUsed > 80 && (
+                                    <button
+                                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded shadow text-sm"
+                                      onClick={() => {
+                                        setTotalArea(Math.max(areaUsed, 80)); // Disminuir área restante, nunca menos de 80
+                                        setShowSuggestionsModal(false);
+                                      }}
+                                    >
+                                      Disminuir área restante
+                                    </button>
+                                  )}
+                                  <button
+                                    className="bg-orange-400 hover:bg-orange-500 text-white font-bold py-1 px-3 rounded shadow text-sm"
+                                    onClick={() => {
+                                      setShowSuggestionsModal(false);
+                                      setTimeout(() => {
+                                        const input = document.querySelector('input[type="number"]#areaTotal') as HTMLInputElement;
+                                        if (input) input.focus();
+                                      }, 100);
+                                    }}
+                                  >
+                                    Aumentar área total
+                                  </button>
+                                </div>
+                              </li>
+                            ) : (
+                              services
+                                .filter(s => {
+                                  const area = SERVICE_AREA_MAX[s.name_en] || 0;
+                                  const yaSeleccionado = Object.values(selectedOptions).flat().some((o: any) => o.id === s.id);
+                                  const esDefault = defaultNames.includes(s.name_en);
+                                  return area > 0 && area <= (totalArea - DEFAULT_AREA - (Object.values(selectedOptions).flat().filter((option: any) => !defaultNames.includes(option.name_en)).reduce((sum: number, option: any) => sum + (SERVICE_AREA_MAX[option.name_en] || 0), 0))) && !yaSeleccionado && !esDefault;
+                                })
+                                .map(s => (
+                                  <li key={s.id} className="flex items-center justify-between bg-blue-50 rounded p-3 border border-blue-100">
+                                    <div>
+                                      <span className="font-bold text-gray-800">{s.name_es}</span>
+                                      <span className="text-xs text-blue-700 ml-2">{SERVICE_AREA_MAX[s.name_en]} m²</span>
                                     </div>
-                                  )
-                                })}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="mt-4 text-center text-blue-700">O reduce el área total para ajustarla al área ocupada.</div>
-                        )}
-                        <div className="flex flex-col sm:flex-row gap-3 mt-6 justify-center">
-                          <button
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition font-bold"
-                            onClick={() => {
-                              setAreaTotal(areaUsed);
-                              setShowAreaAlert(false);
-                            }}
-                          >
-                            Reducir área total a {areaUsed} m²
-                          </button>
+                                    <button
+                                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded shadow text-sm"
+                                      onClick={() => {
+                                        setSelectedOptions(prev => {
+                                          const current = prev[s.category_id] || [];
+                                          return { ...prev, [s.category_id]: [...current, s] };
+                                        });
+                                      }}
+                                    >
+                                      Agregar
+                                    </button>
+                                  </li>
+                                ))
+                            )}
+                        </ul>
+                        <div className="flex justify-center mt-6">
                           <button
                             className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition font-bold"
-                            onClick={() => setShowAreaAlert(false)}
+                            onClick={() => setShowSuggestionsModal(false)}
                           >
                             Cerrar
                           </button>
