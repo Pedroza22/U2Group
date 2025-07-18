@@ -28,8 +28,8 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 EMAIL_USE_TLS = False
-EMAIL_HOST_USER = 'consutoriafacturacion@gmail.com'
-EMAIL_HOST_PASSWORD = 'qfyc phas mmnu zyur'
+EMAIL_HOST_USER = 'facturacion.contacto2g@gmail.com'
+EMAIL_HOST_PASSWORD = 'aoqb gcbw fhkt prlr'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

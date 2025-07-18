@@ -96,7 +96,7 @@ const SERVICE_MAX_UNITS: Record<string, number | undefined> = {
   "Large social bathroom (half bath)": 3,
   "Parking": 5,
   "Laundry and storage room": 2,
-  // ... puedes agregar más si lo deseas ...
+  "Floor": 3,
 };
 
 export default function DisenaPage() {
@@ -113,7 +113,7 @@ export default function DisenaPage() {
 
   // Estado para selección
   const [activeTab, setActiveTab] = useState<string>("")
-  const [selectedOptions, setSelectedOptions] = useState<Record<number, any[]>>({})
+  const [selectedOptions, setSelectedOptions] = useState<Record<number, Record<number, number>>>({} as Record<number, Record<number, number>>)
   const [showQuote, setShowQuote] = useState(false)
   const [currentMainImage, setCurrentMainImage] = useState<string>("/images/u2-logo.png")
   // Estado para el área total
@@ -201,34 +201,44 @@ export default function DisenaPage() {
     // Filtrar los servicios por nombre
     const defaultServices = services.filter(s => defaultNames.includes(s.name_en));
     // Agrupar por categoría
-    const grouped: Record<number, any[]> = {};
+    const grouped: Record<number, Record<number, number>> = {};
     defaultServices.forEach(s => {
-      if (!grouped[s.category_id]) grouped[s.category_id] = [];
-      grouped[s.category_id].push(s);
+      if (!grouped[s.category_id]) grouped[s.category_id] = {};
+      grouped[s.category_id][s.id] = 1;
     });
     setSelectedOptions(grouped);
   }, [services]);
 
-  // Función para manejar selección de servicios
-  const handleOptionSelect = (categoryId: number, service: any) => {
+  // Función para manejar selección de servicios (con cantidad)
+  const handleOptionQuantity = (categoryId: number, service: Service, delta: number, maxUnits?: number) => {
     setSelectedOptions((prev) => {
-      const current = prev[categoryId] || []
-      const exists = current.find((o: any) => o.id === service.id)
-      let newOptions
-        if (exists) {
-        newOptions = { ...prev, [categoryId]: current.filter((o: any) => o.id !== service.id) }
-      } else {
-        newOptions = { ...prev, [categoryId]: [...current, service] }
-      }
-        updateMainImage(newOptions)
-        return newOptions
-    })
-  }
+      const cat = prev[categoryId] || {};
+      const currentQty = cat[service.id] || 0;
+      let newQty = currentQty + delta;
+      if (newQty < 0) newQty = 0;
+      if (maxUnits && newQty > maxUnits) newQty = maxUnits;
+      const newCat = { ...cat, [service.id]: newQty };
+      if (newQty === 0) delete newCat[service.id];
+      const newOptions = { ...prev, [categoryId]: newCat };
+      updateMainImage(newOptions);
+      return newOptions;
+    });
+  };
 
   // Actualizar imagen principal (muestra la imagen del último servicio seleccionado)
-  const updateMainImage = (options: Record<number, any[]>) => {
-    // Buscar el último servicio seleccionado en cualquier categoría
-    const allSelected = Object.values(options).flat();
+  const updateMainImage = (options: Record<number, Record<number, number>>) => {
+    // Generar un array de servicios seleccionados según la cantidad
+    const allSelected: Service[] = [];
+    Object.entries(options).forEach(([catId, servicesObj]) => {
+      Object.entries(servicesObj).forEach(([serviceId, qty]) => {
+        const service = services.find(s => s.id === Number(serviceId));
+        if (service) {
+          for (let i = 0; i < qty; i++) {
+            allSelected.push(service);
+          }
+        }
+      });
+    });
     if (allSelected.length > 0) {
       const lastSelected = allSelected[allSelected.length - 1];
       if (lastSelected.image) {
@@ -241,30 +251,38 @@ export default function DisenaPage() {
       }
     }
     setCurrentMainImage("/images/u2-logo.png");
-  }
+  };
 
   // Calcular precio total
-  const calculateTotal = () => {
-    let total = 0
-    Object.values(selectedOptions).forEach((options: any) => {
-      options.forEach((option: any) => {
-        total += option.price_min_usd || 0
-      })
-    })
-    return total
-  }
+  // Sumar el precio de los servicios seleccionados más el área total (cada m² = $1)
+  const calculateServicesTotal = () => {
+    let total = 0;
+    Object.entries(selectedOptions).forEach(([catId, servicesObj]) => {
+      Object.entries(servicesObj).forEach(([serviceId, qty]) => {
+        const service = services.find(s => s.id === Number(serviceId));
+        if (service) {
+          total += (service.price_min_usd || 0) * qty;
+        }
+      });
+    });
+    return total;
+  };
+  const calculateTotal = () => calculateServicesTotal() + totalArea;
 
   // Calcular área ocupada por los servicios seleccionados
   const calculateAreaUsed = () => {
-    let total = 0
-    Object.values(selectedOptions).forEach((options: any) => {
-      options.forEach((option: any) => {
-        const area = SERVICE_AREA_MAX[option.name_en] || 0
-        total += area
-      })
-    })
-    return total
-  }
+    let total = 0;
+    Object.entries(selectedOptions).forEach(([catId, servicesObj]) => {
+      Object.entries(servicesObj).forEach(([serviceId, qty]) => {
+        const service = services.find(s => s.id === Number(serviceId));
+        if (service) {
+          const area = SERVICE_AREA_MAX[service.name_en] || 0;
+          total += area * qty;
+        }
+      });
+    });
+    return total;
+  };
 
   // Área ocupada por los servicios por defecto (40m²)
   const DEFAULT_AREA = 40;
@@ -277,9 +295,15 @@ export default function DisenaPage() {
     "Laundry and storage room"
   ];
   const areaUsed = calculateAreaUsed();
-  const areaUsedByDefaults = selectedOptions
-    ? Object.values(selectedOptions).flat().filter((option: any) => defaultNames.includes(option.name_en)).reduce((sum: number, option: any) => sum + (SERVICE_AREA_MAX[option.name_en] || 0), 0)
-    : 0;
+  const areaUsedByDefaults = Object.entries(selectedOptions).reduce((sum, [catId, servicesObj]) => {
+    return sum + Object.entries(servicesObj).reduce((catSum, [serviceId, qty]) => {
+      const service = services.find(s => s.id === Number(serviceId));
+      if (service && defaultNames.includes(service.name_en)) {
+        return catSum + (SERVICE_AREA_MAX[service.name_en] || 0) * qty;
+      }
+      return catSum;
+    }, 0);
+  }, 0);
   const areaUsedByOthers = areaUsed - areaUsedByDefaults;
   // Área restante para el usuario (descontando los 40m² por defecto)
   const areaRestante = totalArea - DEFAULT_AREA - areaUsedByOthers;
@@ -354,25 +378,47 @@ export default function DisenaPage() {
                 </div>
                 {/* Desglose de costos por categoría */}
                 <div className="space-y-4 mb-8 text-left">
-                  {Object.entries(selectedOptions).map(([categoryId, options]: any) => {
-                    if (options.length === 0) return null
-                    const category = categories.find((c) => c.id.toString() === categoryId)
-                    const categoryTotal = options.reduce((sum: number, opt: any) => sum + (opt.price_min_usd || 0), 0)
+                  {categories.map((category) => {
+                    const servicesObj = selectedOptions[category.id] || {};
+                    if (Object.keys(servicesObj).length === 0) return null;
+                    const categoryTotal = (Object.entries(servicesObj) as [string, number][]).reduce((sum, [serviceId, qty]) => sum + ((services.find(s => s.id === Number(serviceId))?.price_min_usd || 0) * qty), 0);
                     return (
-                      <div key={categoryId} className="border-b pb-2">
+                      <div key={category.id} className="border-b pb-2">
                         <div className="flex justify-between items-center">
-                          <h4 className="neutra-font-bold text-blue-600 capitalize">{category?.name}</h4>
+                          <h4 className="neutra-font-bold text-blue-600 capitalize">{category.name}</h4>
                           <span className="neutra-font-bold">${categoryTotal}</span>
                         </div>
-                        {options.map((option: any) => (
-                          <div key={option.id} className="flex justify-between text-sm text-gray-600 ml-4">
-                            <span className="neutra-font">{language === "es" ? option.name_es : option.name_en}</span>
-                            <span className="neutra-font">${option.price_min_usd || 0}</span>
-                          </div>
-                        ))}
+                        {(Object.entries(servicesObj) as [string, number][]).map(([serviceId, cantidad]) => {
+                          const service = services.find(s => s.id === Number(serviceId));
+                          if (!service || cantidad === 0) return null;
+                          return (
+                            <div key={serviceId} className="flex justify-between text-sm text-gray-600 ml-4">
+                              <span className="neutra-font">{language === "es" ? service.name_es : service.name_en} x {cantidad}</span>
+                              <span className="neutra-font">${(service.price_min_usd || 0) * cantidad}</span>
+                            </div>
+                          );
+                        })}
                       </div>
-                    )
+                    );
                   })}
+                 {/* Desglose del total de servicios */}
+                 <div className="border-b pb-2">
+                   <div className="flex justify-between items-center">
+                     <h4 className="neutra-font-bold text-blue-600">Total servicios</h4>
+                     <span className="neutra-font-bold">${calculateServicesTotal()}</span>
+                   </div>
+                 </div>
+                 {/* Desglose del área total */}
+                 <div className="border-b pb-2">
+                   <div className="flex justify-between items-center">
+                     <h4 className="neutra-font-bold text-blue-600">Total área</h4>
+                     <span className="neutra-font-bold">${totalArea}</span>
+                   </div>
+                   <div className="flex justify-between text-sm text-gray-600 ml-4">
+                     <span className="neutra-font">{totalArea} m² x $1 USD</span>
+                     <span className="neutra-font">${totalArea}</span>
+                   </div>
+                 </div>
                 </div>
                 {/* Precio total */}
                 <div className="text-center mb-8">
@@ -403,10 +449,12 @@ export default function DisenaPage() {
                       setErrorEnvioFactura("");
                       try {
                         // Construir productos a partir de los servicios seleccionados
-                        const productos = Object.values(selectedOptions).flat().map(s => ({
-                          name: s.name_es,
-                          price: s.price_min_usd || 0,
-                        }));
+                        const productos = Object.entries(selectedOptions).flatMap(([catId, servicesObj]) =>
+                          Object.entries(servicesObj).map(([serviceId, qty]) => ({
+                            name: services.find(s => s.id === Number(serviceId))?.name_es || "",
+                            price: (services.find(s => s.id === Number(serviceId))?.price_min_usd || 0) * qty,
+                          }))
+                        );
                         await axios.post("http://localhost:8000/api/send-invoice/", {
                           email: cotizacionEmail,
                           products: productos,
@@ -559,58 +607,73 @@ export default function DisenaPage() {
               <div className="flex-1 overflow-y-auto p-4">
                   <div className="space-y-4">
                   {services.filter((s) => s.category_id.toString() === activeTab).map((service) => {
-                    // Calcular cantidad seleccionada de este servicio
-                    const selectedCount = (selectedOptions[service.category_id] || []).filter((o: any) => o.id === service.id).length
                     const maxUnits = SERVICE_MAX_UNITS[service.name_en];
-                                return (
-                          <Card
+                    const selectedQty = selectedOptions[service.category_id]?.[service.id] || 0;
+                    return (
+                      <Card
                         key={service.id}
-                            className={`p-3 cursor-pointer transition-all hover:shadow-md ${
-                          selectedOptions[service.category_id]?.some((o: any) => o.id === service.id)
-                                ? "border-blue-600 bg-blue-50"
-                                : "border-gray-200 hover:border-gray-300"
-                            }`}
-                        onClick={() => handleOptionSelect(service.category_id, service)}
-                          >
-                            <div className="flex items-center gap-3">
+                        className={`p-3 transition-all hover:shadow-md ${selectedQty > 0 ? "border-blue-600 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}
+                      >
+                        <div className="flex items-center gap-3">
                           {service.image && (
-                                <Image
+                            <Image
                               src={
                                 service.image.startsWith('http')
                                   ? service.image
                                   : `http://localhost:8000/media/${service.image.startsWith('services/') ? service.image : 'services/' + service.image}`
                               }
                               alt={service.name_es}
-                                  width={40}
-                                  height={40}
-                                  className="rounded object-cover"
-                                />
-                              )}
-                              <div className="flex-1">
+                              width={40}
+                              height={40}
+                              className="rounded object-cover"
+                            />
+                          )}
+                          <div className="flex-1">
                             <h4 className="neutra-font-bold text-gray-900 text-sm">{language === "es" ? service.name_es : service.name_en}</h4>
                             <p className="text-xs text-blue-600 neutra-font">${service.price_min_usd || 0} USD</p>
                             {SERVICE_AREA_MAX[service.name_en] && (
                               <p className="text-xs text-gray-500">Área: {SERVICE_AREA_MAX[service.name_en]} m²</p>
                             )}
-                              </div>
-                              {/* Checkmark para opciones seleccionadas */}
-                          {selectedOptions[service.category_id]?.some((o: any) => o.id === service.id) && (
-                                <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-                                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                </div>
-                              )}
+                          </div>
+                          {/* Selector de cantidad para servicios con máximo */}
+                          {maxUnits ? (
+                            <div className="flex items-center gap-2">
+                              <button
+                                className="px-2 py-1 bg-blue-100 text-blue-700 rounded font-bold text-lg"
+                                onClick={() => handleOptionQuantity(service.category_id, service, -1, maxUnits)}
+                                disabled={selectedQty === 0}
+                              >-</button>
+                              <span className="font-bold text-blue-700 min-w-[20px] text-center">{selectedQty}</span>
+                              <button
+                                className="px-2 py-1 bg-blue-600 text-white rounded font-bold text-lg"
+                                onClick={() => handleOptionQuantity(service.category_id, service, 1, maxUnits)}
+                                disabled={selectedQty >= maxUnits}
+                              >+</button>
                             </div>
+                          ) : (
+                            <button
+                              className={`ml-2 px-3 py-1 rounded ${selectedQty > 0 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"}`}
+                              onClick={() => handleOptionQuantity(service.category_id, service, selectedQty > 0 ? -1 : 1)}
+                            >{selectedQty > 0 ? "Quitar" : "Agregar"}</button>
+                          )}
+                          {/* Checkmark para opciones seleccionadas */}
+                          {selectedQty > 0 && (
+                            <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
                         {/* Alerta visual si excede el máximo */}
-                        {maxUnits && selectedCount > maxUnits && (
+                        {maxUnits && selectedQty > maxUnits && (
                           <div className="text-red-600 font-bold text-xs mt-2">Excediste el máximo permitido para este servicio ({maxUnits})</div>
                         )}
-                          </Card>
+                      </Card>
                     );
                   })}
                   </div>
@@ -649,9 +712,11 @@ export default function DisenaPage() {
                             .filter(s => {
                               const area = SERVICE_AREA_MAX[s.name_en] || 0;
                               // No sugerir los que ya están seleccionados ni los de los defaults
-                              const yaSeleccionado = Object.values(selectedOptions).flat().some((o: any) => o.id === s.id);
+                              const yaSeleccionado = Object.entries(selectedOptions).some(([catId, servicesObj]) => 
+                                Object.keys(servicesObj).includes(s.id.toString())
+                              );
                               const esDefault = defaultNames.includes(s.name_en);
-                              return area > 0 && area <= (totalArea - DEFAULT_AREA - (Object.values(selectedOptions).flat().filter((option: any) => !defaultNames.includes(option.name_en)).reduce((sum: number, option: any) => sum + (SERVICE_AREA_MAX[option.name_en] || 0), 0))) && !yaSeleccionado && !esDefault;
+                              return area > 0 && area <= areaRestante && !yaSeleccionado && !esDefault;
                             })
                             .length === 0 ? (
                               <li className="text-center text-gray-500 flex flex-col items-center gap-4">
@@ -686,9 +751,11 @@ export default function DisenaPage() {
                               services
                                 .filter(s => {
                                   const area = SERVICE_AREA_MAX[s.name_en] || 0;
-                                  const yaSeleccionado = Object.values(selectedOptions).flat().some((o: any) => o.id === s.id);
+                                  const yaSeleccionado = Object.entries(selectedOptions).some(([catId, servicesObj]) => 
+                                    Object.keys(servicesObj).includes(s.id.toString())
+                                  );
                                   const esDefault = defaultNames.includes(s.name_en);
-                                  return area > 0 && area <= (totalArea - DEFAULT_AREA - (Object.values(selectedOptions).flat().filter((option: any) => !defaultNames.includes(option.name_en)).reduce((sum: number, option: any) => sum + (SERVICE_AREA_MAX[option.name_en] || 0), 0))) && !yaSeleccionado && !esDefault;
+                                  return area > 0 && area <= areaRestante && !yaSeleccionado && !esDefault;
                                 })
                                 .map(s => (
                                   <li key={s.id} className="flex items-center justify-between bg-blue-50 rounded p-3 border border-blue-100">
@@ -700,8 +767,8 @@ export default function DisenaPage() {
                                       className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded shadow text-sm"
                                       onClick={() => {
                                         setSelectedOptions(prev => {
-                                          const current = prev[s.category_id] || [];
-                                          return { ...prev, [s.category_id]: [...current, s] };
+                                          const current = prev[s.category_id] || {};
+                                          return { ...prev, [s.category_id]: { ...current, [s.id]: (current[s.id] || 0) + 1 } };
                                         });
                                       }}
                                     >
