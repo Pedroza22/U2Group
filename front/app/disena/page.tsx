@@ -96,13 +96,23 @@ const SERVICE_MAX_UNITS: Record<string, number | undefined> = {
   "Large social bathroom (half bath)": 3,
   "Parking": 5,
   "Laundry and storage room": 2,
-  // ... puedes agregar más si lo deseas ...
+  "Floor": 3,
 };
 
 export default function DisenaPage() {
   const { t, language } = useLanguage()
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
   const router = useRouter();
+
+  // Mapeo de traducciones para categorías
+  const categoryTranslationMap: Record<string, string> = {
+    "Espacios básicos": t("basicSpaces"),
+    "Funcionalidad del hogar": t("homeFunction"),
+    "Trabajo & Creatividad": t("workAndCreativity"),
+    "Bienestar & Salud": t("wellnessAndHealth"),
+    "Naturaleza & Sustentabilidad": t("natureAndSustainability"),
+    "Entretenimiento & Social": t("entertainmentAndSocial"),
+  };
 
   // Estado para datos dinámicos
   const [categories, setCategories] = useState<Category[]>([])
@@ -113,7 +123,7 @@ export default function DisenaPage() {
 
   // Estado para selección
   const [activeTab, setActiveTab] = useState<string>("")
-  const [selectedOptions, setSelectedOptions] = useState<Record<number, any[]>>({})
+  const [selectedOptions, setSelectedOptions] = useState<Record<number, Record<number, number>>>({} as Record<number, Record<number, number>>)
   const [showQuote, setShowQuote] = useState(false)
   const [currentMainImage, setCurrentMainImage] = useState<string>("/images/u2-logo.png")
   // Estado para el área total
@@ -122,6 +132,50 @@ export default function DisenaPage() {
   const [showAreaAlert, setShowAreaAlert] = useState(false)
   // Estado para mostrar alerta de área excedida al intentar cotizar
   const [showAreaExceededAlert, setShowAreaExceededAlert] = useState(false)
+
+  // Estado para el email y feedback
+  const [cotizacionEmail, setCotizacionEmail] = useState("");
+  const [enviandoFactura, setEnviandoFactura] = useState(false);
+  const [facturaEnviada, setFacturaEnviada] = useState(false);
+  const [errorEnvioFactura, setErrorEnvioFactura] = useState("");
+
+  const [totalArea, setTotalArea] = useState(80);
+  const [showMaxAreaAlert, setShowMaxAreaAlert] = useState(false);
+
+  // Estado para mostrar el modal de sugerencias
+  const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
+
+  const handleAreaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (value > 1000) {
+      setTotalArea(1000);
+      setShowMaxAreaAlert(true);
+    } else if (value < 80) {
+      setTotalArea(80); // mínimo
+      setShowMaxAreaAlert(false);
+    } else {
+      setTotalArea(value);
+      setShowMaxAreaAlert(false);
+    }
+  };
+
+  // Botón de cotizar: mostrar modal de sugerencias si falta área
+  const handleCotizar = () => {
+    if (areaPercent !== 100) {
+      setShowSuggestionsModal(true);
+      setShowAreaAlert(false);
+      setShowAreaExceededAlert(false);
+      return;
+    }
+    if (areaTotal > 0 && areaUsed > areaTotal) {
+      setShowAreaAlert(false);
+      setShowAreaExceededAlert(true);
+      return;
+    }
+    setShowAreaAlert(false);
+    setShowAreaExceededAlert(false);
+    setShowQuote(true);
+  };
 
   // Cargar datos desde la API
   useEffect(() => {
@@ -138,31 +192,63 @@ export default function DisenaPage() {
         setActiveTab((catRes.data as Category[])[0]?.id?.toString() || "")
       })
       .catch((err) => {
-        setError("Error al cargar datos de diseño")
+        setError("Error loading design data")
       })
       .finally(() => setLoading(false))
   }, [])
 
-  // Función para manejar selección de servicios
-  const handleOptionSelect = (categoryId: number, service: any) => {
+  // Selección por defecto de espacios básicos (suma 40m²)
+  useEffect(() => {
+    if (services.length === 0) return;
+    // Nombres de los servicios a seleccionar por defecto
+    const defaultNames = [
+      "Small room",
+      "Small full bathroom",
+      "Small social bathroom (half bath)",
+      "Parking",
+      "Laundry and storage room"
+    ];
+    // Filtrar los servicios por nombre
+    const defaultServices = services.filter(s => defaultNames.includes(s.name_en));
+    // Agrupar por categoría
+    const grouped: Record<number, Record<number, number>> = {};
+    defaultServices.forEach(s => {
+      if (!grouped[s.category_id]) grouped[s.category_id] = {};
+      grouped[s.category_id][s.id] = 1;
+    });
+    setSelectedOptions(grouped);
+  }, [services]);
+
+  // Función para manejar selección de servicios (con cantidad)
+  const handleOptionQuantity = (categoryId: number, service: Service, delta: number, maxUnits?: number) => {
     setSelectedOptions((prev) => {
-      const current = prev[categoryId] || []
-      const exists = current.find((o: any) => o.id === service.id)
-      let newOptions
-        if (exists) {
-        newOptions = { ...prev, [categoryId]: current.filter((o: any) => o.id !== service.id) }
-      } else {
-        newOptions = { ...prev, [categoryId]: [...current, service] }
-      }
-      updateMainImage(newOptions)
-      return newOptions
-    })
-  }
+      const cat = prev[categoryId] || {};
+      const currentQty = cat[service.id] || 0;
+      let newQty = currentQty + delta;
+      if (newQty < 0) newQty = 0;
+      if (maxUnits && newQty > maxUnits) newQty = maxUnits;
+      const newCat = { ...cat, [service.id]: newQty };
+      if (newQty === 0) delete newCat[service.id];
+      const newOptions = { ...prev, [categoryId]: newCat };
+      updateMainImage(newOptions);
+      return newOptions;
+    });
+  };
 
   // Actualizar imagen principal (muestra la imagen del último servicio seleccionado)
-  const updateMainImage = (options: Record<number, any[]>) => {
-    // Buscar el último servicio seleccionado en cualquier categoría
-    const allSelected = Object.values(options).flat();
+  const updateMainImage = (options: Record<number, Record<number, number>>) => {
+    // Generar un array de servicios seleccionados según la cantidad
+    const allSelected: Service[] = [];
+    Object.entries(options).forEach(([catId, servicesObj]) => {
+      Object.entries(servicesObj).forEach(([serviceId, qty]) => {
+        const service = services.find(s => s.id === Number(serviceId));
+        if (service) {
+          for (let i = 0; i < qty; i++) {
+            allSelected.push(service);
+          }
+        }
+      });
+    });
     if (allSelected.length > 0) {
       const lastSelected = allSelected[allSelected.length - 1];
       if (lastSelected.image) {
@@ -175,34 +261,66 @@ export default function DisenaPage() {
       }
     }
     setCurrentMainImage("/images/u2-logo.png");
-  }
+  };
 
   // Calcular precio total
-  const calculateTotal = () => {
-    let total = 0
-    Object.values(selectedOptions).forEach((options: any) => {
-      options.forEach((option: any) => {
-        total += option.price_min_usd || 0
-      })
-    })
-    return total
-  }
+  // Sumar el precio de los servicios seleccionados más el área total (cada m² = $1)
+  const calculateServicesTotal = () => {
+    let total = 0;
+    Object.entries(selectedOptions).forEach(([catId, servicesObj]) => {
+      Object.entries(servicesObj).forEach(([serviceId, qty]) => {
+        const service = services.find(s => s.id === Number(serviceId));
+        if (service) {
+          total += (service.price_min_usd || 0) * qty;
+        }
+      });
+    });
+    return total;
+  };
+  const calculateTotal = () => calculateServicesTotal() + totalArea;
 
-  // Calcular área ocupada
+  // Calcular área ocupada por los servicios seleccionados
   const calculateAreaUsed = () => {
-    let total = 0
-    Object.values(selectedOptions).forEach((options: any) => {
-      options.forEach((option: any) => {
-        const area = SERVICE_AREA_MAX[option.name_en] || 0
-        total += area
-      })
-    })
-    return total
-  }
+    let total = 0;
+    Object.entries(selectedOptions).forEach(([catId, servicesObj]) => {
+      Object.entries(servicesObj).forEach(([serviceId, qty]) => {
+        const service = services.find(s => s.id === Number(serviceId));
+        if (service) {
+          const area = SERVICE_AREA_MAX[service.name_en] || 0;
+          total += area * qty;
+        }
+      });
+    });
+    return total;
+  };
 
-  // Calcular porcentaje de área ocupada
-  const areaUsed = calculateAreaUsed()
-  const areaPercent = areaTotal > 0 ? Math.round((areaUsed / areaTotal) * 100) : 0
+  // Área ocupada por los servicios por defecto (40m²)
+  const DEFAULT_AREA = 40;
+  // Calcular área ocupada por otros servicios (excluyendo los por defecto)
+  const defaultNames = [
+    "Small room",
+    "Small full bathroom",
+    "Small social bathroom (half bath)",
+    "Parking",
+    "Laundry and storage room"
+  ];
+  const areaUsed = calculateAreaUsed();
+  const areaUsedByDefaults = Object.entries(selectedOptions).reduce((sum, [catId, servicesObj]) => {
+    return sum + Object.entries(servicesObj).reduce((catSum, [serviceId, qty]) => {
+      const service = services.find(s => s.id === Number(serviceId));
+      if (service && defaultNames.includes(service.name_en)) {
+        return catSum + (SERVICE_AREA_MAX[service.name_en] || 0) * qty;
+      }
+      return catSum;
+    }, 0);
+  }, 0);
+  const areaUsedByOthers = areaUsed - areaUsedByDefaults;
+  // Área restante para el usuario (descontando los 40m² por defecto)
+  const areaRestante = totalArea - DEFAULT_AREA - areaUsedByOthers;
+
+  // Calcular porcentaje de área ocupada SOLO del área adicional
+  const areaAdicional = totalArea - DEFAULT_AREA;
+  const areaPercent = areaAdicional > 0 ? Math.round((areaUsedByOthers / areaAdicional) * 100) : 0;
   const areaMissing = areaTotal > 0 ? Math.max(areaTotal - areaUsed, 0) : 0
 
   // Sugerencias de servicios que caben en el área faltante
@@ -216,7 +334,7 @@ export default function DisenaPage() {
 
   // Renderizado
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Cargando datos de diseño...</div>
+    return <div className="min-h-screen flex items-center justify-center">Loading design data...</div>
   }
   if (error) {
     return <div className="min-h-screen flex items-center justify-center text-red-600">{error}</div>
@@ -270,25 +388,47 @@ export default function DisenaPage() {
                 </div>
                 {/* Desglose de costos por categoría */}
                 <div className="space-y-4 mb-8 text-left">
-                  {Object.entries(selectedOptions).map(([categoryId, options]: any) => {
-                    if (options.length === 0) return null
-                    const category = categories.find((c) => c.id.toString() === categoryId)
-                    const categoryTotal = options.reduce((sum: number, opt: any) => sum + (opt.price_min_usd || 0), 0)
+                  {categories.map((category) => {
+                    const servicesObj = selectedOptions[category.id] || {};
+                    if (Object.keys(servicesObj).length === 0) return null;
+                    const categoryTotal = (Object.entries(servicesObj) as [string, number][]).reduce((sum, [serviceId, qty]) => sum + ((services.find(s => s.id === Number(serviceId))?.price_min_usd || 0) * qty), 0);
                     return (
-                      <div key={categoryId} className="border-b pb-2">
+                      <div key={category.id} className="border-b pb-2">
                         <div className="flex justify-between items-center">
-                          <h4 className="neutra-font-bold text-blue-600 capitalize">{category?.name}</h4>
+                          <h4 className="neutra-font-bold text-blue-600 capitalize">{categoryTranslationMap[category.name] || category.name}</h4>
                           <span className="neutra-font-bold">${categoryTotal}</span>
                         </div>
-                        {options.map((option: any) => (
-                          <div key={option.id} className="flex justify-between text-sm text-gray-600 ml-4">
-                            <span className="neutra-font">{language === "es" ? option.name_es : option.name_en}</span>
-                            <span className="neutra-font">${option.price_min_usd || 0}</span>
-                          </div>
-                        ))}
+                        {(Object.entries(servicesObj) as [string, number][]).map(([serviceId, cantidad]) => {
+                          const service = services.find(s => s.id === Number(serviceId));
+                          if (!service || cantidad === 0) return null;
+                          return (
+                            <div key={serviceId} className="flex justify-between text-sm text-gray-600 ml-4">
+                              <span className="neutra-font">{language === "es" ? service.name_es : service.name_en} x {cantidad}</span>
+                              <span className="neutra-font">${(service.price_min_usd || 0) * cantidad}</span>
+                            </div>
+                          );
+                        })}
                       </div>
-                    )
+                    );
                   })}
+                 {/* Desglose del total de servicios */}
+                 <div className="border-b pb-2">
+                   <div className="flex justify-between items-center">
+                     <h4 className="neutra-font-bold text-blue-600">{t("totalServices") || "Total servicios"}</h4>
+                     <span className="neutra-font-bold">${calculateServicesTotal()}</span>
+                   </div>
+                 </div>
+                 {/* Desglose del área total */}
+                 <div className="border-b pb-2">
+                   <div className="flex justify-between items-center">
+                     <h4 className="neutra-font-bold text-blue-600">{t("totalArea") || "Total área"}</h4>
+                     <span className="neutra-font-bold">${totalArea}</span>
+                   </div>
+                   <div className="flex justify-between text-sm text-gray-600 ml-4">
+                     <span className="neutra-font">{totalArea} m² x $1 USD</span>
+                     <span className="neutra-font">${totalArea}</span>
+                   </div>
+                 </div>
                 </div>
                 {/* Precio total */}
                 <div className="text-center mb-8">
@@ -301,13 +441,47 @@ export default function DisenaPage() {
                 </div>
                 {/* Input para el correo Gmail en la cotización */}
                 <div className="mt-6 mb-6 max-w-md mx-auto">
-                  <label htmlFor="cotizacionEmail" className="block text-blue-700 font-bold mb-2">Correo Gmail para recibir la factura:</label>
+                  <label htmlFor="cotizacionEmail" className="block text-blue-700 font-bold mb-2">{t("gmailForInvoice") || "Correo Gmail para recibir la factura:"}</label>
                   <input
                     id="cotizacionEmail"
                     type="email"
                     placeholder="tucorreo@gmail.com"
                     className="w-full border border-blue-200 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    value={cotizacionEmail}
+                    onChange={e => setCotizacionEmail(e.target.value)}
+                    disabled={enviandoFactura}
                   />
+                  <button
+                    className="mt-4 w-full bg-blue-600 text-white rounded px-4 py-2 font-bold hover:bg-blue-700 disabled:opacity-50"
+                    onClick={async () => {
+                      setEnviandoFactura(true);
+                      setFacturaEnviada(false);
+                      setErrorEnvioFactura("");
+                      try {
+                        // Construir productos a partir de los servicios seleccionados
+                        const productos = Object.entries(selectedOptions).flatMap(([catId, servicesObj]) =>
+                          Object.entries(servicesObj).map(([serviceId, qty]) => ({
+                            name: services.find(s => s.id === Number(serviceId))?.name_es || "",
+                            price: (services.find(s => s.id === Number(serviceId))?.price_min_usd || 0) * qty,
+                          }))
+                        );
+                        await axios.post("http://localhost:8000/api/send-invoice/", {
+                          email: cotizacionEmail,
+                          products: productos,
+                        });
+                        setFacturaEnviada(true);
+                      } catch (err) {
+                        setErrorEnvioFactura(t("invoiceError") || "No se pudo enviar la factura. Verifica el correo o intenta de nuevo.");
+                      } finally {
+                        setEnviandoFactura(false);
+                      }
+                    }}
+                    disabled={enviandoFactura || !cotizacionEmail || Object.values(selectedOptions).flat().length === 0}
+                  >
+                    {enviandoFactura ? t("sending") || "Enviando..." : t("sendInvoice") || "Enviar factura"}
+                  </button>
+                  {facturaEnviada && <p className="text-green-600 mt-2">{t("invoiceSent") || "¡Factura enviada correctamente!"}</p>}
+                  {errorEnvioFactura && <p className="text-red-600 mt-2">{errorEnvioFactura}</p>}
                 </div>
                 {/* Botones de navegación */}
                 <div className="flex gap-4">
@@ -369,16 +543,18 @@ export default function DisenaPage() {
       {/* Navegación de pestañas */}
       <div className="bg-white border-b">
         <div className="w-full px-2 md:container md:mx-auto md:px-4">
-          <div className="flex gap-2 py-4 overflow-x-auto flex-nowrap whitespace-nowrap scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent justify-center">
+          <div className="flex flex-wrap gap-2 py-4 justify-center">
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveTab(cat.id.toString())}
-                className={`px-4 py-2 rounded-lg text-lg neutra-font transition-colors shadow-md mx-1 mb-2 ${
-                  activeTab === cat.id.toString() ? "bg-blue-600 text-white scale-105" : "bg-white border border-blue-200 text-blue-700 hover:bg-blue-50"
+                className={`px-3 py-1 rounded-md text-sm neutra-font transition-colors shadow-sm ${
+                  activeTab === cat.id.toString()
+                    ? "bg-blue-600 text-white scale-100"
+                    : "bg-white border border-blue-200 text-blue-700 hover:bg-blue-50"
                 }`}
               >
-                <span className="mr-2">{cat.emoji}</span> {cat.name}
+                {categoryTranslationMap[cat.name] || cat.name}
               </button>
             ))}
           </div>
@@ -390,16 +566,18 @@ export default function DisenaPage() {
           <div className="lg:col-span-2">
             {/* Input para el área total */}
             <div className="mb-4 flex items-center gap-4">
-              <label htmlFor="areaTotal" className="font-bold text-blue-700">Área total de la casa (m²):</label>
+              <label htmlFor="areaTotal" className="font-bold text-blue-700">{t("designAreaTitle")}</label>
               <input
                 id="areaTotal"
                 type="number"
-                min={1}
-                className="border border-blue-200 rounded px-3 py-1 w-32 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                value={areaTotal > 0 ? areaTotal : ""}
-                onChange={e => setAreaTotal(Number(e.target.value))}
-                placeholder="Ej: 120"
+                value={totalArea}
+                min={80}
+                max={1000}
+                onChange={handleAreaChange}
               />
+              {showMaxAreaAlert && (
+                <div className="text-red-600 font-bold text-xs mt-1">{t("designAreaExceeded")}</div>
+              )}
             </div>
             <div className="relative h-[500px] rounded-2xl overflow-hidden mb-8 bg-white border-2 border-blue-100 shadow-lg">
               <Image
@@ -411,7 +589,7 @@ export default function DisenaPage() {
               />
               {/* Indicador de imagen activa */}
               <div className="absolute bottom-4 left-4 bg-blue-700 bg-opacity-80 text-white px-3 py-1 rounded-full text-sm neutra-font">
-                {currentMainImage === "/images/u2-logo.png" ? "Vista por defecto" : "Vista personalizada"}
+                {currentMainImage === "/images/u2-logo.png" ? t("defaultView") : t("customView")}
               </div>
             </div>
             {/* Barra de progreso de selección de categorías */}
@@ -420,18 +598,10 @@ export default function DisenaPage() {
               <div className="flex-1 h-4 bg-blue-100 rounded-full overflow-hidden relative">
                 <div className="h-4 bg-gradient-to-r from-blue-500 to-orange-400 rounded-full transition-all duration-500" style={{ width: `${areaPercent}%` }} />
                 <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-blue-700">
-                  {areaPercent}% completado
+                  {areaPercent}% {t("areaCompleted")}
                 </div>
               </div>
             </div>
-            {/* Alerta visual si falta área */}
-            {areaTotal > 0 && areaUsed < areaTotal && (
-              <div className="text-red-600 font-bold text-sm mb-4 px-2">Te falta llenar {areaMissing} m² del área total</div>
-            )}
-            {/* Alerta visual si excede el área total */}
-            {areaTotal > 0 && areaUsed > areaTotal && (
-              <div className="text-red-600 font-bold text-sm mb-4 px-2">Has excedido el área total disponible. Reduce la selección o ajusta el área.</div>
-            )}
           </div>
           {/* Panel de configuración lateral con altura fija y scroll */}
           <div className="lg:col-span-1">
@@ -439,65 +609,80 @@ export default function DisenaPage() {
               {/* Header del panel */}
               <div className="p-4 border-b flex-shrink-0">
                 <h2 className="text-xl neutra-font-bold text-blue-600">
-                  {t("chooseThe") || "Elige los"} {categories.find((c) => c.id.toString() === activeTab)?.name}
+                  {t("chooseThe")} {categories.find((c) => c.id.toString() === activeTab)?.name}
                 </h2>
               </div>
               {/* Contenido scrolleable */}
               <div className="flex-1 overflow-y-auto p-4">
                   <div className="space-y-4">
                   {services.filter((s) => s.category_id.toString() === activeTab).map((service) => {
-                    // Calcular cantidad seleccionada de este servicio
-                    const selectedCount = (selectedOptions[service.category_id] || []).filter((o: any) => o.id === service.id).length
                     const maxUnits = SERVICE_MAX_UNITS[service.name_en];
-                                return (
-                          <Card
+                    const selectedQty = selectedOptions[service.category_id]?.[service.id] || 0;
+                    return (
+                      <Card
                         key={service.id}
-                            className={`p-3 cursor-pointer transition-all hover:shadow-md ${
-                          selectedOptions[service.category_id]?.some((o: any) => o.id === service.id)
-                                ? "border-blue-600 bg-blue-50"
-                                : "border-gray-200 hover:border-gray-300"
-                            }`}
-                        onClick={() => handleOptionSelect(service.category_id, service)}
-                          >
-                            <div className="flex items-center gap-3">
+                        className={`p-3 transition-all hover:shadow-md ${selectedQty > 0 ? "border-blue-600 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}
+                      >
+                        <div className="flex items-center gap-3">
                           {service.image && (
-                                <Image
+                            <Image
                               src={
                                 service.image.startsWith('http')
                                   ? service.image
                                   : `http://localhost:8000/media/${service.image.startsWith('services/') ? service.image : 'services/' + service.image}`
                               }
                               alt={service.name_es}
-                                  width={40}
-                                  height={40}
-                                  className="rounded object-cover"
-                                />
-                              )}
-                              <div className="flex-1">
+                              width={40}
+                              height={40}
+                              className="rounded object-cover"
+                            />
+                          )}
+                          <div className="flex-1">
                             <h4 className="neutra-font-bold text-gray-900 text-sm">{language === "es" ? service.name_es : service.name_en}</h4>
                             <p className="text-xs text-blue-600 neutra-font">${service.price_min_usd || 0} USD</p>
                             {SERVICE_AREA_MAX[service.name_en] && (
-                              <p className="text-xs text-gray-500">Área: {SERVICE_AREA_MAX[service.name_en]} m²</p>
+                              <p className="text-xs text-gray-500">{t("area")}: {SERVICE_AREA_MAX[service.name_en]} m²</p>
                             )}
-                              </div>
-                              {/* Checkmark para opciones seleccionadas */}
-                          {selectedOptions[service.category_id]?.some((o: any) => o.id === service.id) && (
-                                <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-                                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path
-                                      fillRule="evenodd"
-                                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                      clipRule="evenodd"
-                                    />
-                                  </svg>
-                                </div>
-                              )}
+                          </div>
+                          {/* Selector de cantidad para servicios con máximo */}
+                          {maxUnits ? (
+                            <div className="flex items-center gap-2">
+                              <button
+                                className="px-2 py-1 bg-blue-100 text-blue-700 rounded font-bold text-lg"
+                                onClick={() => handleOptionQuantity(service.category_id, service, -1, maxUnits)}
+                                disabled={selectedQty === 0}
+                              >-</button>
+                              <span className="font-bold text-blue-700 min-w-[20px] text-center">{selectedQty}</span>
+                              <button
+                                className="px-2 py-1 bg-blue-600 text-white rounded font-bold text-lg"
+                                onClick={() => handleOptionQuantity(service.category_id, service, 1, maxUnits)}
+                                disabled={selectedQty >= maxUnits}
+                              >+</button>
                             </div>
+                          ) : (
+                            <button
+                              className={`ml-2 px-3 py-1 rounded ${selectedQty > 0 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"}`}
+                              onClick={() => handleOptionQuantity(service.category_id, service, selectedQty > 0 ? -1 : 1)}
+                            >{selectedQty > 0 ? t("remove") : t("add")}</button>
+                          )}
+                          {/* Checkmark para opciones seleccionadas */}
+                          {selectedQty > 0 && (
+                            <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
+                              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                  fillRule="evenodd"
+                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
                         {/* Alerta visual si excede el máximo */}
-                        {maxUnits && selectedCount > maxUnits && (
-                          <div className="text-red-600 font-bold text-xs mt-2">Excediste el máximo permitido para este servicio ({maxUnits})</div>
+                        {maxUnits && selectedQty > maxUnits && (
+                          <div className="text-red-600 font-bold text-xs mt-2">{t("maxUnitsExceeded").replace("{{max}}", maxUnits.toString())}</div>
                         )}
-                          </Card>
+                      </Card>
                     );
                   })}
                   </div>
@@ -505,7 +690,7 @@ export default function DisenaPage() {
               {/* Panel de precio total - FIJO en la parte inferior */}
               <div className="border-t p-4 bg-white rounded-b-lg flex-shrink-0">
                 <div className="text-center mb-4">
-                  <p className="text-sm neutra-font-bold text-gray-700">{t("designCost") || "Costo del Diseño"}</p>
+                  <p className="text-sm neutra-font-bold text-gray-700">{t("designCost")}</p>
                   <div className="text-2xl neutra-font-black text-blue-600">
                     ${calculateTotal()} <span className="text-sm neutra-font">USD</span>
                   </div>
@@ -513,81 +698,101 @@ export default function DisenaPage() {
                 {/* Botones de acción */}
                 <div className="space-y-2">
                   <Button
-                    onClick={() => {
-                      if (areaTotal > 0 && areaUsed < areaTotal) {
-                        setShowAreaAlert(true);
-                        setShowAreaExceededAlert(false);
-                        return;
-                      }
-                      if (areaTotal > 0 && areaUsed > areaTotal) {
-                        setShowAreaAlert(false);
-                        setShowAreaExceededAlert(true);
-                        return;
-                      }
-                      setShowAreaAlert(false);
-                      setShowAreaExceededAlert(false);
-                      setShowQuote(true);
-                    }}
+                    onClick={handleCotizar}
                     className="w-full bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white py-2 neutra-font-black text-sm shadow-xl"
                   >
-                    {t("getYourQuote") || "Obtén tu Cotización"}
+                    {t("getYourQuote")}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
-                  {/* Modal de alerta visual si falta área, solo al intentar cotizar */}
-                  {showAreaAlert && (
+                  {/* Modal flotante de sugerencias al intentar cotizar si falta área */}
+                  {showSuggestionsModal && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full relative animate-fade-in">
+                      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full relative animate-fade-in border-2 border-blue-100">
                         <button
                           className="absolute top-3 right-3 text-gray-400 hover:text-blue-600 text-2xl font-bold"
-                          onClick={() => setShowAreaAlert(false)}
+                          onClick={() => setShowSuggestionsModal(false)}
                           aria-label="Cerrar"
                         >
-                          ×
                         </button>
-                        <div className="text-red-600 font-bold text-lg mb-2 text-center">
-                          Te falta llenar <b>{areaMissing} m²</b> del área total para poder cotizar.
-                        </div>
-                        {serviceSuggestions.length > 0 ? (
-                          <div className="mt-4">
-                            <div className="text-blue-700 font-semibold mb-2 text-center">Puedes agregar alguno de estos espacios:</div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[350px] overflow-y-auto">
-                              {Object.entries(SERVICE_AREA_MAX)
-                                .filter(([name, area]) => area && areaMissing >= area)
-                                .map(([name, area], i) => {
-                                  const service = services.find(s => s.name_en === name)
-                                  return (
-                                    <div key={i} className="flex items-center gap-3 bg-blue-50 rounded p-2">
-                                      {service?.image && (
-                                        <Image src={service.image} alt={service.name_es} width={40} height={40} className="rounded object-cover" />
-                                      )}
-                                      <div>
-                                        <div className="font-bold text-gray-800 text-sm">{service ? service.name_es : name}</div>
-                                        <div className="text-xs text-gray-500">{service ? service.name_en : name}</div>
-                                        <div className="text-xs text-blue-700">Área: {area} m²</div>
-                                      </div>
+                        <h2 className="text-xl font-bold text-blue-700 mb-4 text-center">{t("suggestionsTitle")}</h2>
+                        <p className="text-gray-700 mb-4 text-center">{t("suggestionsDescription")}</p>
+                        <ul className="space-y-3 max-h-80 overflow-y-auto">
+                          {services
+                            .filter(s => {
+                              const area = SERVICE_AREA_MAX[s.name_en] || 0;
+                              // No sugerir los que ya están seleccionados ni los de los defaults
+                              const yaSeleccionado = Object.entries(selectedOptions).some(([catId, servicesObj]) => 
+                                Object.keys(servicesObj).includes(s.id.toString())
+                              );
+                              const esDefault = defaultNames.includes(s.name_en);
+                              return area > 0 && area <= areaRestante && !yaSeleccionado && !esDefault;
+                            })
+                            .length === 0 ? (
+                              <li className="text-center text-gray-500 flex flex-col items-center gap-4">
+                                {t("noSuggestionsAvailable")}
+                                <div className="flex gap-3 justify-center mt-2">
+                                  {areaUsed > 80 && (
+                                    <button
+                                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded shadow text-sm"
+                                      onClick={() => {
+                                        setTotalArea(Math.max(areaUsed, 80)); // Disminuir área restante, nunca menos de 80
+                                        setShowSuggestionsModal(false);
+                                      }}
+                                    >
+                                      {t("decreaseRemainingArea")}
+                                    </button>
+                                  )}
+                                  <button
+                                    className="bg-orange-400 hover:bg-orange-500 text-white font-bold py-1 px-3 rounded shadow text-sm"
+                                    onClick={() => {
+                                      setShowSuggestionsModal(false);
+                                      setTimeout(() => {
+                                        const input = document.querySelector('input[type="number"]#areaTotal') as HTMLInputElement;
+                                        if (input) input.focus();
+                                      }, 100);
+                                    }}
+                                  >
+                                    {t("increaseTotalArea")}
+                                  </button>
+                                </div>
+                              </li>
+                            ) : (
+                              services
+                                .filter(s => {
+                                  const area = SERVICE_AREA_MAX[s.name_en] || 0;
+                                  const yaSeleccionado = Object.entries(selectedOptions).some(([catId, servicesObj]) => 
+                                    Object.keys(servicesObj).includes(s.id.toString())
+                                  );
+                                  const esDefault = defaultNames.includes(s.name_en);
+                                  return area > 0 && area <= areaRestante && !yaSeleccionado && !esDefault;
+                                })
+                                .map(s => (
+                                  <li key={s.id} className="flex items-center justify-between bg-blue-50 rounded p-3 border border-blue-100">
+                                    <div>
+                                      <span className="font-bold text-gray-800">{s.name_es}</span>
+                                      <span className="text-xs text-blue-700 ml-2">{SERVICE_AREA_MAX[s.name_en]} m²</span>
                                     </div>
-                                  )
-                                })}
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="mt-4 text-center text-blue-700">O reduce el área total para ajustarla al área ocupada.</div>
-                        )}
-                        <div className="flex flex-col sm:flex-row gap-3 mt-6 justify-center">
-                          <button
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition font-bold"
-                            onClick={() => {
-                              setAreaTotal(areaUsed);
-                              setShowAreaAlert(false);
-                            }}
-                          >
-                            Reducir área total a {areaUsed} m²
-                          </button>
+                                    <button
+                                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-3 rounded shadow text-sm"
+                                      onClick={() => {
+                                        setSelectedOptions(prev => {
+                                          const current = prev[s.category_id] || {};
+                                          return { ...prev, [s.category_id]: { ...current, [s.id]: (current[s.id] || 0) + 1 } };
+                                        });
+                                      }}
+                                    >
+                                      {t("add")}
+                                    </button>
+                                  </li>
+                                ))
+                            )}
+                        </ul>
+                        <div className="flex justify-center mt-6">
                           <button
                             className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition font-bold"
-                            onClick={() => setShowAreaAlert(false)}
+                            onClick={() => setShowSuggestionsModal(false)}
                           >
-                            Cerrar
+                            {t("close")}
                           </button>
                         </div>
                       </div>
@@ -595,7 +800,7 @@ export default function DisenaPage() {
                   )}
                   {/* Alerta visual si excede el área, solo al intentar cotizar */}
                   {showAreaExceededAlert && (
-                    <div className="text-red-600 font-bold text-sm mt-2">Has excedido el área total disponible. Reduce la selección o ajusta el área para poder cotizar.</div>
+                    <div className="text-red-600 font-bold text-sm mt-2">{t("areaExceededAlert")}</div>
                   )}
                 </div>
               </div>

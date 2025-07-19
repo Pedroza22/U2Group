@@ -9,9 +9,10 @@ import { useLanguage } from "@/hooks/use-language"
 
 interface HeaderProps {
   currentPage?: string
+  onLogoClick?: () => void
 }
 
-export default function Header({ currentPage }: HeaderProps) {
+export default function Header({ currentPage, onLogoClick }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { language, setLanguage, t } = useLanguage()
 
@@ -38,10 +39,14 @@ export default function Header({ currentPage }: HeaderProps) {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* LOGO */}
-          <Link href="/" className="flex items-center" onClick={() => (window.location.href = "/")}>
+          <a
+            className="flex items-center cursor-pointer"
+            onClick={onLogoClick ? (e) => { e.preventDefault(); onLogoClick(); } : undefined}
+            href="/"
+          >
             <Image src="/images/u2-logo.png" alt="U2 Group" width={80} height={80} className="mr-2" />
             <span className="text-xl neutra-font-black text-blue-600"></span>
-          </Link>
+          </a>
 
           {/* NAVEGACIÓN DESKTOP */}
           <nav className="hidden md:flex items-center space-x-8">

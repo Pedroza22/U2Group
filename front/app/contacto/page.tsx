@@ -9,6 +9,7 @@ import { ArrowRight, Mail, Phone, MapPin } from "lucide-react"
 import Header from "@/components/layout/header"
 import Footer from "@/components/layout/footer"
 import { useLanguage } from "@/hooks/use-language"
+import axios from "axios";
 
 export default function ContactoPage() {
   const { t } = useLanguage()
@@ -21,17 +22,38 @@ export default function ContactoPage() {
     timeline: "",
     comments: "",
   })
+  const [enviando, setEnviando] = useState(false);
+  const [exito, setExito] = useState(false);
+  const [error, setError] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Form submitted:", formData)
-    // Aquí iría la lógica de envío del formulario
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEnviando(true);
+    setExito(false);
+    setError("");
+    try {
+      await axios.post("http://localhost:8000/api/send-contact-message/", formData);
+      setExito(true);
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        projectLocation: "",
+        timeline: "",
+        comments: "",
+      });
+    } catch (err) {
+      setError(t("messageError"));
+    } finally {
+      setEnviando(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white neutra-font">
@@ -62,7 +84,7 @@ export default function ContactoPage() {
                 </div>
                 <div>
                   <h3 className="text-lg neutra-font-bold text-gray-900 mb-1">{t("email")}</h3>
-                  <p className="text-gray-600 neutra-font">hello@u2group.com</p>
+                  <p className="text-gray-600 neutra-font">sales-team@u2.group</p>
                 </div>
               </div>
 
@@ -72,7 +94,7 @@ export default function ContactoPage() {
                 </div>
                 <div>
                   <h3 className="text-lg neutra-font-bold text-gray-900 mb-1">{t("phone")}</h3>
-                  <p className="text-gray-600 neutra-font">+3043001791</p>
+                  <p className="text-gray-600 neutra-font">3164035330 - 3043618282</p>
                 </div>
               </div>
 
@@ -82,7 +104,7 @@ export default function ContactoPage() {
                 </div>
                 <div>
                   <h3 className="text-lg neutra-font-bold text-gray-900 mb-1">{t("office")}</h3>
-                  <p className="text-gray-600 neutra-font">Pasto, Colombia</p>
+                  <p className="text-gray-600 neutra-font">Colombia</p>
                 </div>
               </div>
             </div>
@@ -230,23 +252,35 @@ export default function ContactoPage() {
                   />
                 </div>
 
+                {error && (
+                  <div className="text-red-600 text-sm">{error}</div>
+                )}
+
+                {exito && (
+                  <div className="text-green-600 text-sm">{t("messageSent")}</div>
+                )}
+
                 <Button
                   type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg neutra-font-bold"
+                  disabled={enviando}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
                 >
-                  {t("sendMessage")}
-                  <ArrowRight className="w-5 h-5 ml-2" />
+                  {enviando ? (
+                    t("sendingMessage")
+                  ) : (
+                    <>
+                      {t("sendMessageButton")}
+                      <ArrowRight className="w-5 h-5" />
+                    </>
+                  )}
                 </Button>
-
-                <p className="text-xs text-gray-500 neutra-font text-center">
-                  {t("submitForm")}
-                </p>
               </form>
             </Card>
           </div>
         </div>
       </div>
 
+      <div className="w-full h-2 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-100 my-8" />
       <Footer />
     </div>
   )

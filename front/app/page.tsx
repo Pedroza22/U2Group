@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import axios from "axios";
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ArrowRight } from "lucide-react"
@@ -79,9 +80,14 @@ function SimpleCalculator() {
 
 export default function HomePage() {
   const { t } = useLanguage();
+  // TODOS LOS HOOKS DEBEN IR AQUÍ, ANTES DE CUALQUIER RETURN O IF
   const [showMainContent, setShowMainContent] = useState(false)
   const [showVideo, setShowVideo] = useState(false)
   const [mounted, setMounted] = useState(false)
+  // Blogs dinámicos
+  const [blogs, setBlogs] = useState<any[]>([]);
+  const [loadingBlogs, setLoadingBlogs] = useState(true);
+  const [errorBlogs, setErrorBlogs] = useState("");
 
   useEffect(() => {
     setMounted(true)
@@ -97,6 +103,23 @@ export default function HomePage() {
       setShowMainContent(true)
     }
   }, [])
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoadingBlogs(true);
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/admin";
+        const res = await axios.get(`${API_URL}/blogs/`);
+        setBlogs((res.data as any[]).slice(0, 4)); // Solo los 4 más recientes
+        setErrorBlogs("");
+      } catch (err) {
+        setErrorBlogs("Error loading blogs");
+      } finally {
+        setLoadingBlogs(false);
+      }
+    };
+    fetchBlogs();
+  }, []);
 
   const handleVideoEnd = () => {
     setShowVideo(false)
@@ -114,7 +137,7 @@ export default function HomePage() {
       <div className="min-h-screen bg-gray-200 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando...</p>
+          <p className="text-gray-600">{t("loading")}</p>
         </div>
       </div>
     )
@@ -122,42 +145,6 @@ export default function HomePage() {
 
   // Debug info
   console.log("🎯 Current render state:", { showVideo, showMainContent, mounted })
-
-  // Datos de blogs estáticos
-  const featuredBlogs = [
-    {
-      id: "1",
-      title: "Tendencias en diseño arquitectónico moderno",
-      category: "Diseño Interior",
-      image: "/placeholder.svg?height=150&width=200",
-      date: "2024-01-15",
-      readTime: "5 min",
-    },
-    {
-      id: "2",
-      title: "Arquitectura sostenible y eco-friendly",
-      category: "Sostenibilidad",
-      image: "/placeholder.svg?height=150&width=200",
-      date: "2024-02-20",
-      readTime: "7 min",
-    },
-    {
-      id: "3",
-      title: "Espacios de trabajo creativos y productivos",
-      category: "Corporativo",
-      image: "/placeholder.svg?height=150&width=200",
-      date: "2024-03-10",
-      readTime: "6 min",
-    },
-    {
-      id: "4",
-      title: "Remodelación de casas históricas",
-      category: "Residencial",
-      image: "/placeholder.svg?height=150&width=200",
-      date: "2024-04-05",
-      readTime: "8 min",
-    },
-  ]
 
   // BLOGS Y NOTICIAS
   // Mapeo de categorías traducidas
@@ -174,7 +161,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-white neutra-font">
-      <Header currentPage="inicio" />
+      <Header currentPage="inicio" onLogoClick={handleLogoClick} />
       {/* VIDEO DE INTRO - Pantalla de carga */}
       {showVideo && <IntroVideo onVideoEnd={handleVideoEnd} />}
       {/* CONTENIDO PRINCIPAL */}
@@ -283,11 +270,18 @@ export default function HomePage() {
                 <p className="text-xl text-gray-700 max-w-2xl mx-auto mb-6 neutra-font">{t("newsSubtitle")}</p>
               </div>
               <div className="grid md:grid-cols-2 gap-10 mb-8">
-                {featuredBlogs.map((post) => (
+                {loadingBlogs ? (
+                  <div className="col-span-2 text-center py-10 text-gray-500">{t("loading")}...</div>
+                ) : errorBlogs ? (
+                  <div className="col-span-2 text-center py-10 text-red-500">{errorBlogs}</div>
+                ) : blogs.length === 0 ? (
+                  <div className="col-span-2 text-center py-10 text-gray-500">{t("noBlogs")}</div>
+                ) : (
+                  blogs.map((post) => (
                   <Card key={post.id} className="bg-white border-2 border-blue-100 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow">
                     <div className="flex flex-col md:flex-row items-center">
                       <div className="w-full md:w-1/3 flex items-center justify-center p-6">
-                        <Image src={post.image} alt={post.title} width={150} height={120} className="rounded-xl object-cover border border-blue-100" />
+                          <Image src={post.image || (post.images && post.images[0]) || "/placeholder.svg"} alt={post.title} width={150} height={120} className="rounded-xl object-cover border border-blue-100" />
                       </div>
                       <div className="w-full md:w-2/3 p-6">
                         <div className="mb-3">
@@ -295,7 +289,7 @@ export default function HomePage() {
                             {categoryTranslationMap[post.category] || post.category}
                           </span>
                           <span className="text-gray-500 text-sm ml-2">
-                            • {post.date} • {post.readTime}
+                              • {post.date} • {post.read_time || post.readTime}
                           </span>
                         </div>
                         <h3 className="font-bold text-gray-900 mb-4 text-lg leading-tight">{post.title}</h3>
@@ -312,7 +306,8 @@ export default function HomePage() {
                       </div>
                     </div>
                   </Card>
-                ))}
+                  ))
+                )}
               </div>
               <div className="text-center">
                 <Link href="/blog">

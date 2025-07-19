@@ -54,7 +54,7 @@ export default function NosotrosPage() {
       id: 1,
       title: t("weListen") || "We listen",
       description: t("weListenDescription") || "No tomamos decisiones hasta que tu visión esté clara.",
-      image: "",
+      image: "/animacion4.jpg",
     },
     {
       id: 2,
@@ -62,7 +62,7 @@ export default function NosotrosPage() {
       description:
         t("weCreateConceptDescription") ||
         "This is where the magic begins: we blend function, aesthetics, and emotion into a unique concept. Every detail comes from your real needs. No templates only purpose.",
-      image: "",
+      image: "/animacion3.png",
     },
     {
       id: 3,
@@ -70,7 +70,7 @@ export default function NosotrosPage() {
       description:
         t("youVisualize3DDescription") ||
         "With our hyper-realistic renders, you'll walk through and feel your home before a single brick is laid. That way, you make decisions with clarity and confidence.",
-      image: "",
+      image: "/animacion2.jpeg",
     },
     {
       id: 4,
@@ -78,7 +78,7 @@ export default function NosotrosPage() {
       description:
         t("weBuildWithYouDescription") ||
         "From plans to finishes, you're part of every step. We guide you, keep you informed, and walk with you. Your home isn't built alone it's built with you.",
-      image: "",
+      image: "/animacion1.png",
     },
   ]
 
@@ -106,20 +106,17 @@ export default function NosotrosPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <h1 className="text-5xl md:text-7xl lg:text-8xl neutra-font-black leading-tight mb-8 text-blue-700 drop-shadow-md text-center">
-              {t("heroTitle") ||
-                (language === "en"
-                  ? "We are more than architects, we are experience creators"
-                  : "Somos más que arquitectos, somos creadores de experiencias")}
+              {t("heroTitle")}
             </h1>
             <div className="grid md:grid-cols-2 gap-8 mb-12">
               <div>
                 <p className="text-xl text-gray-700 mb-4 neutra-font text-center md:text-left">
-                  Con más de 4 años de experiencia en la industria, hemos trabajado en diferentes climas, contextos y desafíos siempre con el mismo objetivo: hacer que la arquitectura sea más simple, inteligente y personal.
+                  {t("heroDescription1")}
                 </p>
               </div>
               <div>
                 <p className="text-xl text-gray-700 neutra-font text-center md:text-left">
-                  Ya sea que estés construyendo en las montañas, la ciudad o junto al mar, te ayudamos a dar vida a tu visión donde quiera que estés.
+                  {t("heroDescription2")}
                 </p>
               </div>
             </div>
@@ -142,9 +139,7 @@ export default function NosotrosPage() {
             <div className="w-full flex justify-center mt-8">
               <div className="rounded-2xl shadow-2xl bg-gradient-to-br from-blue-50 via-white to-blue-100 border border-blue-100 px-10 py-10 max-w-3xl mx-auto">
                 <p className="text-xl text-blue-900 leading-relaxed neutra-font text-center">
-                  {activeButton === "mission"
-                    ? t("missionDescription")
-                    : t("visionDescription")}
+                  {activeButton === "mission" ? t("missionDescription") : t("visionDescription")}
                 </p>
               </div>
             </div>
@@ -233,12 +228,14 @@ export default function NosotrosPage() {
       <section className="w-full py-20 md:py-32 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-5xl md:text-7xl neutra-font-black text-blue-600 mb-12 text-center drop-shadow-md">{t("howWeDo")}</h2>
-            <div className="grid md:grid-cols-2 gap-16 items-center">
+            <h2 className="text-5xl md:text-7xl neutra-font-black text-blue-600 mb-12 text-center drop-shadow-md">
+              {t("howWeDo")}
+            </h2>
+            <div className="grid md:grid-cols-2 gap-12 items-center">
               {/* Imagen del paso actual */}
               <div className="relative">
                 <Image
-                  src={processSteps[currentStep - 1].image || "/placeholder.svg"}
+                  src={processSteps[currentStep - 1].image || "/animacion1.png"}
                   alt={processSteps[currentStep - 1].title}
                   width={600}
                   height={400}
@@ -247,30 +244,40 @@ export default function NosotrosPage() {
               </div>
               {/* Contenido del paso actual */}
               <div>
-                <div className="text-7xl neutra-font-black text-blue-100 mb-4 text-center md:text-left">{currentStep}.</div>
-                <h3 className="text-4xl md:text-5xl neutra-font-bold text-blue-700 mb-6 text-center md:text-left">
+                <h3 className="text-4xl neutra-font-bold text-blue-600 mb-6">
                   {processSteps[currentStep - 1].title}
                 </h3>
-                <p className="text-xl text-gray-700 mb-8 neutra-font text-center md:text-left">{processSteps[currentStep - 1].description}</p>
-                {/* Botones de navegación */}
-                <div className="flex items-center gap-4 justify-center md:justify-start">
-                  <Button
+                <p className="text-lg text-gray-700 neutra-font mb-8">
+                  {processSteps[currentStep - 1].description}
+                </p>
+                <div className="flex items-center justify-between">
+                  {/* Navegación con botones circulares */}
+                  <div className="flex items-center gap-6">
+                    <button
                     onClick={prevStep}
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-14 h-14 p-0 shadow-lg"
+                      className="w-12 h-12 rounded-full bg-white hover:bg-blue-50 border-2 border-blue-200 text-blue-600 hover:text-blue-800 hover:border-blue-400 transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg group"
+                      aria-label="Previous step"
+                    >
+                      <ChevronLeft className="w-6 h-6 transform group-hover:scale-110 transition-transform duration-300" />
+                    </button>
+                    <span className="text-blue-600 neutra-font-bold">
+                      {currentStep} / {processSteps.length}
+                    </span>
+                    <button
+                      onClick={nextStep}
+                      className="w-12 h-12 rounded-full bg-white hover:bg-blue-50 border-2 border-blue-200 text-blue-600 hover:text-blue-800 hover:border-blue-400 transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg group"
+                      aria-label="Next step"
                   >
-                    <ChevronLeft className="w-7 h-7" />
-                  </Button>
+                      <ChevronRight className="w-6 h-6 transform group-hover:scale-110 transition-transform duration-300" />
+                    </button>
+                  </div>
+                  {/* Botón "Start Now" solo en el último paso */}
+                  {currentStep === processSteps.length && (
+                    <Link href="/disena">
                   <Button
-                    onClick={nextStep}
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-14 h-14 p-0 shadow-lg"
-                  >
-                    <ChevronRight className="w-7 h-7" />
-                  </Button>
-                  {/* Botón Start Now solo en el último paso */}
-                  {currentStep === 4 && (
-                    <Link href="/disena" onClick={scrollToTop}>
-                      <Button className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-10 py-4 rounded-full neutra-font-black ml-4 shadow-xl text-lg">
-                        {t("startNow")}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full neutra-font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                      >
+                        {t("startProject")}
                       </Button>
                     </Link>
                   )}
@@ -299,7 +306,7 @@ export default function NosotrosPage() {
               <div className="bg-white rounded-2xl p-10 shadow-2xl text-center border-2 border-blue-100 hover:shadow-blue-200 transition-shadow">
                 <div className="mb-6">
                   <Image
-                    src="/placeholder.svg?height=120&width=120"
+                    src="https://avataaars.io/?avatarStyle=Circle&topType=LongHairStraight&accessoriesType=Blank&hairColor=Brown&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Default&mouthType=Default&skinColor=Light"
                     alt="Sofía Solarte"
                     width={120}
                     height={120}
@@ -310,22 +317,22 @@ export default function NosotrosPage() {
                 </div>
                 {/* Redes sociales */}
                 <div className="flex justify-center gap-4">
-                  <Link href="#" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
+                  <Link href="https://www.linkedin.com/in/sofia-solarte-cabrera-0143b4157/" target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
                     <Linkedin className="w-5 h-5 text-blue-600" />
                   </Link>
-                  <Link href="#" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
-                    <Facebook className="w-5 h-5 text-blue-600" />
-                  </Link>
-                  <Link href="#" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
-                    <Twitter className="w-5 h-5 text-blue-600" />
+                  <Link href="https://www.instagram.com/sosolarte?igsh=MXhtZmFsamlnOXRxMQ%3D%3D&utm_source=qr" target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
+                    <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M7.75 2h8.5C19.55 2 22 4.45 22 7.75v8.5C22 19.55 19.55 22 16.25 22h-8.5C4.45 22 2 19.55 2 16.25v-8.5C2 4.45 4.45 2 7.75 2zm0 2C5.68 4 4 5.68 4 7.75v8.5C4 18.32 5.68 20 7.75 20h8.5c2.07 0 3.75-1.68 3.75-3.75v-8.5C20 5.68 18.32 4 16.25 4h-8.5zM12 7a5 5 0 110 10 5 5 0 010-10zm0 2a3 3 0 100 6 3 3 0 000-6zm5.5-.25a1.25 1.25 0 110 2.5 1.25 1.25 0 010-2.5z" />
+                    </svg>
                   </Link>
                 </div>
               </div>
+
               {/* Juan José Lima */}
               <div className="bg-white rounded-2xl p-10 shadow-2xl text-center border-2 border-blue-100 hover:shadow-blue-200 transition-shadow">
                 <div className="mb-6">
                   <Image
-                    src="/placeholder.svg?height=120&width=120"
+                    src="https://avataaars.io/?avatarStyle=Circle&topType=ShortHairShortCurly&accessoriesType=Blank&hairColor=Black&facialHairType=BeardLight&facialHairColor=Black&clotheType=CollarSweater&eyeType=Happy&eyebrowType=Default&mouthType=Smile&skinColor=Light"
                     alt="Juan José Lima"
                     width={120}
                     height={120}
@@ -336,14 +343,13 @@ export default function NosotrosPage() {
                 </div>
                 {/* Redes sociales */}
                 <div className="flex justify-center gap-4">
-                  <Link href="#" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
+                  <Link href="https://www.linkedin.com/in/juanjose-lima/" target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
                     <Linkedin className="w-5 h-5 text-blue-600" />
                   </Link>
-                  <Link href="#" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
-                    <Facebook className="w-5 h-5 text-blue-600" />
-                  </Link>
-                  <Link href="#" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
-                    <Twitter className="w-5 h-5 text-blue-600" />
+                  <Link href="https://www.instagram.com/limao9?igsh=eXB3dHU4cGdxcHRp" target="_blank" rel="noopener noreferrer" className="p-2 bg-blue-50 rounded-full hover:bg-blue-100 transition-colors">
+                    <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M7.75 2h8.5C19.55 2 22 4.45 22 7.75v8.5C22 19.55 19.55 22 16.25 22h-8.5C4.45 22 2 19.55 2 16.25v-8.5C2 4.45 4.45 2 7.75 2zm0 2C5.68 4 4 5.68 4 7.75v8.5C4 18.32 5.68 20 7.75 20h8.5c2.07 0 3.75-1.68 3.75-3.75v-8.5C20 5.68 18.32 4 16.25 4h-8.5zM12 7a5 5 0 110 10 5 5 0 010-10zm0 2a3 3 0 100 6 3 3 0 000-6zm5.5-.25a1.25 1.25 0 110 2.5 1.25 1.25 0 010-2.5z" />
+                    </svg>
                   </Link>
                 </div>
               </div>

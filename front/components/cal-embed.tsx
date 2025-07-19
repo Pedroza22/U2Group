@@ -289,7 +289,7 @@ export function CalEmbed({ calLink, showDemo = false }: CalEmbedProps) {
           <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-600">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-blue-50 border border-blue-200 rounded"></div>
-              <span>Disponible</span>
+              <span>Available</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-gray-50 rounded"></div>
@@ -328,7 +328,7 @@ export function CalEmbed({ calLink, showDemo = false }: CalEmbedProps) {
             </Button>
 
             <p className="text-xs text-gray-500 text-center mt-2">
-              Haz clic en un día disponible o usa el botón para agendar
+              Click on an available day or use the button to schedule
             </p>
           </div>
         </div>

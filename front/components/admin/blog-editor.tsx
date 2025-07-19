@@ -120,7 +120,7 @@ export default function BlogEditor({ blog, onSave, onCancel }: BlogEditorProps) 
     try {
       await onSave(formData as any);
     } catch (err: any) {
-      setApiError(err?.response?.data?.detail || "Error al guardar el blog. Verifica los campos.");
+              setApiError(err?.response?.data?.detail || "Error saving blog. Check the fields.");
     }
   };
 

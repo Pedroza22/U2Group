@@ -125,7 +125,7 @@ export default function BlogPostPage() {
   };
 
   if (loading) {
-    return <div>Cargando blog...</div>;
+    return <div>Loading blog...</div>;
   }
   if (error || !blogPost) {
     return <div className="text-red-600">{error || "Blog no encontrado."}</div>;
@@ -249,34 +249,8 @@ export default function BlogPostPage() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center text-gray-500 neutra-font">(Por llenar - No hay blogs disponibles)</div>
+                  <div className="text-center text-gray-500 neutra-font">(To be filled - No blogs available)</div>
                 )}
-              </div>
-            </div>
-
-            {/* Suscripción al newsletter */}
-            <div className="bg-gray-800 text-white rounded-lg p-6 mb-8">
-              <h3 className="text-xl neutra-font-bold mb-2">Únete al Newsletter</h3>
-              <p className="text-gray-300 text-sm mb-4 neutra-font">
-                Recibe los últimos blogs y artículos directamente en tu email
-              </p>
-              <div className="space-y-3">
-                <input
-                  type="email"
-                  placeholder="tu@email.com"
-                  className="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 neutra-font"
-                />
-                <Button className="w-full bg-white text-gray-800 hover:bg-gray-100 neutra-font">Suscribirse</Button>
-              </div>
-            </div>
-
-            {/* Compartir artículo */}
-            <div className="mb-8">
-              <h3 className="text-lg neutra-font-bold text-gray-900 mb-4">Compartir Artículo</h3>
-              <div className="flex gap-3">
-                <Button variant="outline" size="sm" className="bg-gray-100 hover:bg-gray-200">
-                  <Twitter className="w-4 h-4" />
-                </Button>
               </div>
             </div>
           </div>
@@ -317,7 +291,7 @@ export default function BlogPostPage() {
             </div>
           ) : (
             <div className="text-center text-gray-500 neutra-font mb-8">
-              No hay blogs relacionados disponibles
+              No related blogs available
             </div>
           )}
 

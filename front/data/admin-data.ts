@@ -1,24 +1,28 @@
 // MÓDULO DE DATOS PARA EL ADMINISTRADOR
 // Aquí se definen todas las interfaces y datos iniciales
 
+export type ProjectCategory = "residencial" | "comercial" | "industrial" | "educativo" | "hospitalario" | "cultural" | "deportivo" | "mixto";
+export type ProjectType = "casa" | "apartamento" | "oficina" | "local" | "hotel" | "restaurante" | "hospital" | "clinica" | "colegio" | "universidad" | "museo" | "teatro" | "estadio" | "gimnasio";
+export type ProjectStatus = "Planning" | "In Progress" | "Completed" | "On Hold";
+
 export interface AdminProject {
-  id: number
-  name: string // Nombre que aparece en las tarjetas de proyectos
-  displayTitle?: string // Título que aparece en la página de detalle (opcional)
-  color: string
-  image: string
-  utilization: string
-  services: string
-  year: string
-  category: string
-  type: string
-  size: string
-  location: string
-  status: string
-  featured: boolean
-  description?: string
-  features?: string[]
-  images?: string[] // Array de imágenes adicionales
+  id: number;
+  name: string;
+  displayTitle?: string;
+  color: string;
+  image: string;
+  utilization: string;
+  services: string;
+  year: string;
+  category: ProjectCategory;
+  type: ProjectType;
+  size: string;
+  location: string;
+  status: ProjectStatus;
+  featured: boolean;
+  description?: string;
+  features?: string[];
+  images?: string[];
 }
 
 export interface AdminBlog {
@@ -284,9 +288,9 @@ export const getAdminProjects = (): AdminProject[] => [
     utilization: "Casa Privada",
     services: "Diseño de Casa Privada",
     year: "2025",
-    category: "Residencial",
-    type: "Casa Privada",
-    size: "140m2",
+    category: "residencial",
+    type: "casa",
+    size: "140m2", 
     location: "Madrid, España",
     status: "Completed",
     featured: true,
