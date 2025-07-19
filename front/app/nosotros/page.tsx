@@ -106,20 +106,17 @@ export default function NosotrosPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <h1 className="text-5xl md:text-7xl lg:text-8xl neutra-font-black leading-tight mb-8 text-blue-700 drop-shadow-md text-center">
-              {t("heroTitle") ||
-                (language === "en"
-                  ? "We are more than architects, we are experience creators"
-                  : "Somos más que arquitectos, somos creadores de experiencias")}
+              {t("heroTitle")}
             </h1>
             <div className="grid md:grid-cols-2 gap-8 mb-12">
               <div>
                 <p className="text-xl text-gray-700 mb-4 neutra-font text-center md:text-left">
-                  Con más de 4 años de experiencia en la industria, hemos trabajado en diferentes climas, contextos y desafíos siempre con el mismo objetivo: hacer que la arquitectura sea más simple, inteligente y personal.
+                  {t("heroDescription1")}
                 </p>
               </div>
               <div>
                 <p className="text-xl text-gray-700 neutra-font text-center md:text-left">
-                  Ya sea que estés construyendo en las montañas, la ciudad o junto al mar, te ayudamos a dar vida a tu visión donde quiera que estés.
+                  {t("heroDescription2")}
                 </p>
               </div>
             </div>
@@ -142,9 +139,7 @@ export default function NosotrosPage() {
             <div className="w-full flex justify-center mt-8">
               <div className="rounded-2xl shadow-2xl bg-gradient-to-br from-blue-50 via-white to-blue-100 border border-blue-100 px-10 py-10 max-w-3xl mx-auto">
                 <p className="text-xl text-blue-900 leading-relaxed neutra-font text-center">
-                  {activeButton === "mission"
-                    ? t("missionDescription")
-                    : t("visionDescription")}
+                  {activeButton === "mission" ? t("missionDescription") : t("visionDescription")}
                 </p>
               </div>
             </div>
@@ -246,63 +241,43 @@ export default function NosotrosPage() {
                   height={400}
                   className="rounded-2xl object-cover w-full h-[400px] border-2 border-blue-100 shadow-lg"
                 />
-
-                {/* Galería de miniaturas */}
-                <div className="flex justify-center mt-6 gap-4 flex-wrap">
-                  {processSteps.map((step, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentStep(index + 1)}
-                      className={`border-2 rounded-xl overflow-hidden transition-all duration-300 ${
-                        currentStep === index + 1
-                          ? "border-blue-600 ring-2 ring-blue-300 scale-105"
-                          : "border-gray-200 hover:border-blue-400"
-                      }`}
-                    >
-                      <Image
-                        src={step.image || "/placeholder.svg"}
-                        alt={step.title}
-                        width={100}
-                        height={66}
-                        className="object-cover w-[100px] h-[66px]"
-                      />
-                    </button>
-                  ))}
-                </div>
               </div>
-
               {/* Contenido del paso actual */}
               <div>
-                <div className="text-7xl neutra-font-black text-blue-100 mb-4 text-center md:text-left">
-                  {currentStep}.
-                </div>
-                <h3 className="text-4xl md:text-5xl neutra-font-bold text-blue-700 mb-6 text-center md:text-left">
+                <h3 className="text-4xl neutra-font-bold text-blue-600 mb-6">
                   {processSteps[currentStep - 1].title}
                 </h3>
-                <p className="text-xl text-gray-700 mb-8 neutra-font text-center md:text-left">
+                <p className="text-lg text-gray-700 neutra-font mb-8">
                   {processSteps[currentStep - 1].description}
                 </p>
-
-                {/* Botones de navegación */}
-                <div className="flex items-center gap-4 justify-center md:justify-start">
-                  <Button
+                <div className="flex items-center justify-between">
+                  {/* Navegación con botones circulares */}
+                  <div className="flex items-center gap-6">
+                    <button
                     onClick={prevStep}
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-14 h-14 p-0 shadow-lg"
+                      className="w-12 h-12 rounded-full bg-white hover:bg-blue-50 border-2 border-blue-200 text-blue-600 hover:text-blue-800 hover:border-blue-400 transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg group"
+                      aria-label="Previous step"
+                    >
+                      <ChevronLeft className="w-6 h-6 transform group-hover:scale-110 transition-transform duration-300" />
+                    </button>
+                    <span className="text-blue-600 neutra-font-bold">
+                      {currentStep} / {processSteps.length}
+                    </span>
+                    <button
+                      onClick={nextStep}
+                      className="w-12 h-12 rounded-full bg-white hover:bg-blue-50 border-2 border-blue-200 text-blue-600 hover:text-blue-800 hover:border-blue-400 transition-all duration-300 flex items-center justify-center shadow-md hover:shadow-lg group"
+                      aria-label="Next step"
                   >
-                    <ChevronLeft className="w-7 h-7" />
-                  </Button>
+                      <ChevronRight className="w-6 h-6 transform group-hover:scale-110 transition-transform duration-300" />
+                    </button>
+                  </div>
+                  {/* Botón "Start Now" solo en el último paso */}
+                  {currentStep === processSteps.length && (
+                    <Link href="/disena">
                   <Button
-                    onClick={nextStep}
-                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-14 h-14 p-0 shadow-lg"
-                  >
-                    <ChevronRight className="w-7 h-7" />
-                  </Button>
-
-                  {/* Botón Start Now solo en el último paso */}
-                  {currentStep === 4 && (
-                    <Link href="/disena" onClick={scrollToTop}>
-                      <Button className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-10 py-4 rounded-full neutra-font-black ml-4 shadow-xl text-lg">
-                        {t("startNow")}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-full neutra-font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                      >
+                        {t("startProject")}
                       </Button>
                     </Link>
                   )}

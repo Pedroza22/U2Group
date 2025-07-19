@@ -116,7 +116,7 @@ export default function GoogleMapsWorking({
       script.defer = true
       script.onerror = () => {
         setIsLoading(false)
-        setError("Error al cargar Google Maps")
+        setError("Error loading Google Maps")
         console.error("Google Maps API load error")
       }
       document.head.appendChild(script)
@@ -191,7 +191,7 @@ export default function GoogleMapsWorking({
       setMap(mapInstance)
     } catch (err) {
       console.error("Error initializing map:", err)
-      setError("Error al inicializar el mapa")
+      setError("Error initializing map")
     }
   }, [isLoaded, center, zoom])
 
@@ -265,7 +265,7 @@ export default function GoogleMapsWorking({
       <div className="flex items-center justify-center bg-gray-100 rounded-lg" style={{ height }}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-2"></div>
-          <p className="text-gray-600">Cargando mapa...</p>
+          <p className="text-gray-600">Loading map...</p>
         </div>
       </div>
     )
@@ -277,8 +277,8 @@ export default function GoogleMapsWorking({
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <h3 className="text-xl font-bold mb-2 text-purple-600">U2 Group Projects</h3>
-            <p className="text-red-500 mb-4">{error || "Error al cargar Google Maps"}</p>
-            <p className="text-sm text-gray-500 mb-6">Nuestros proyectos alrededor del mundo</p>
+            <p className="text-red-500 mb-4">{error || "Error loading Google Maps"}</p>
+            <p className="text-sm text-gray-500 mb-6">Our projects around the world</p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {locations.map((location) => (
                 <div key={location.id} className="text-center p-3 bg-white rounded-lg shadow">

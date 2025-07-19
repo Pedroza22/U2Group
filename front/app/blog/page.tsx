@@ -46,7 +46,7 @@ export default function BlogPage() {
       setError("");
     } catch (err) {
       console.error('Error al cargar blogs:', err);
-      setError("Error al cargar los blogs");
+              setError("Error loading blogs");
     } finally {
       setLoading(false);
     }
@@ -121,7 +121,7 @@ export default function BlogPage() {
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-5xl md:text-7xl neutra-font-black text-blue-700 mb-8 drop-shadow-md">{t("blogTitle")}</h1>
             <p className="text-2xl text-gray-700 mb-8 neutra-font max-w-2xl mx-auto">{t("blogSubtitle")}</p>
-            {error && <p className="text-red-600 mt-4">{error}</p>}
+            {error && <p className="text-red-600 mt-4">{t("error")}</p>}
           </div>
         </div>
       </section>
@@ -151,12 +151,12 @@ export default function BlogPage() {
             ))}
           </div>
           {loading ? (
-            <div className="text-center py-10">Cargando blogs...</div>
+            <div className="text-center py-10">{t("loadingBlogs")}</div>
           ) : (
             <div className="grid md:grid-cols-2 gap-10 mb-12">
               {filteredBlogs.length === 0 ? (
                 <div className="col-span-2 text-center py-10 text-gray-500">
-                  No hay blogs disponibles en esta categoría
+                  {t("noBlogs")}
                 </div>
               ) : (
                 filteredBlogs.map((blog) => (
@@ -171,13 +171,13 @@ export default function BlogPage() {
                             {t(CATEGORY_TRANSLATIONS[blog.category] || blog.category)}
                           </span>
                           <span className="text-gray-500 text-sm ml-2">
-                            • {blog.date} • {blog.read_time || blog.readTime}
+                            • {blog.date} • {blog.read_time || blog.readTime} {t("readTime")}
                           </span>
                           <span className="ml-auto flex items-center gap-2">
-                            <button title="Me gusta" onClick={() => handleLike(blog.id)} className="flex items-center gap-1 text-blue-600 hover:text-blue-800">
+                            <button title={t("likes")} onClick={() => handleLike(blog.id)} className="flex items-center gap-1 text-blue-600 hover:text-blue-800">
                               <Heart className="w-4 h-4" /> {likeCounts[blog.id]?.likes ?? 0}
                             </button>
-                            <button title="Favoritos" onClick={() => handleFavorite(blog.id)} className="flex items-center gap-1 text-yellow-500 hover:text-yellow-600">
+                            <button title={t("favorites")} onClick={() => handleFavorite(blog.id)} className="flex items-center gap-1 text-yellow-500 hover:text-yellow-600">
                               <Star className="w-4 h-4" /> {likeCounts[blog.id]?.favorites ?? 0}
                             </button>
                           </span>

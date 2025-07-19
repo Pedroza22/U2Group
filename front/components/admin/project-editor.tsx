@@ -1,13 +1,83 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { X, Plus, Trash2 } from "lucide-react"
-import { type AdminProject, COMPANY_COLORS } from "@/data/admin-data"
 import ImageUploader from "./image-uploader"
+import { useLanguage } from "@/hooks/use-language"
+
+// Categorías de proyectos
+const PROJECT_CATEGORIES = [
+  "residencial",
+  "comercial",
+  "industrial",
+  "educativo",
+  "hospitalario",
+  "cultural",
+  "deportivo",
+  "mixto",
+] as const;
+
+// Tipos de proyectos
+const PROJECT_TYPES = [
+  "casa",
+  "apartamento",
+  "oficina",
+  "local",
+  "hotel",
+  "restaurante",
+  "hospital",
+  "clinica",
+  "colegio",
+  "universidad",
+  "museo",
+  "teatro",
+  "estadio",
+  "gimnasio",
+] as const;
+
+// Estados de proyecto
+const PROJECT_STATUS = [
+  "Planning",
+  "In Progress",
+  "Completed",
+  "On Hold",
+] as const;
+
+// Colores de la empresa
+const COMPANY_COLORS = {
+  PRIMARY_BLUE: "#3B82F6",
+  DARK_BLUE: "#1E40AF",
+  LIGHT_BLUE: "#60A5FA",
+  NAVY_BLUE: "#1E3A8A",
+  SKY_BLUE: "#0EA5E9",
+} as const;
+
+type ProjectCategory = typeof PROJECT_CATEGORIES[number];
+type ProjectType = typeof PROJECT_TYPES[number];
+type ProjectStatus = typeof PROJECT_STATUS[number];
+
+interface AdminProject {
+  id: number;
+  name: string;
+  displayTitle?: string;
+  color: string;
+  image: string;
+  utilization: string;
+  services: string;
+  year: string;
+  category: ProjectCategory;
+  type: ProjectType;
+  size: string;
+  location: string;
+  status: ProjectStatus;
+  featured: boolean;
+  description?: string;
+  features?: string[];
+  images?: string[];
+}
 
 interface ProjectEditorProps {
   project?: AdminProject
@@ -22,6 +92,7 @@ interface ProjectFormState extends Omit<AdminProject, 'image' | 'images'> {
 }
 
 export default function ProjectEditor({ project, onSave, onCancel }: ProjectEditorProps) {
+  const { t } = useLanguage();
   // Estado del formulario - inicializa con datos del proyecto o valores por defecto
   const [formData, setFormData] = useState<ProjectFormState>(
     project
@@ -35,11 +106,11 @@ export default function ProjectEditor({ project, onSave, onCancel }: ProjectEdit
       utilization: "",
       services: "",
       year: new Date().getFullYear().toString(),
-      category: "",
-      type: "",
+          category: PROJECT_CATEGORIES[0],
+          type: PROJECT_TYPES[0],
       size: "",
       location: "",
-      status: "Planning",
+          status: PROJECT_STATUS[0],
       featured: false,
       description: "",
       features: [],
@@ -224,27 +295,35 @@ export default function ProjectEditor({ project, onSave, onCancel }: ProjectEdit
             </div>
             <div>
               <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Categoría *</label>
-              <input
-                type="text"
+              <select
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 neutra-font"
-                placeholder="Ej: Residencial"
-              />
+              >
+                {PROJECT_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {t(category)}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Tipo *</label>
-              <input
-                type="text"
+              <select
                 name="type"
                 value={formData.type}
                 onChange={handleInputChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 neutra-font"
-                placeholder="Ej: Casa Privada"
-              />
+              >
+                {PROJECT_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {t(type)}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

@@ -49,7 +49,7 @@ export default function ContactoPage() {
         comments: "",
       });
     } catch (err) {
-      setError("No se pudo enviar el mensaje. Intenta de nuevo o revisa tu conexión.");
+      setError(t("messageError"));
     } finally {
       setEnviando(false);
     }
@@ -252,30 +252,35 @@ export default function ContactoPage() {
                   />
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 text-lg neutra-font-bold"
-                  disabled={enviando}
-                >
-                  {enviando ? "Enviando..." : t("sendMessage")}
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-                {exito && (
-                  <p className="text-green-600 mt-4">¡Mensaje enviado correctamente! Pronto te contactaremos.</p>
-                )}
                 {error && (
-                  <p className="text-red-600 mt-4">{error}</p>
+                  <div className="text-red-600 text-sm">{error}</div>
                 )}
 
-                <p className="text-xs text-gray-500 neutra-font text-center">
-                  {t("submitForm")}
-                </p>
+                {exito && (
+                  <div className="text-green-600 text-sm">{t("messageSent")}</div>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={enviando}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
+                >
+                  {enviando ? (
+                    t("sendingMessage")
+                  ) : (
+                    <>
+                      {t("sendMessageButton")}
+                      <ArrowRight className="w-5 h-5" />
+                    </>
+                  )}
+                </Button>
               </form>
             </Card>
           </div>
         </div>
       </div>
 
+      <div className="w-full h-2 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-100 my-8" />
       <Footer />
     </div>
   )

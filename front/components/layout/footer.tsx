@@ -18,10 +18,10 @@ export default function Footer() {
             </div>
             {/* Enlace a políticas de privacidad */}
             <div className="mt-4">
-              <a href="/privacidad" className="inline-flex items-center text-blue-100 hover:text-white transition-colors neutra-font text-sm">
+              <Link href="/privacidad" className="inline-flex items-center text-blue-100 hover:text-white transition-colors neutra-font text-sm">
                 <FileText className="w-4 h-4 mr-2" />
                 {t("privacyPolicy")}
-              </a>
+              </Link>
             </div>
           </div>
           {/* Servicios */}
@@ -84,7 +84,7 @@ export default function Footer() {
         <div className="border-t border-blue-400 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             {/* Copyright */}
-            <div className="text-blue-100 text-sm neutra-font">© 2022 U2 GROUP. {t("allRightsReserved")}</div>
+            <div className="text-blue-100 text-sm neutra-font">© 2024 U2 GROUP. {t("allRightsReserved")}</div>
             {/* Redes sociales */}
             <div className="flex items-center space-x-4">
               <span className="text-white text-sm neutra-font-bold mr-2">{t("followUs")}</span>

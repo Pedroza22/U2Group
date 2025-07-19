@@ -157,6 +157,7 @@ export default function AdminDashboardPage() {
 
   const handleSaveProject = async (formData: any) => {
     console.log('Intentando guardar proyecto:', formData);
+    try {
     let mainImage = formData.image;
     let fd = new FormData();
     // Campos comunes
@@ -182,22 +183,18 @@ export default function AdminDashboardPage() {
       // Si es una URL existente, incluirla
       fd.append("image", mainImage);
     }
-    // Si es string vacío, NO la incluimos (Django mantiene la anterior)
 
     let project;
     if (editingProject) {
       console.log('Actualizando proyecto existente:', editingProject.id);
-      for (let pair of fd.entries()) {
-        console.log('PUT field:', pair[0], pair[1]);
-      }
       project = await updateProject(editingProject.id, fd);
+        toast({ title: "Proyecto actualizado", description: "El proyecto se actualizó correctamente." });
     } else {
       console.log('Creando nuevo proyecto');
-      for (let pair of fd.entries()) {
-        console.log('POST field:', pair[0], pair[1]);
-      }
       project = await createProject(fd);
+        toast({ title: "Proyecto creado", description: "El proyecto se creó correctamente." });
     }
+      
     // Subir imágenes extra si son archivos
     for (const img of formData.images) {
       if (img instanceof File) {
@@ -205,9 +202,18 @@ export default function AdminDashboardPage() {
         await uploadProjectImage((project as AdminProject).id, img);
       }
     }
+      
     setShowProjectEditor(false);
     setEditingProject(null);
-    await loadProjects();
+      await loadProjects(); // Recargar proyectos
+      router.refresh(); // Forzar actualización de la página
+    } catch (error) {
+      console.error("Error al guardar proyecto:", error);
+      toast({ 
+        title: "Error", 
+        description: "No se pudo guardar el proyecto. Por favor, intenta de nuevo." 
+      });
+    }
   };
 
   const handleCancelEdit = () => {
@@ -282,6 +288,7 @@ export default function AdminDashboardPage() {
     }
   };
   const handleSaveBlog = async (formData: any) => {
+    try {
     let fd = new FormData();
     fd.append("title", formData.title);
     fd.append("author", formData.author);
@@ -297,18 +304,27 @@ export default function AdminDashboardPage() {
     }
     // Tags como JSON string
     fd.append("tags", JSON.stringify(formData.tags || []));
+      
     let blog;
     if (editingBlog) {
       blog = await updateBlog(editingBlog.id, fd);
+        toast({ title: "Blog actualizado", description: "El blog se actualizó correctamente." });
     } else {
       blog = await createBlog(fd);
+        toast({ title: "Blog creado", description: "El blog se creó correctamente." });
     }
+      
     setShowBlogEditor(false);
     setEditingBlog(null);
-    await loadBlogs();
-    
-    // Redirigir a la vista de blogs filtrada por categoría
-    router.push(`/blog?category=${formData.category}`);
+      await loadBlogs(); // Recargar blogs
+      router.refresh(); // Forzar actualización de la página
+    } catch (error) {
+      console.error("Error al guardar blog:", error);
+      toast({ 
+        title: "Error", 
+        description: "No se pudo guardar el blog. Por favor, intenta de nuevo." 
+      });
+    }
   };
 
   // CRUD de servicios
@@ -331,8 +347,7 @@ export default function AdminDashboardPage() {
     try {
       let dataToSend: any = formData;
       let config = {};
-      // Agregado para depuración:
-      console.log("Valor de formData.image antes de enviar:", formData.image);
+      
       if (formData.image instanceof File) {
         const fd = new FormData();
         Object.keys(formData).forEach(key => {
@@ -341,7 +356,6 @@ export default function AdminDashboardPage() {
               if (formData.image instanceof File) {
                 fd.append('image', formData.image);
               }
-              // Si es string (URL), no lo agregues
             } else {
               fd.append(key, formData[key]);
             }
@@ -350,6 +364,7 @@ export default function AdminDashboardPage() {
         dataToSend = fd;
         config = { headers: { 'Content-Type': 'multipart/form-data' } };
       }
+      
       if (formData.id) {
         await axios.patch(`${API_URL}/servicios/${formData.id}/`, dataToSend, config);
         toast({ title: "Servicio actualizado", description: "El servicio se actualizó correctamente." });
@@ -357,15 +372,13 @@ export default function AdminDashboardPage() {
         await axios.post(`${API_URL}/servicios/`, dataToSend, config);
         toast({ title: "Servicio creado", description: "El servicio se creó correctamente." });
       }
+      
       setShowServiceEditor(false);
       setEditingService(null);
-      await loadServices();
+      await loadServices(); // Recargar servicios
+      router.refresh(); // Forzar actualización de la página
     } catch (error) {
       console.error("Error al guardar servicio:", error);
-      if (typeof error === "object" && error !== null && 'response' in error) {
-        // @ts-ignore
-        console.error("Respuesta del backend:", error.response?.data);
-      }
       toast({ title: "Error", description: "No se pudo guardar el servicio." });
     }
   };
@@ -381,7 +394,7 @@ export default function AdminDashboardPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 neutra-font">Cargando panel de administración...</p>
+          <p className="text-gray-600 neutra-font">Loading admin panel...</p>
         </div>
       </div>
     )
@@ -555,7 +568,7 @@ export default function AdminDashboardPage() {
             <div className="space-y-4">
               {blogs.length === 0 ? (
                 <div className="text-center text-gray-500 neutra-font py-12">
-                  No hay blogs registrados. ¡Crea el primero!
+                  No blogs registered. Create the first one!
                 </div>
               ) : (
                 blogs.map((blog: any) => {
