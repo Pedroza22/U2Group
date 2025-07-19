@@ -53,23 +53,25 @@ const LanguageContext = createContext<any>(null);
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState("es");
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     const storedLang = localStorage.getItem("lang");
     if (storedLang && storedLang !== language) {
       setLanguage(storedLang);
-      document.documentElement.lang = storedLang;
-    } else {
+    }
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (isHydrated && typeof document !== "undefined") {
       document.documentElement.lang = language;
     }
-  }, []);
+  }, [language, isHydrated]);
 
   const changeLanguage = (lang: string) => {
     setLanguage(lang);
     localStorage.setItem("lang", lang);
-    if (typeof document !== "undefined") {
-      document.documentElement.lang = lang;
-    }
   };
 
   // Función de traducción
