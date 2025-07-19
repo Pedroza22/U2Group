@@ -15,15 +15,20 @@ interface MarketplaceEditorProps {
   onSave: (categories: AdminDesignCategory[]) => void
 }
 
-interface OptionFormState extends Omit<AdminDesignOption, 'id'> {
-  id?: string
-  sqft?: number
-  bedrooms?: number
-  bathrooms?: number
-  stories?: number
-  garage?: number
-  isExclusive?: boolean
-  architecturalStyle?: string
+interface OptionFormState {
+  name: string
+  price: number
+  image: string
+  description: string
+  category: string
+  style: string
+  area_m2: number
+  rooms: number
+  bathrooms: number
+  floors: number
+  is_featured: boolean
+  is_active: boolean
+  [key: string]: any // Índice de tipo para permitir acceso dinámico
 }
 
 export default function MarketplaceEditor({ categories, onSave }: MarketplaceEditorProps) {
@@ -35,13 +40,14 @@ export default function MarketplaceEditor({ categories, onSave }: MarketplaceEdi
     price: 0,
     image: "",
     description: "",
-    sqft: 0,
-    bedrooms: 1,
+    category: "residential",
+    style: "modern",
+    area_m2: 0,
+    rooms: 1,
     bathrooms: 1,
-    stories: 1,
-    garage: 1,
-    isExclusive: false,
-    architecturalStyle: ""
+    floors: 1,
+    is_featured: false,
+    is_active: true
   })
 
   // Estado para productos/planos
@@ -82,12 +88,13 @@ export default function MarketplaceEditor({ categories, onSave }: MarketplaceEdi
 
   // Definir los filtros fijos
   const fixedFilters = [
-    { name: "Área (m²)", key: "area", type: "number" },
-    { name: "Habitaciones", key: "bedrooms", type: "number" },
+    { name: "Área (m²)", key: "area_m2", type: "number" },
+    { name: "Habitaciones", key: "rooms", type: "number" },
     { name: "Baños", key: "bathrooms", type: "number" },
-    { name: "Garaje", key: "garage", type: "number" },
+    { name: "Pisos", key: "floors", type: "number" },
     { name: "Precio (USD)", key: "price", type: "number" },
-    { name: "Estilo arquitectónico", key: "architecturalStyle", type: "text" },
+    { name: "Categoría", key: "category", type: "text" },
+    { name: "Estilo", key: "style", type: "text" },
   ];
 
   // Manejadores para el formulario
@@ -101,7 +108,7 @@ export default function MarketplaceEditor({ categories, onSave }: MarketplaceEdi
     } else {
       setFormData(prev => ({
         ...prev,
-        [name]: name === "price" || name === "sqft" || name === "bedrooms" || name === "bathrooms" || name === "stories" || name === "garage" ? Number(value) : value
+        [name]: name === "price" || name === "area_m2" || name === "rooms" || name === "bathrooms" || name === "floors" ? Number(value) : value
       }))
     }
   }
@@ -167,13 +174,14 @@ export default function MarketplaceEditor({ categories, onSave }: MarketplaceEdi
       price: 0,
       image: "",
       description: "",
-      sqft: 0,
-      bedrooms: 1,
+      category: "residential",
+      style: "modern",
+      area_m2: 0,
+      rooms: 1,
       bathrooms: 1,
-      stories: 1,
-      garage: 1,
-      isExclusive: false,
-      architecturalStyle: ""
+      floors: 1,
+      is_featured: false,
+      is_active: true
     })
     setEditingOption(null)
   }
@@ -186,13 +194,14 @@ export default function MarketplaceEditor({ categories, onSave }: MarketplaceEdi
       price: option.price,
       image: option.image || "",
       description: option.description || "",
-      sqft: (option as any).sqft || 0,
-      bedrooms: (option as any).bedrooms || 1,
+      category: (option as any).category || "residential",
+      style: (option as any).style || "modern",
+      area_m2: (option as any).area_m2 || 0,
+      rooms: (option as any).rooms || 1,
       bathrooms: (option as any).bathrooms || 1,
-      stories: (option as any).stories || 1,
-      garage: (option as any).garage || 1,
-      isExclusive: (option as any).isExclusive || false,
-      architecturalStyle: (option as any).architecturalStyle || ""
+      floors: (option as any).floors || 1,
+      is_featured: (option as any).is_featured || false,
+      is_active: (option as any).is_active !== undefined ? (option as any).is_active : true
     })
     setShowOptionEditor(true)
   }

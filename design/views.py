@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .services import calcular_datos_diseño
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView
+from rest_framework.viewsets import ViewSet
 from .serializers import ServiceSerializer, FilterConfigurationSerializer
 from home.models import Product
 from home.serializer import ProductSerializer
@@ -17,12 +18,18 @@ class FilterConfigurationListView(ListAPIView):
     queryset = FilterConfiguration.objects.all()
     serializer_class = FilterConfigurationSerializer
 
-class MarketplaceView(ListAPIView):
-    queryset = Product.objects.all().prefetch_related('images')
-    serializer_class = ProductSerializer
-    filterset_fields = ['bedrooms', 'bathrooms', 'garage', 'architectural_style']
-    search_fields = ['name', 'description']
-    ordering_fields = ['price', 'area_m2', 'created_at']
+class MarketplaceView(ViewSet):
+    def list(self, request):
+        queryset = Product.objects.all().prefetch_related('images')
+        serializer = ProductSerializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    def create(self, request):
+        serializer = ProductSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CategoryListView(APIView):
     def get(self, request):
