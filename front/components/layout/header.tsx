@@ -30,6 +30,7 @@ export default function Header({ currentPage }: HeaderProps) {
     { id: "disena", label: t("disena"), href: "/disena" },
     { id: "blog", label: t("blog"), href: "/blog" },
     { id: "contacto", label: t("contacto"), href: "/contacto" },
+    { id: "marketplace", label: "Marketplace", href: "/marketplace" },
   ]
 
   return (

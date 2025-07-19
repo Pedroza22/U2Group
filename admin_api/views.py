@@ -2,12 +2,15 @@ from django.shortcuts import render
 from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import Project, ProjectImage, Blog, BlogLikeFavorite
-from .serializers import ProjectSerializer, ProjectImageSerializer, BlogSerializer, BlogLikeFavoriteSerializer
+from .models import Project, ProjectImage, Blog, BlogLikeFavorite, MarketplaceProduct
+from .serializers import ProjectSerializer, ProjectImageSerializer, BlogSerializer, BlogLikeFavoriteSerializer, MarketplaceProductSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import action
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.shortcuts import get_object_or_404
+from django.db.models import F
+from django.db import transaction
 
 # Create your views here.
 
@@ -106,3 +109,61 @@ class BlogLikeFavoriteViewSet(viewsets.ModelViewSet):
             'like_count': blog.like_count,
             'favorite_count': blog.favorite_count
         })
+
+class MarketplaceProductViewSet(viewsets.ModelViewSet):
+    queryset = MarketplaceProduct.objects.all()
+    serializer_class = MarketplaceProductSerializer
+
+    def get_queryset(self):
+        queryset = MarketplaceProduct.objects.all()
+        
+        # Filtros
+        category = self.request.query_params.get('category', None)
+        style = self.request.query_params.get('style', None)
+        min_price = self.request.query_params.get('min_price', None)
+        max_price = self.request.query_params.get('max_price', None)
+        min_area = self.request.query_params.get('min_area', None)
+        max_area = self.request.query_params.get('max_area', None)
+        rooms = self.request.query_params.get('rooms', None)
+        bathrooms = self.request.query_params.get('bathrooms', None)
+        is_featured = self.request.query_params.get('is_featured', None)
+        is_active = self.request.query_params.get('is_active', None)
+
+        if category:
+            queryset = queryset.filter(category=category)
+        if style:
+            queryset = queryset.filter(style=style)
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+        if min_area:
+            queryset = queryset.filter(area_m2__gte=min_area)
+        if max_area:
+            queryset = queryset.filter(area_m2__lte=max_area)
+        if rooms:
+            queryset = queryset.filter(rooms=rooms)
+        if bathrooms:
+            queryset = queryset.filter(bathrooms=bathrooms)
+        if is_featured is not None:
+            queryset = queryset.filter(is_featured=is_featured.lower() == 'true')
+        if is_active is not None:
+            queryset = queryset.filter(is_active=is_active.lower() == 'true')
+
+        # Ordenamiento
+        ordering = self.request.query_params.get('ordering', '-created_at')
+        return queryset.order_by(ordering)
+
+    @action(detail=True, methods=['post'])
+    def toggle_featured(self, request, pk=None):
+        product = self.get_object()
+        product.is_featured = not product.is_featured
+        product.save()
+        return Response({'status': 'success', 'is_featured': product.is_featured})
+
+    @action(detail=True, methods=['post'])
+    def toggle_active(self, request, pk=None):
+        product = self.get_object()
+        product.is_active = not product.is_active
+        product.save()
+        return Response({'status': 'success', 'is_active': product.is_active})

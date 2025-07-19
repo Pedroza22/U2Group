@@ -1,30 +1,30 @@
-import type React from "react"
-import type { Metadata } from "next"
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { LanguageProvider } from "@/hooks/use-language"
-import { useEffect, useState } from "react";
-import { CookieBanner } from "./components/cookie-banner";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+import { AuthProvider } from "@/hooks/use-auth";
+import { CartProvider } from "@/context/cart-context";
+import { LanguageProvider } from "@/hooks/use-language";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "U2 Group - Arquitectura del Futuro",
-  description: "Transformando espacios, creando futuro",
-  generator: "v0.dev",
-}
+  title: "U2Group - Marketplace",
+  description: "Marketplace de planos de casas",
+};
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
-    <html lang="es" suppressHydrationWarning>
-      <body style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          {/* PROVIDER DE IDIOMAS - Envuelve toda la aplicación */}
-          <LanguageProvider>{children}</LanguageProvider>
-        </ThemeProvider>
-        <CookieBanner />
+    <html lang="en">
+      <body>
+        <LanguageProvider>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   )

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Project, ProjectImage, Blog, BlogLikeFavorite
+from .models import Project, ProjectImage, Blog, BlogLikeFavorite, MarketplaceProduct
 
 class ProjectImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,4 +27,10 @@ class BlogSerializer(serializers.ModelSerializer):
 class BlogLikeFavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogLikeFavorite
-        fields = ['id', 'blog', 'visitor_id', 'liked', 'favorited'] 
+        fields = ['id', 'blog', 'visitor_id', 'liked', 'favorited']
+
+class MarketplaceProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MarketplaceProduct
+        fields = '__all__'
+        read_only_fields = ('created_at', 'updated_at') 

@@ -115,3 +115,17 @@
 .whitespace-nowrap {
   white-space: nowrap;
 }
+
+/* Smooth transitions for login/register panels */
+.transition-transform {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+/* Prevent flickering during transitions */
+.overflow-hidden {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}

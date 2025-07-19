@@ -82,6 +82,16 @@ export interface AdminDesignCategory {
   required?: boolean
 }
 
+// NUEVO: Tipos y utilidades para filtros globales de marketplace
+export type MarketplaceFilterType = "text" | "number" | "select"
+
+export interface MarketplaceFilter {
+  id: string
+  name: string
+  type: MarketplaceFilterType
+  options?: string[] // Solo para tipo select
+}
+
 // PALETA DE COLORES DE LA EMPRESA - SOLO AZULES
 export const COMPANY_COLORS = {
   PRIMARY_BLUE: "#3B82F6", // Azul principal
@@ -508,5 +518,41 @@ export class AdminDataManager {
   static getFeaturedProjects(): AdminProject[] {
     const projects = this.getProjects()
     return projects.filter((project) => project.featured)
+  }
+}
+
+export const getMarketplaceFilters = (): MarketplaceFilter[] => {
+  const raw = localStorage.getItem("marketplace-filters")
+  if (!raw) return []
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return []
+  }
+}
+
+export const saveMarketplaceFilters = (filters: MarketplaceFilter[]) => {
+  localStorage.setItem("marketplace-filters", JSON.stringify(filters))
+}
+
+export class MarketplaceFilterManager {
+  static getFilters(): MarketplaceFilter[] {
+    return getMarketplaceFilters()
+  }
+  static saveFilters(filters: MarketplaceFilter[]): void {
+    saveMarketplaceFilters(filters)
+  }
+  static addFilter(filter: MarketplaceFilter): void {
+    const filters = getMarketplaceFilters()
+    filters.push(filter)
+    saveMarketplaceFilters(filters)
+  }
+  static updateFilter(id: string, updated: MarketplaceFilter): void {
+    const filters = getMarketplaceFilters().map(f => f.id === id ? updated : f)
+    saveMarketplaceFilters(filters)
+  }
+  static deleteFilter(id: string): void {
+    const filters = getMarketplaceFilters().filter(f => f.id !== id)
+    saveMarketplaceFilters(filters)
   }
 }

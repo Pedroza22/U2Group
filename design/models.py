@@ -21,11 +21,26 @@ class Service(models.Model):
         return f"{self.name_es} / {self.name_en}"
 
 class GeneralConfig(models.Model):
-    key = models.CharField(max_length=100, primary_key=True)
-    value = models.TextField()
+    key = models.CharField(max_length=255, unique=True, db_index=True)
+    value = models.CharField(max_length=255)
 
     def __str__(self):
         return f"{self.key}: {self.value}"
+
+class FilterConfiguration(models.Model):
+    name = models.CharField(max_length=100, help_text="Nombre del filtro, ej: Habitaciones")
+    key = models.CharField(max_length=50, unique=True, help_text="Clave para la API, ej: bedrooms")
+    options = models.JSONField(
+        default=list,
+        help_text='Opciones en formato JSON. Ej: [{"label": "1", "params": {"bedrooms": 1}}, {"label": "3+", "params": {"bedrooms__gte": 3}}]',
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Configuración de Filtro"
+        verbose_name_plural = "Configuraciones de Filtros"
 
 class DesignEntry(models.Model):
     area_total = models.FloatField(help_text="Área total del terreno en m²")

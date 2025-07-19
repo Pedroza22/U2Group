@@ -27,10 +27,10 @@ import {
   type AdminBlog,
   type AdminDesignCategory,
   type AdminDesignOption,
-  type AdminBasicCategory,
 } from "@/data/admin-data"
 import ProjectEditor from "@/components/admin/project-editor"
 import BlogEditor from "@/components/admin/blog-editor"
+import MarketplaceEditor from "@/components/admin/marketplace-editor"
 import ImageUploader from "@/components/admin/image-uploader"
 import axios from "axios";
 import {
@@ -53,16 +53,13 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 export default function AdminDashboardPage() {
   const router = useRouter()
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<"projects" | "blogs" | "design-options" | "services" | "settings">("projects")
+  const [activeTab, setActiveTab] = useState<"projects" | "blogs" | "design-options" | "services" | "marketplace" | "settings">("projects")
   const [projects, setProjects] = useState<AdminProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [editingProject, setEditingProject] = useState<AdminProject | null>(null);
   const [showProjectEditor, setShowProjectEditor] = useState(false);
   const [blogs, setBlogs] = useState<AdminBlog[]>([])
   const [designOptions, setDesignOptions] = useState<AdminDesignCategory[]>([])
-  const [basicCategories, setBasicCategories] = useState<AdminBasicCategory[]>([])
-  const [editingBasicCategory, setEditingBasicCategory] = useState<AdminBasicCategory | null>(null)
-  const [showBasicEditor, setShowBasicEditor] = useState(false)
   const [editingBlog, setEditingBlog] = useState<AdminBlog | null>(null)
   const [showBlogEditor, setShowBlogEditor] = useState(false)
 
@@ -134,6 +131,8 @@ export default function AdminDashboardPage() {
     loadBlogs();
     loadServices();
     loadCategories();
+    // Cargar opciones de diseño
+    setDesignOptions(AdminDataManager.getDesignOptions());
   }, [router]);
 
   const handleDeleteProject = async (id: number) => {
@@ -213,12 +212,18 @@ export default function AdminDashboardPage() {
   const handleCancelEdit = () => {
     setShowProjectEditor(false)
     setShowBlogEditor(false)
-    setShowOptionEditor(false)
-    setShowBasicEditor(false)
     setEditingProject(null)
     setEditingBlog(null)
-    setEditingOption(null)
-    setEditingBasicCategory(null)
+  }
+
+  // Manejador para opciones de diseño
+  const handleDesignOptionsUpdate = (updatedCategories: AdminDesignCategory[]) => {
+    setDesignOptions(updatedCategories)
+    AdminDataManager.saveDesignOptions(updatedCategories)
+    toast({
+      title: "Éxito",
+      description: "Opciones de diseño actualizadas correctamente",
+    })
   }
 
   // FUNCIONES PARA OPCIONES DE DISEÑO
@@ -252,18 +257,6 @@ export default function AdminDashboardPage() {
       AdminDataManager.deleteDesignOption(categoryId, optionId)
       loadProjects(); // Reload projects to update design options count
     }
-  }
-
-  const handleEditBasicCategory = (category: AdminBasicCategory) => {
-    setEditingBasicCategory(category)
-    setShowBasicEditor(true)
-  }
-
-  const handleSaveBasicCategory = (category: AdminBasicCategory) => {
-    AdminDataManager.updateBasicCategory(category.id, category)
-    setShowBasicEditor(false)
-    setEditingBasicCategory(null)
-    loadProjects(); // Reload projects to update basic categories count
   }
 
   // Definir funciones de blogs para evitar errores de referencia
@@ -446,14 +439,7 @@ export default function AdminDashboardPage() {
             <FileText className="w-4 h-4 mr-2" />
             Blogs ({blogs.length})
           </Button>
-          <Button
-            onClick={() => setActiveTab("design-options")}
-            variant={activeTab === "design-options" ? "default" : "outline"}
-            className="neutra-font"
-          >
-            <Palette className="w-4 h-4 mr-2" />
-            Opciones de Diseño ({designOptions.length})
-          </Button>
+          {/* Eliminar la pestaña de Opciones de Diseño */}
           <Button
             onClick={() => setActiveTab("services")}
             variant={activeTab === "services" ? "default" : "outline"}
@@ -461,6 +447,14 @@ export default function AdminDashboardPage() {
           >
             <FileText className="w-4 h-4 mr-2" />
             Servicios de Diseño ({services.length})
+          </Button>
+          <Button
+            onClick={() => setActiveTab("marketplace")}
+            variant={activeTab === "marketplace" ? "default" : "outline"}
+            className="neutra-font"
+          >
+            <DollarSign className="w-4 h-4 mr-2" />
+            Marketplace
           </Button>
           <Button
             onClick={() => setActiveTab("settings")}
@@ -652,138 +646,7 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* CONTENIDO DE OPCIONES DE DISEÑO */}
-        {activeTab === "design-options" && (
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl neutra-font-bold text-gray-900">Gestión de Opciones de Diseño</h2>
-            </div>
-
-            {/* SECCIÓN DE CATEGORÍAS BÁSICAS */}
-            <Card className="p-6 mb-8">
-              <div className="flex justify-between items-center mb-4">
-                <div>
-                  <h3 className="text-xl neutra-font-bold text-gray-900">Categorías Básicas</h3>
-                  <p className="text-sm text-gray-600 neutra-font">4 categorías principales • Precios por unidad</p>
-                </div>
-              </div>
-
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {basicCategories.map((category) => (
-                  <Card key={category.id} className="p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-center gap-3 mb-3">
-                      {category.image && (
-                        <Image
-                          src={category.image || "/placeholder.svg"}
-                          alt={category.nameEs}
-                          width={40}
-                          height={40}
-                          className="rounded object-cover"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <h4 className="neutra-font-bold text-gray-900 text-sm">{category.nameEs}</h4>
-                        <div className="flex items-center gap-1 text-blue-600">
-                          <DollarSign className="w-3 h-3" />
-                          <span className="text-sm neutra-font-bold">{category.pricePerUnit}/unidad</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-gray-600 neutra-font mb-3">
-                      Rango: {category.minQuantity} - {category.maxQuantity}
-                    </p>
-
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full neutra-font bg-transparent"
-                      onClick={() => handleEditBasicCategory(category)}
-                    >
-                      <Edit className="w-3 h-3 mr-1" />
-                      Editar
-                    </Button>
-                  </Card>
-                ))}
-              </div>
-            </Card>
-
-            {/* SECCIÓN DE OTRAS CATEGORÍAS */}
-            <div className="space-y-8">
-              {designOptions.map((category) => (
-                <Card key={category.id} className="p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <div>
-                      <h3 className="text-xl neutra-font-bold text-gray-900 capitalize">{category.name}</h3>
-                      <p className="text-sm text-gray-600 neutra-font">
-                        {category.options.length} opciones •{" "}
-                        {category.allowMultiple ? "Múltiple selección" : "Selección única"}
-                        {category.required && " • Requerido"}
-                      </p>
-                    </div>
-                    <Button
-                      onClick={() => handleNewOption(category.id)}
-                      className="bg-blue-600 hover:bg-blue-700 neutra-font"
-                      size="sm"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Nueva Opción
-                    </Button>
-                  </div>
-
-                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {category.options.map((option) => (
-                      <Card key={option.id} className="p-4 hover:shadow-md transition-shadow">
-                        <div className="flex items-center gap-3 mb-3">
-                          {option.image && (
-                            <Image
-                              src={option.image || "/placeholder.svg"}
-                              alt={option.name}
-                              width={40}
-                              height={40}
-                              className="rounded object-cover"
-                            />
-                          )}
-                          <div className="flex-1">
-                            <h4 className="neutra-font-bold text-gray-900 text-sm">{option.name}</h4>
-                            <div className="flex items-center gap-1 text-blue-600">
-                              <DollarSign className="w-3 h-3" />
-                              <span className="text-sm neutra-font-bold">{option.price}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {option.description && (
-                          <p className="text-xs text-gray-600 neutra-font mb-3">{option.description}</p>
-                        )}
-
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="flex-1 neutra-font bg-transparent"
-                            onClick={() => handleEditOption(category.id, option)}
-                          >
-                            <Edit className="w-3 h-3 mr-1" />
-                            Editar
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDeleteOption(category.id, option.id)}
-                            className="text-red-600 border-red-200 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Eliminar el contenido de Opciones de Diseño */}
 
         {/* CONTENIDO DE SERVICIOS DE DISEÑO */}
         {activeTab === "services" && (
@@ -947,6 +810,20 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
+        {/* CONTENIDO DE MARKETPLACE */}
+        {activeTab === "marketplace" && (
+          <div>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl neutra-font-bold text-gray-900">Gestión de Marketplace</h2>
+            </div>
+
+            <MarketplaceEditor
+              categories={designOptions}
+              onSave={handleDesignOptionsUpdate}
+            />
+          </div>
+        )}
+
         {/* CONTENIDO DE CONFIGURACIÓN */}
         {activeTab === "settings" && (
           <div>
@@ -1020,15 +897,6 @@ export default function AdminDashboardPage() {
           option={editingOption || undefined}
           categoryId={selectedCategory}
           onSave={handleSaveOption}
-          onCancel={handleCancelEdit}
-        />
-      )}
-
-      {/* EDITOR DE CATEGORÍAS BÁSICAS */}
-      {showBasicEditor && (
-        <BasicCategoryEditor
-          category={editingBasicCategory || undefined}
-          onSave={handleSaveBasicCategory}
           onCancel={handleCancelEdit}
         />
       )}
@@ -1133,146 +1001,6 @@ function DesignOptionEditor({
               </Button>
               <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 neutra-font">
                 {option ? "Actualizar" : "Crear"} Opción
-              </Button>
-            </div>
-          </form>
-        </div>
-      </Card>
-    </div>
-  )
-}
-
-// COMPONENTE EDITOR DE CATEGORÍAS BÁSICAS
-function BasicCategoryEditor({
-  category,
-  onSave,
-  onCancel,
-}: {
-  category?: AdminBasicCategory
-  onSave: (category: AdminBasicCategory) => void
-  onCancel: () => void
-}) {
-  const [formData, setFormData] = useState<AdminBasicCategory>({
-    id: category?.id || "",
-    name: category?.nameEs || "",
-    nameEs: category?.nameEs || "",
-    nameEn: category?.nameEn || "",
-    pricePerUnit: category?.pricePerUnit || 0,
-    minQuantity: category?.minQuantity || 0,
-    maxQuantity: category?.maxQuantity || 0,
-    image: (category?.image as string) || "",
-  })
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSave(formData)
-  }
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === "pricePerUnit" || name === "minQuantity" || name === "maxQuantity" ? Number(value) : value,
-    }))
-  }
-
-  const handleImageChange = (imageUrl: string | File | null) => {
-    setFormData((prev) => ({
-      ...prev,
-      image: typeof imageUrl === "string" ? imageUrl : "",
-    }))
-  }
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <h2 className="text-2xl neutra-font-bold text-gray-900 mb-6">
-            {category ? "Editar Categoría" : "Nueva Categoría"}
-          </h2>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Nombre (Español)</label>
-                <input
-                  type="text"
-                  name="nameEs"
-                  value={formData.nameEs}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 neutra-font"
-                  placeholder="Ej: Puerta"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Nombre (Inglés)</label>
-                <input
-                  type="text"
-                  name="nameEn"
-                  value={formData.nameEn}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 neutra-font"
-                  placeholder="Ej: Door"
-                />
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              <div>
-                <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Precio por Unidad (USD)</label>
-                <input
-                  type="number"
-                  name="pricePerUnit"
-                  value={formData.pricePerUnit}
-                  onChange={handleInputChange}
-                  min="0"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 neutra-font"
-                  placeholder="0"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Cantidad Mínima</label>
-                <input
-                  type="number"
-                  name="minQuantity"
-                  value={formData.minQuantity}
-                  onChange={handleInputChange}
-                  min="0"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 neutra-font"
-                  placeholder="0"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Cantidad Máxima</label>
-                <input
-                  type="number"
-                  name="maxQuantity"
-                  value={formData.maxQuantity}
-                  onChange={handleInputChange}
-                  min="0"
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 neutra-font"
-                  placeholder="0"
-                />
-              </div>
-            </div>
-
-            {/* COMPONENTE DE SUBIDA DE IMÁGENES */}
-            <ImageUploader value={formData.image} onChange={handleImageChange} label="Imagen de la Categoría" />
-
-            <div className="flex gap-4 pt-4">
-              <Button type="button" variant="outline" onClick={onCancel} className="flex-1 neutra-font bg-transparent">
-                Cancelar
-              </Button>
-              <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 neutra-font">
-                {category ? "Actualizar" : "Crear"} Categoría
               </Button>
             </div>
           </form>

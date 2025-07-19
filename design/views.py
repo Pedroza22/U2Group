@@ -1,11 +1,24 @@
-from .models import DesignEntry, Category, Service, GeneralConfig
+from .models import DesignEntry, Category, Service, GeneralConfig, FilterConfiguration
 from .serializers import DesignEntrySerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .services import calcular_datos_diseño
-from rest_framework.generics import RetrieveUpdateDestroyAPIView
-from .serializers import ServiceSerializer
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView
+from .serializers import ServiceSerializer, FilterConfigurationSerializer
+from home.models import Product
+from home.serializer import ProductSerializer
+
+class FilterConfigurationListView(ListAPIView):
+    queryset = FilterConfiguration.objects.all()
+    serializer_class = FilterConfigurationSerializer
+
+class MarketplaceView(ListAPIView):
+    queryset = Product.objects.all().prefetch_related('images')
+    serializer_class = ProductSerializer
+    filterset_fields = ['bedrooms', 'bathrooms', 'garage', 'architectural_style']
+    search_fields = ['name', 'description']
+    ordering_fields = ['price', 'area_m2', 'created_at']
 
 class CategoryListView(APIView):
     def get(self, request):
