@@ -21,10 +21,12 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning>
       <body style={{ fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          {/* PROVIDER DE IDIOMAS - Envuelve toda la aplicación */}
-          <LanguageProvider>{children}</LanguageProvider>
+          {/* PROVIDER DE IDIOMAS - Envuelve toda la aplicación y el banner de cookies */}
+          <LanguageProvider>
+            {children}
+            <CookieBanner />
+          </LanguageProvider>
         </ThemeProvider>
-        <CookieBanner />
       </body>
     </html>
   )

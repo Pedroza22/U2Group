@@ -125,7 +125,7 @@ export default function BlogPostPage() {
   };
 
   if (loading) {
-    return <div>Cargando blog...</div>;
+    return <div>Loading blog...</div>;
   }
   if (error || !blogPost) {
     return <div className="text-red-600">{error || "Blog no encontrado."}</div>;
@@ -249,7 +249,7 @@ export default function BlogPostPage() {
                     </div>
                   ))
                 ) : (
-                  <div className="text-center text-gray-500 neutra-font">(Por llenar - No hay blogs disponibles)</div>
+                  <div className="text-center text-gray-500 neutra-font">(To be filled - No blogs available)</div>
                 )}
               </div>
             </div>
@@ -291,7 +291,7 @@ export default function BlogPostPage() {
             </div>
           ) : (
             <div className="text-center text-gray-500 neutra-font mb-8">
-              No hay blogs relacionados disponibles
+              No related blogs available
             </div>
           )}
 

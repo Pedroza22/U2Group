@@ -6,11 +6,45 @@ import Link from "next/link"
 import Header from "@/components/layout/header"
 import Footer from "@/components/layout/footer"
 import { useLanguage } from "@/hooks/use-language"
-import { getProjects } from "@/data/projects"
+import { useState, useEffect } from "react"
+import { getProjects } from "@/lib/api-projects"
+import type { Project } from "@/data/projects"
 
 export default function ProyectosPage() {
   const { t } = useLanguage()
-  const projects = getProjects(t)
+  const [projects, setProjects] = useState<Project[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        setIsLoading(true)
+        const data = await getProjects()
+        setProjects(data as Project[])
+      } catch (error) {
+        console.error("Error loading projects:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadProjects()
+  }, [])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white neutra-font">
+        <Header currentPage="proyectos" />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">{t("loading")}</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-white neutra-font">
@@ -24,11 +58,10 @@ export default function ProyectosPage() {
         </div>
       </section>
       <div className="w-full h-2 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-100 my-8" />
-      {/* Aquí iría el listado de proyectos, puedes aplicar tarjetas similares a las de blog/noticias */}
       <section className="w-full py-20 md:py-28 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
-            <h2 className="text-4xl md:text-5xl neutra-font-black text-blue-600 mb-4 drop-shadow-md">{t("Nuestros Destacados")}</h2>
+            <h2 className="text-4xl md:text-5xl neutra-font-black text-blue-600 mb-4 drop-shadow-md">{t("projectsHighlights")}</h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10 mb-12">
             {projects.map((project) => (
@@ -47,8 +80,8 @@ export default function ProyectosPage() {
                   <div className="p-6">
                     <h3 className="text-2xl neutra-font-black text-blue-700 mb-2">{project.name}</h3>
                     <div className="flex flex-wrap gap-2 mb-2">
-                      <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white">{project.category}</span>
-                      <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">{project.type}</span>
+                      <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-600 text-white">{t(project.category)}</span>
+                      <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">{t(project.type)}</span>
                     </div>
                     <p className="text-gray-600 text-sm mb-2 neutra-font">{project.location}</p>
                     <p className="text-gray-700 text-sm neutra-font line-clamp-2">{project.description}</p>

@@ -104,6 +104,16 @@ export default function DisenaPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
   const router = useRouter();
 
+  // Mapeo de traducciones para categorías
+  const categoryTranslationMap: Record<string, string> = {
+    "Espacios básicos": t("basicSpaces"),
+    "Funcionalidad del hogar": t("homeFunction"),
+    "Trabajo & Creatividad": t("workAndCreativity"),
+    "Bienestar & Salud": t("wellnessAndHealth"),
+    "Naturaleza & Sustentabilidad": t("natureAndSustainability"),
+    "Entretenimiento & Social": t("entertainmentAndSocial"),
+  };
+
   // Estado para datos dinámicos
   const [categories, setCategories] = useState<Category[]>([])
   const [services, setServices] = useState<Service[]>([])
@@ -182,7 +192,7 @@ export default function DisenaPage() {
         setActiveTab((catRes.data as Category[])[0]?.id?.toString() || "")
       })
       .catch((err) => {
-        setError("Error al cargar datos de diseño")
+        setError("Error loading design data")
       })
       .finally(() => setLoading(false))
   }, [])
@@ -324,7 +334,7 @@ export default function DisenaPage() {
 
   // Renderizado
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Cargando datos de diseño...</div>
+    return <div className="min-h-screen flex items-center justify-center">Loading design data...</div>
   }
   if (error) {
     return <div className="min-h-screen flex items-center justify-center text-red-600">{error}</div>
@@ -385,7 +395,7 @@ export default function DisenaPage() {
                     return (
                       <div key={category.id} className="border-b pb-2">
                         <div className="flex justify-between items-center">
-                          <h4 className="neutra-font-bold text-blue-600 capitalize">{category.name}</h4>
+                          <h4 className="neutra-font-bold text-blue-600 capitalize">{categoryTranslationMap[category.name] || category.name}</h4>
                           <span className="neutra-font-bold">${categoryTotal}</span>
                         </div>
                         {(Object.entries(servicesObj) as [string, number][]).map(([serviceId, cantidad]) => {
@@ -404,14 +414,14 @@ export default function DisenaPage() {
                  {/* Desglose del total de servicios */}
                  <div className="border-b pb-2">
                    <div className="flex justify-between items-center">
-                     <h4 className="neutra-font-bold text-blue-600">Total servicios</h4>
+                     <h4 className="neutra-font-bold text-blue-600">{t("totalServices") || "Total servicios"}</h4>
                      <span className="neutra-font-bold">${calculateServicesTotal()}</span>
                    </div>
                  </div>
                  {/* Desglose del área total */}
                  <div className="border-b pb-2">
                    <div className="flex justify-between items-center">
-                     <h4 className="neutra-font-bold text-blue-600">Total área</h4>
+                     <h4 className="neutra-font-bold text-blue-600">{t("totalArea") || "Total área"}</h4>
                      <span className="neutra-font-bold">${totalArea}</span>
                    </div>
                    <div className="flex justify-between text-sm text-gray-600 ml-4">
@@ -431,7 +441,7 @@ export default function DisenaPage() {
                 </div>
                 {/* Input para el correo Gmail en la cotización */}
                 <div className="mt-6 mb-6 max-w-md mx-auto">
-                  <label htmlFor="cotizacionEmail" className="block text-blue-700 font-bold mb-2">Correo Gmail para recibir la factura:</label>
+                  <label htmlFor="cotizacionEmail" className="block text-blue-700 font-bold mb-2">{t("gmailForInvoice") || "Correo Gmail para recibir la factura:"}</label>
                   <input
                     id="cotizacionEmail"
                     type="email"
@@ -461,16 +471,16 @@ export default function DisenaPage() {
                         });
                         setFacturaEnviada(true);
                       } catch (err) {
-                        setErrorEnvioFactura("No se pudo enviar la factura. Verifica el correo o intenta de nuevo.");
+                        setErrorEnvioFactura(t("invoiceError") || "No se pudo enviar la factura. Verifica el correo o intenta de nuevo.");
                       } finally {
                         setEnviandoFactura(false);
                       }
                     }}
                     disabled={enviandoFactura || !cotizacionEmail || Object.values(selectedOptions).flat().length === 0}
                   >
-                    {enviandoFactura ? "Enviando..." : "Enviar factura"}
+                    {enviandoFactura ? t("sending") || "Enviando..." : t("sendInvoice") || "Enviar factura"}
                   </button>
-                  {facturaEnviada && <p className="text-green-600 mt-2">¡Factura enviada correctamente!</p>}
+                  {facturaEnviada && <p className="text-green-600 mt-2">{t("invoiceSent") || "¡Factura enviada correctamente!"}</p>}
                   {errorEnvioFactura && <p className="text-red-600 mt-2">{errorEnvioFactura}</p>}
                 </div>
                 {/* Botones de navegación */}
@@ -544,7 +554,7 @@ export default function DisenaPage() {
                     : "bg-white border border-blue-200 text-blue-700 hover:bg-blue-50"
                 }`}
               >
-                {cat.name}
+                {categoryTranslationMap[cat.name] || cat.name}
               </button>
             ))}
           </div>
@@ -556,7 +566,7 @@ export default function DisenaPage() {
           <div className="lg:col-span-2">
             {/* Input para el área total */}
             <div className="mb-4 flex items-center gap-4">
-              <label htmlFor="areaTotal" className="font-bold text-blue-700">Área total de la casa (m²):</label>
+              <label htmlFor="areaTotal" className="font-bold text-blue-700">{t("designAreaTitle")}</label>
               <input
                 id="areaTotal"
                 type="number"
@@ -566,7 +576,7 @@ export default function DisenaPage() {
                 onChange={handleAreaChange}
               />
               {showMaxAreaAlert && (
-                <div className="text-red-600 font-bold text-xs mt-1">El área máxima es 1000 m²</div>
+                <div className="text-red-600 font-bold text-xs mt-1">{t("designAreaExceeded")}</div>
               )}
             </div>
             <div className="relative h-[500px] rounded-2xl overflow-hidden mb-8 bg-white border-2 border-blue-100 shadow-lg">
@@ -579,7 +589,7 @@ export default function DisenaPage() {
               />
               {/* Indicador de imagen activa */}
               <div className="absolute bottom-4 left-4 bg-blue-700 bg-opacity-80 text-white px-3 py-1 rounded-full text-sm neutra-font">
-                {currentMainImage === "/images/u2-logo.png" ? "Vista por defecto" : "Vista personalizada"}
+                {currentMainImage === "/images/u2-logo.png" ? t("defaultView") : t("customView")}
               </div>
             </div>
             {/* Barra de progreso de selección de categorías */}
@@ -588,11 +598,10 @@ export default function DisenaPage() {
               <div className="flex-1 h-4 bg-blue-100 rounded-full overflow-hidden relative">
                 <div className="h-4 bg-gradient-to-r from-blue-500 to-orange-400 rounded-full transition-all duration-500" style={{ width: `${areaPercent}%` }} />
                 <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-blue-700">
-                  {areaPercent}% completado del área adicional
+                  {areaPercent}% {t("areaCompleted")}
                 </div>
               </div>
             </div>
-            {/* Alerta visual si falta área */}
           </div>
           {/* Panel de configuración lateral con altura fija y scroll */}
           <div className="lg:col-span-1">
@@ -600,7 +609,7 @@ export default function DisenaPage() {
               {/* Header del panel */}
               <div className="p-4 border-b flex-shrink-0">
                 <h2 className="text-xl neutra-font-bold text-blue-600">
-                  {t("chooseThe") || "Elige los"} {categories.find((c) => c.id.toString() === activeTab)?.name}
+                  {t("chooseThe")} {categories.find((c) => c.id.toString() === activeTab)?.name}
                 </h2>
               </div>
               {/* Contenido scrolleable */}
@@ -632,7 +641,7 @@ export default function DisenaPage() {
                             <h4 className="neutra-font-bold text-gray-900 text-sm">{language === "es" ? service.name_es : service.name_en}</h4>
                             <p className="text-xs text-blue-600 neutra-font">${service.price_min_usd || 0} USD</p>
                             {SERVICE_AREA_MAX[service.name_en] && (
-                              <p className="text-xs text-gray-500">Área: {SERVICE_AREA_MAX[service.name_en]} m²</p>
+                              <p className="text-xs text-gray-500">{t("area")}: {SERVICE_AREA_MAX[service.name_en]} m²</p>
                             )}
                           </div>
                           {/* Selector de cantidad para servicios con máximo */}
@@ -654,7 +663,7 @@ export default function DisenaPage() {
                             <button
                               className={`ml-2 px-3 py-1 rounded ${selectedQty > 0 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"}`}
                               onClick={() => handleOptionQuantity(service.category_id, service, selectedQty > 0 ? -1 : 1)}
-                            >{selectedQty > 0 ? "Quitar" : "Agregar"}</button>
+                            >{selectedQty > 0 ? t("remove") : t("add")}</button>
                           )}
                           {/* Checkmark para opciones seleccionadas */}
                           {selectedQty > 0 && (
@@ -671,7 +680,7 @@ export default function DisenaPage() {
                         </div>
                         {/* Alerta visual si excede el máximo */}
                         {maxUnits && selectedQty > maxUnits && (
-                          <div className="text-red-600 font-bold text-xs mt-2">Excediste el máximo permitido para este servicio ({maxUnits})</div>
+                          <div className="text-red-600 font-bold text-xs mt-2">{t("maxUnitsExceeded").replace("{{max}}", maxUnits.toString())}</div>
                         )}
                       </Card>
                     );
@@ -681,7 +690,7 @@ export default function DisenaPage() {
               {/* Panel de precio total - FIJO en la parte inferior */}
               <div className="border-t p-4 bg-white rounded-b-lg flex-shrink-0">
                 <div className="text-center mb-4">
-                  <p className="text-sm neutra-font-bold text-gray-700">{t("designCost") || "Costo del Diseño"}</p>
+                  <p className="text-sm neutra-font-bold text-gray-700">{t("designCost")}</p>
                   <div className="text-2xl neutra-font-black text-blue-600">
                     ${calculateTotal()} <span className="text-sm neutra-font">USD</span>
                   </div>
@@ -692,7 +701,7 @@ export default function DisenaPage() {
                     onClick={handleCotizar}
                     className="w-full bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white py-2 neutra-font-black text-sm shadow-xl"
                   >
-                    {t("getYourQuote") || "Obtén tu Cotización"}
+                    {t("getYourQuote")}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                   {/* Modal flotante de sugerencias al intentar cotizar si falta área */}
@@ -705,8 +714,8 @@ export default function DisenaPage() {
                           aria-label="Cerrar"
                         >
                         </button>
-                        <h2 className="text-xl font-bold text-blue-700 mb-4 text-center">Sugerencias para llenar el área</h2>
-                        <p className="text-gray-700 mb-4 text-center">Selecciona productos que caben en el área restante:</p>
+                        <h2 className="text-xl font-bold text-blue-700 mb-4 text-center">{t("suggestionsTitle")}</h2>
+                        <p className="text-gray-700 mb-4 text-center">{t("suggestionsDescription")}</p>
                         <ul className="space-y-3 max-h-80 overflow-y-auto">
                           {services
                             .filter(s => {
@@ -720,7 +729,7 @@ export default function DisenaPage() {
                             })
                             .length === 0 ? (
                               <li className="text-center text-gray-500 flex flex-col items-center gap-4">
-                                No hay más productos que quepan en el área restante. Puedes disminuir el área restante o aumentar el área total.
+                                {t("noSuggestionsAvailable")}
                                 <div className="flex gap-3 justify-center mt-2">
                                   {areaUsed > 80 && (
                                     <button
@@ -730,7 +739,7 @@ export default function DisenaPage() {
                                         setShowSuggestionsModal(false);
                                       }}
                                     >
-                                      Disminuir área restante
+                                      {t("decreaseRemainingArea")}
                                     </button>
                                   )}
                                   <button
@@ -743,7 +752,7 @@ export default function DisenaPage() {
                                       }, 100);
                                     }}
                                   >
-                                    Aumentar área total
+                                    {t("increaseTotalArea")}
                                   </button>
                                 </div>
                               </li>
@@ -772,7 +781,7 @@ export default function DisenaPage() {
                                         });
                                       }}
                                     >
-                                      Agregar
+                                      {t("add")}
                                     </button>
                                   </li>
                                 ))
@@ -783,7 +792,7 @@ export default function DisenaPage() {
                             className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition font-bold"
                             onClick={() => setShowSuggestionsModal(false)}
                           >
-                            Cerrar
+                            {t("close")}
                           </button>
                         </div>
                       </div>
@@ -791,7 +800,7 @@ export default function DisenaPage() {
                   )}
                   {/* Alerta visual si excede el área, solo al intentar cotizar */}
                   {showAreaExceededAlert && (
-                    <div className="text-red-600 font-bold text-sm mt-2">Has excedido el área total disponible. Reduce la selección o ajusta el área para poder cotizar.</div>
+                    <div className="text-red-600 font-bold text-sm mt-2">{t("areaExceededAlert")}</div>
                   )}
                 </div>
               </div>

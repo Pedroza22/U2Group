@@ -113,7 +113,7 @@ export default function HomePage() {
         setBlogs((res.data as any[]).slice(0, 4)); // Solo los 4 más recientes
         setErrorBlogs("");
       } catch (err) {
-        setErrorBlogs("Error al cargar los blogs");
+        setErrorBlogs("Error loading blogs");
       } finally {
         setLoadingBlogs(false);
       }
@@ -137,7 +137,7 @@ export default function HomePage() {
       <div className="min-h-screen bg-gray-200 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando...</p>
+          <p className="text-gray-600">{t("loading")}</p>
         </div>
       </div>
     )
@@ -271,11 +271,11 @@ export default function HomePage() {
               </div>
               <div className="grid md:grid-cols-2 gap-10 mb-8">
                 {loadingBlogs ? (
-                  <div className="col-span-2 text-center py-10 text-gray-500">Cargando blogs...</div>
+                  <div className="col-span-2 text-center py-10 text-gray-500">{t("loading")}...</div>
                 ) : errorBlogs ? (
                   <div className="col-span-2 text-center py-10 text-red-500">{errorBlogs}</div>
                 ) : blogs.length === 0 ? (
-                  <div className="col-span-2 text-center py-10 text-gray-500">No hay blogs disponibles</div>
+                  <div className="col-span-2 text-center py-10 text-gray-500">{t("noBlogs")}</div>
                 ) : (
                   blogs.map((post) => (
                   <Card key={post.id} className="bg-white border-2 border-blue-100 rounded-2xl shadow-xl hover:shadow-2xl transition-shadow">
