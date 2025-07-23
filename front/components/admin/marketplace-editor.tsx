@@ -88,10 +88,10 @@ export default function MarketplaceEditor({ categories, onSave }: MarketplaceEdi
   const loadProducts = async () => {
     setIsLoading(true);
     try {
-      const data = await getMarketplaceProducts();
+    const data = await getMarketplaceProducts();
       // Verificar que data sea un array
       if (Array.isArray(data)) {
-        setProducts(data);
+    setProducts(data);
       } else {
         console.error('getMarketplaceProducts devolvió algo que no es un array:', data);
         setProducts([]);

@@ -293,7 +293,7 @@ export default function DisenaPage() {
     services.forEach(s => {
       const config = SERVICE_CONFIG[s.name_es];
       if (config) {
-        if (!grouped[s.category_id]) grouped[s.category_id] = {};
+      if (!grouped[s.category_id]) grouped[s.category_id] = {};
         grouped[s.category_id][s.id] = config.default;
       }
     });
@@ -796,33 +796,33 @@ export default function DisenaPage() {
                     services.filter((s) => s.category_id.toString() === activeTab).map((service) => {
                       const config = SERVICE_CONFIG[service.name_es] || { default: 0, max: 5, type: 'number' };
                       const selectedQty = selectedOptions[service.category_id]?.[service.id] ?? config.default;
-                      return (
-                        <Card
-                          key={service.id}
+                    return (
+                      <Card
+                        key={service.id}
                           onClick={() => setActiveProductId(service.id)}
                           className={`p-3 transition-all hover:shadow-md ${selectedQty ? "border-blue-600 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}
-                        >
-                          <div className="flex items-center gap-3">
-                            {service.image && (
-                              <Image
+                      >
+                        <div className="flex items-center gap-3">
+                          {service.image && (
+                            <Image
                                 src={service.image.startsWith('http') ? service.image : `http://localhost:8000/media/${service.image.startsWith('services/') ? service.image : 'services/' + service.image}`}
-                                alt={service.name_es}
-                                width={40}
-                                height={40}
-                                className="rounded object-cover"
-                              />
+                              alt={service.name_es}
+                              width={40}
+                              height={40}
+                              className="rounded object-cover"
+                            />
+                          )}
+                          <div className="flex-1">
+                            <h4 className="neutra-font-bold text-gray-900 text-sm">{language === "es" ? service.name_es : service.name_en}</h4>
+                            <p className="text-xs text-blue-600 neutra-font">${service.price_min_usd || 0} USD</p>
+                            {SERVICE_AREA_MAX[service.name_en] && (
+                              <p className="text-xs text-gray-500">{t("area")}: {SERVICE_AREA_MAX[service.name_en]} m²</p>
                             )}
-                            <div className="flex-1">
-                              <h4 className="neutra-font-bold text-gray-900 text-sm">{language === "es" ? service.name_es : service.name_en}</h4>
-                              <p className="text-xs text-blue-600 neutra-font">${service.price_min_usd || 0} USD</p>
-                              {SERVICE_AREA_MAX[service.name_en] && (
-                                <p className="text-xs text-gray-500">{t("area")}: {SERVICE_AREA_MAX[service.name_en]} m²</p>
-                              )}
-                            </div>
+                          </div>
                             {/* Input numérico o switch según corresponda */}
                             {config.type === 'number' ? (
-                              <div className="flex items-center gap-2">
-                                <button
+                            <div className="flex items-center gap-2">
+                              <button
                                   className={`w-8 h-8 rounded bg-blue-50 text-blue-600 font-bold text-lg flex items-center justify-center border border-blue-100 hover:bg-blue-100 transition ${selectedQty <= config.default ? 'opacity-50 cursor-not-allowed' : ''}`}
                                   onClick={() => {
                                     if (selectedQty > config.default) {
@@ -845,7 +845,7 @@ export default function DisenaPage() {
                                   -
                                 </button>
                                 <span className="w-6 text-center font-bold text-gray-900">{selectedQty}</span>
-                                <button
+                              <button
                                   className="w-8 h-8 rounded bg-blue-600 text-white font-bold text-lg flex items-center justify-center border border-blue-600 hover:bg-blue-700 transition"
                                   onClick={() => {
                                     const areaProducto = SERVICE_AREA_MAX[service.name_en] || 0;
@@ -872,8 +872,8 @@ export default function DisenaPage() {
                                 >
                                   +
                                 </button>
-                              </div>
-                            ) : (
+                            </div>
+                          ) : (
                               <input
                                 type="checkbox"
                                 checked={!!selectedQty}
@@ -891,10 +891,10 @@ export default function DisenaPage() {
                                   });
                                 }}
                               />
-                            )}
-                          </div>
-                        </Card>
-                      );
+                          )}
+                        </div>
+                      </Card>
+                    );
                     })
                   )}
                   </div>

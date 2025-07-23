@@ -20,7 +20,7 @@ class FilterConfigurationListView(ListAPIView):
 
 class MarketplaceView(ViewSet):
     def list(self, request):
-        queryset = Product.objects.all().prefetch_related('images')
+    queryset = Product.objects.all().prefetch_related('images')
         serializer = ProductSerializer(queryset, many=True)
         return Response(serializer.data)
     
