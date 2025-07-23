@@ -10,8 +10,9 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
   const { t } = useLanguage()
   const router = useRouter()
 
-  const INITIAL_AREA = 75
-  const MAX_AREA = 200
+  const INITIAL_AREA = 80
+  const MAX_AREA = 400
+  const MIN_AREA = 0
   const PRICE_PER_M2 = 4
 
   const [area, setArea] = useState(INITIAL_AREA)
@@ -136,7 +137,7 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
           <input
             id="area-range"
             type="range"
-            min={1}
+            min={MIN_AREA}
             max={MAX_AREA}
             step={1}
             value={area}

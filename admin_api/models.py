@@ -86,6 +86,7 @@ class MarketplaceProduct(models.Model):
     style = models.CharField(max_length=50, choices=STYLE_CHOICES)
     price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     area_m2 = models.DecimalField(max_digits=8, decimal_places=2, validators=[MinValueValidator(0)])
+    area_ft2 = models.DecimalField(max_digits=8, decimal_places=2, validators=[MinValueValidator(0)], null=True, blank=True)
     rooms = models.PositiveIntegerField(default=1)
     bathrooms = models.PositiveIntegerField(default=1)
     floors = models.PositiveIntegerField(default=1)
@@ -93,6 +94,22 @@ class MarketplaceProduct(models.Model):
     features = models.JSONField(default=list)  # Lista de características especiales
     is_featured = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
+    
+    # Campos adicionales para la vista de detalle
+    width = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)  # Ancho en pies
+    depth = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)  # Profundidad en pies
+    max_ridge_height = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)  # Altura máxima
+    garage_type = models.CharField(max_length=50, default='Attached')  # Tipo de garaje
+    garage_area = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)  # Área del garaje
+    garage_cars = models.PositiveIntegerField(default=2)  # Número de carros en garaje
+    garage_entry = models.CharField(max_length=50, default='Front')  # Entrada del garaje
+    ceiling_height_lower = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)  # Altura techo nivel inferior
+    ceiling_height_first = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)  # Altura techo primer nivel
+    foundation_type = models.CharField(max_length=50, default='Walkout')  # Tipo de fundación
+    porch_front_area = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)  # Área porche frontal
+    porch_rear_area = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)  # Área porche trasero
+    optional_lower_level = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)  # Nivel inferior opcional
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -101,3 +118,14 @@ class MarketplaceProduct(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+class Order(models.Model):
+    stripe_session_id = models.CharField(max_length=255, unique=True)
+    email = models.EmailField(blank=True, null=True)
+    amount_total = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=50, default='pending')
+    raw_data = models.JSONField(default=dict)
+
+    def __str__(self):
+        return f"Order {self.stripe_session_id} - {self.amount_total}"

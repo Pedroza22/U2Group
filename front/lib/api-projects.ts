@@ -5,7 +5,22 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/ad
 
 export async function getProjects(): Promise<Project[]> {
   const res = await axios.get<Project[]>(`${API_URL}/projects/`);
+  console.log('Respuesta completa de getProjects:', res);
+  console.log('res.data:', res.data);
+  
+  // Si la respuesta es un objeto con 'results', usar eso
+  if (res.data && typeof res.data === 'object' && 'results' in res.data) {
+    return res.data.results;
+  }
+  
+  // Si es un array, devolverlo directamente
+  if (Array.isArray(res.data)) {
   return res.data;
+  }
+  
+  // Si no es ninguno de los anteriores, devolver array vacío
+  console.error('getProjects devolvió algo inesperado:', res.data);
+  return [];
 }
 
 export async function getProject(id: number): Promise<Project> {

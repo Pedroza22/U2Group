@@ -208,12 +208,9 @@ export default function GoogleMapsWorking({
           map,
           title: location.name,
           icon: {
-            path: window.google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
-            scale: 6,
-            fillColor: "#0D00FF",
-            fillOpacity: 1,
-            strokeColor: "#FFFFFF",
-            strokeWeight: 2,
+            url: '/images/CASA.svg',
+            scaledSize: new window.google.maps.Size(28, 21), // Más pequeño
+            anchor: new window.google.maps.Point(14, 21), // Ancla la base del icono
           },
           animation: window.google.maps.Animation.DROP,
         })

@@ -99,6 +99,23 @@ const SERVICE_MAX_UNITS: Record<string, number | undefined> = {
   "Floor": 3,
 };
 
+// Configuración de servicios según la tabla proporcionada
+const SERVICE_CONFIG: Record<string, { default: number | boolean, max: number | boolean, type: 'number' | 'boolean' }> = {
+  "Habitación grande": { default: 0, max: 5, type: 'number' },
+  "Habitación mediana": { default: 0, max: 5, type: 'number' },
+  "Habitación pequeña": { default: 1, max: 5, type: 'number' },
+  "Baño completo grande": { default: 0, max: 5, type: 'number' },
+  "Baño completo mediano": { default: 0, max: 5, type: 'number' },
+  "Baño completo pequeño": { default: 1, max: 5, type: 'number' },
+  "Baño social (medio baño) grande": { default: 0, max: 3, type: 'number' },
+  "Baño social (medio baño) pequeño": { default: 1, max: 3, type: 'number' },
+  "Pisos": { default: 1, max: 10, type: 'number' },
+  "Ático": { default: false, max: true, type: 'boolean' },
+  "Sótano": { default: false, max: true, type: 'boolean' },
+  "Parqueadero": { default: 1, max: 5, type: 'number' },
+  "Cuarto de lavado y almacenamiento": { default: 1, max: 2, type: 'number' },
+};
+
 export default function DisenaPage() {
   const { t, language } = useLanguage()
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
@@ -123,7 +140,7 @@ export default function DisenaPage() {
 
   // Estado para selección
   const [activeTab, setActiveTab] = useState<string>("")
-  const [selectedOptions, setSelectedOptions] = useState<Record<number, Record<number, number>>>({} as Record<number, Record<number, number>>)
+  const [selectedOptions, setSelectedOptions] = useState<Record<number, Record<number, number | boolean>>>({} as Record<number, Record<number, number | boolean>>)
   const [showQuote, setShowQuote] = useState(false)
   const [currentMainImage, setCurrentMainImage] = useState<string>("/images/u2-logo.png")
   // Estado para el área total
@@ -139,11 +156,58 @@ export default function DisenaPage() {
   const [facturaEnviada, setFacturaEnviada] = useState(false);
   const [errorEnvioFactura, setErrorEnvioFactura] = useState("");
 
-  const [totalArea, setTotalArea] = useState(80);
+  // 1. Inicializar área y productos por defecto
+  const BASIC_DEFAULT_AREA = 40;
+  const INITIAL_AREA = 80;
+  const [totalArea, setTotalArea] = useState(INITIAL_AREA);
   const [showMaxAreaAlert, setShowMaxAreaAlert] = useState(false);
+  const [areaInput, setAreaInput] = useState(totalArea);
 
   // Estado para mostrar el modal de sugerencias
   const [showSuggestionsModal, setShowSuggestionsModal] = useState(false);
+  const [activeProductId, setActiveProductId] = useState<number | null>(null);
+
+  // 1. Calcular área básica y defaults
+  const areaBasica = Math.floor(totalArea * 0.5);
+  const areaDefaults = (() => {
+    let total = 0;
+    services.forEach(service => {
+      const config = SERVICE_CONFIG[service.name_es];
+      if (config && config.type === 'number' && config.default) {
+        total += (SERVICE_AREA_MAX[service.name_en] || 0) * (config.default as number);
+      }
+    });
+    return total;
+  })();
+  // 2. Calcular área ocupada por todos los productos seleccionados
+  const calculateAreaUsed = () => {
+    let total = 0;
+    Object.entries(selectedOptions).forEach(([catId, servicesObj]) => {
+      Object.entries(servicesObj).forEach(([serviceId, qty]) => {
+        const service = services.find(s => s.id === Number(serviceId));
+        if (service) {
+          total += (SERVICE_AREA_MAX[service.name_en] || 0) * (qty as number);
+        }
+      });
+    });
+    return total;
+  };
+  const areaUsed = calculateAreaUsed();
+  // 3. Calcular área adicional y restante
+  const areaAdicional = totalArea - areaBasica - areaDefaults;
+  const areaRestante = Math.max(areaAdicional - (areaUsed - areaDefaults), 0);
+  // 4. Sugerencias
+  const sugerencias = services.filter(s => {
+    const area = SERVICE_AREA_MAX[s.name_en] || 0;
+    return area > 0 && area <= areaRestante;
+  });
+  // Agrupar sugerencias por categoría
+  const sugerenciasPorCategoria = categories.map(cat => ({
+    ...cat,
+    productos: sugerencias.filter(s => s.category_id === cat.id)
+  })).filter(cat => cat.productos.length > 0);
+  // 5. Barra de progreso
+  const areaPercent = areaAdicional <= 0 ? 100 : areaAdicional > 0 ? Math.min(Math.round(((areaUsed - areaDefaults) / areaAdicional) * 100), 100) : 0;
 
   const handleAreaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
@@ -159,6 +223,22 @@ export default function DisenaPage() {
     }
   };
 
+  const handleAreaInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAreaInput(e.target.value);
+  };
+
+  const handleAreaInputBlur = () => {
+    let value = parseInt(areaInput as any) || 80;
+    if (value > 1000) value = 1000;
+    if (value < 80) value = 80;
+    setTotalArea(value);
+    setAreaInput(value);
+  };
+
+  useEffect(() => {
+    setAreaInput(totalArea);
+  }, [totalArea]);
+
   // Botón de cotizar: mostrar modal de sugerencias si falta área
   const handleCotizar = () => {
     if (areaPercent !== 100) {
@@ -167,7 +247,7 @@ export default function DisenaPage() {
       setShowAreaExceededAlert(false);
       return;
     }
-    if (areaTotal > 0 && areaUsed > areaTotal) {
+    if (totalArea > 0 && areaUsed > totalArea) {
       setShowAreaAlert(false);
       setShowAreaExceededAlert(true);
       return;
@@ -190,6 +270,15 @@ export default function DisenaPage() {
         setServices(servRes.data as Service[])
         setConfig(confRes.data as ConfigItem[])
         setActiveTab((catRes.data as Category[])[0]?.id?.toString() || "")
+        // Logs detallados para depuración
+        console.log('CATEGORÍAS DESDE API:', catRes.data);
+        console.log('SERVICIOS DESDE API:', servRes.data);
+        if (Array.isArray(catRes.data)) {
+          console.log('Total categorías:', catRes.data.length);
+        }
+        if (Array.isArray(servRes.data)) {
+          console.log('Total servicios:', servRes.data.length);
+        }
       })
       .catch((err) => {
         setError("Error loading design data")
@@ -197,53 +286,69 @@ export default function DisenaPage() {
       .finally(() => setLoading(false))
   }, [])
 
-  // Selección por defecto de espacios básicos (suma 40m²)
+  // Inicialización de valores por defecto (productos default = 1)
   useEffect(() => {
     if (services.length === 0) return;
-    // Nombres de los servicios a seleccionar por defecto
-    const defaultNames = [
-      "Small room",
-      "Small full bathroom",
-      "Small social bathroom (half bath)",
-      "Parking",
-      "Laundry and storage room"
-    ];
-    // Filtrar los servicios por nombre
-    const defaultServices = services.filter(s => defaultNames.includes(s.name_en));
-    // Agrupar por categoría
-    const grouped: Record<number, Record<number, number>> = {};
-    defaultServices.forEach(s => {
-      if (!grouped[s.category_id]) grouped[s.category_id] = {};
-      grouped[s.category_id][s.id] = 1;
+    const grouped: Record<number, Record<number, number | boolean>> = {};
+    services.forEach(s => {
+      const config = SERVICE_CONFIG[s.name_es];
+      if (config) {
+        if (!grouped[s.category_id]) grouped[s.category_id] = {};
+        grouped[s.category_id][s.id] = config.default;
+      }
     });
     setSelectedOptions(grouped);
   }, [services]);
 
-  // Función para manejar selección de servicios (con cantidad)
-  const handleOptionQuantity = (categoryId: number, service: Service, delta: number, maxUnits?: number) => {
-    setSelectedOptions((prev) => {
-      const cat = prev[categoryId] || {};
-      const currentQty = cat[service.id] || 0;
-      let newQty = currentQty + delta;
-      if (newQty < 0) newQty = 0;
-      if (maxUnits && newQty > maxUnits) newQty = maxUnits;
-      const newCat = { ...cat, [service.id]: newQty };
-      if (newQty === 0) delete newCat[service.id];
-      const newOptions = { ...prev, [categoryId]: newCat };
-      updateMainImage(newOptions);
-      return newOptions;
+  // Calcular precio: base + extras
+  const calculateServicesTotal = () => {
+    let total = 0;
+    Object.entries(selectedOptions).forEach(([catId, servicesObj]) => {
+      Object.entries(servicesObj).forEach(([serviceId, qty]) => {
+        const service = services.find(s => s.id === Number(serviceId));
+        const config = service ? SERVICE_CONFIG[service.name_es] : undefined;
+        if (service && config) {
+          if (config.type === 'number') {
+            const extras = (qty as number) - (config.default as number);
+            if (extras > 0) {
+              total += (service.price_min_usd || 0) * extras;
+            }
+          } else if (config.type === 'boolean' && qty) {
+            total += (service.price_min_usd || 0);
+          }
+        } else if (service) {
+          const extras = (qty as number);
+          if (extras > 0) {
+            total += (service.price_min_usd || 0) * extras;
+          }
+        }
+      });
     });
+    return total;
+  };
+  const calculateTotal = () => {
+    return totalArea + calculateServicesTotal();
   };
 
-  // Actualizar imagen principal (muestra la imagen del último servicio seleccionado)
-  const updateMainImage = (options: Record<number, Record<number, number>>) => {
+  // Mensajes según el estado del área
+  const areaCompleta = areaRestante === 0 && areaAdicional > 0;
+  const areaMinimaOcupada = areaAdicional <= 0;
+  // Alerta visual y bloqueo de botones si el área está llena
+  const areaLlena = areaAdicional > 0 && areaRestante === 0;
+  const areaRestantePositivo = areaRestante > 0;
+
+  // Estado para alerta de intento de agregar producto que no cabe
+  const [showNoFitAlert, setShowNoFitAlert] = useState<{show: boolean, nombre: string}>({show: false, nombre: ''});
+
+  // Definir la función updateMainImage para evitar ReferenceError
+  const updateMainImage = (options: Record<number, Record<number, number | boolean>>) => {
     // Generar un array de servicios seleccionados según la cantidad
     const allSelected: Service[] = [];
     Object.entries(options).forEach(([catId, servicesObj]) => {
       Object.entries(servicesObj).forEach(([serviceId, qty]) => {
         const service = services.find(s => s.id === Number(serviceId));
         if (service) {
-          for (let i = 0; i < qty; i++) {
+          for (let i = 0; i < (qty as number); i++) {
             allSelected.push(service);
           }
         }
@@ -263,82 +368,25 @@ export default function DisenaPage() {
     setCurrentMainImage("/images/u2-logo.png");
   };
 
-  // Calcular precio total
-  // Sumar el precio de los servicios seleccionados más el área total (cada m² = $1)
-  const calculateServicesTotal = () => {
-    let total = 0;
-    Object.entries(selectedOptions).forEach(([catId, servicesObj]) => {
-      Object.entries(servicesObj).forEach(([serviceId, qty]) => {
-        const service = services.find(s => s.id === Number(serviceId));
-        if (service) {
-          total += (service.price_min_usd || 0) * qty;
-        }
-      });
-    });
-    return total;
-  };
-  const calculateTotal = () => calculateServicesTotal() + totalArea;
-
-  // Calcular área ocupada por los servicios seleccionados
-  const calculateAreaUsed = () => {
-    let total = 0;
-    Object.entries(selectedOptions).forEach(([catId, servicesObj]) => {
-      Object.entries(servicesObj).forEach(([serviceId, qty]) => {
-        const service = services.find(s => s.id === Number(serviceId));
-        if (service) {
-          const area = SERVICE_AREA_MAX[service.name_en] || 0;
-          total += area * qty;
-        }
-      });
-    });
-    return total;
-  };
-
-  // Área ocupada por los servicios por defecto (40m²)
-  const DEFAULT_AREA = 40;
-  // Calcular área ocupada por otros servicios (excluyendo los por defecto)
-  const defaultNames = [
-    "Small room",
-    "Small full bathroom",
-    "Small social bathroom (half bath)",
-    "Parking",
-    "Laundry and storage room"
-  ];
-  const areaUsed = calculateAreaUsed();
-  const areaUsedByDefaults = Object.entries(selectedOptions).reduce((sum, [catId, servicesObj]) => {
-    return sum + Object.entries(servicesObj).reduce((catSum, [serviceId, qty]) => {
-      const service = services.find(s => s.id === Number(serviceId));
-      if (service && defaultNames.includes(service.name_en)) {
-        return catSum + (SERVICE_AREA_MAX[service.name_en] || 0) * qty;
-      }
-      return catSum;
-    }, 0);
-  }, 0);
-  const areaUsedByOthers = areaUsed - areaUsedByDefaults;
-  // Área restante para el usuario (descontando los 40m² por defecto)
-  const areaRestante = totalArea - DEFAULT_AREA - areaUsedByOthers;
-
-  // Calcular porcentaje de área ocupada SOLO del área adicional
-  const areaAdicional = totalArea - DEFAULT_AREA;
-  const areaPercent = areaAdicional > 0 ? Math.round((areaUsedByOthers / areaAdicional) * 100) : 0;
-  const areaMissing = areaTotal > 0 ? Math.max(areaTotal - areaUsed, 0) : 0
-
-  // Sugerencias de servicios que caben en el área faltante
-  const serviceSuggestions = Object.entries(SERVICE_AREA_MAX)
-    .filter(([name, area]) => area && areaMissing >= area)
-    .map(([name, area]) => {
-      // Buscar el servicio en la lista para obtener el nombre en español
-      const service = services.find(s => s.name_en === name)
-      return service ? `${service.name_es} (${service.name_en}, ${area} m²)` : `${name} (${area} m²)`
-    })
-
   // Renderizado
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading design data...</div>
+    return <div className="min-h-screen flex flex-col items-center justify-center">
+      <div>Cargando datos de diseño...</div>
+      <div className="mt-4 text-xs text-gray-500">(Espere...)</div>
+    </div>
   }
   if (error) {
     return <div className="min-h-screen flex items-center justify-center text-red-600">{error}</div>
   }
+  // Mostrar en pantalla el total de categorías y servicios recibidos
+
+  // Definir mainImage y activeService antes del return principal
+  const activeService = services.find(s => s.id === activeProductId);
+  const mainImage = activeService?.image
+    ? (activeService.image.startsWith('http')
+        ? activeService.image
+        : `http://localhost:8000/media/${activeService.image.startsWith('services/') ? activeService.image : 'services/' + activeService.image}`)
+    : currentMainImage;
 
   // Pantalla de cotización final con Cal.com integrado
   if (showQuote) {
@@ -540,6 +588,9 @@ export default function DisenaPage() {
         </div>
       </section>
       <div className="w-full h-2 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-100 my-8" />
+      <div className="text-center text-xs text-gray-500 mb-2">
+        Total categorías: {categories.length} | Total servicios: {services.length}
+      </div>
       {/* Navegación de pestañas */}
       <div className="bg-white border-b">
         <div className="w-full px-2 md:container md:mx-auto md:px-4">
@@ -570,18 +621,20 @@ export default function DisenaPage() {
               <input
                 id="areaTotal"
                 type="number"
-                value={totalArea}
+                value={areaInput}
                 min={80}
                 max={1000}
-                onChange={handleAreaChange}
+                onChange={handleAreaInputChange}
+                onBlur={handleAreaInputBlur}
               />
               {showMaxAreaAlert && (
                 <div className="text-red-600 font-bold text-xs mt-1">{t("designAreaExceeded")}</div>
               )}
             </div>
+            {/* En la imagen grande: */}
             <div className="relative h-[500px] rounded-2xl overflow-hidden mb-8 bg-white border-2 border-blue-100 shadow-lg">
               <Image
-                src={currentMainImage || "/placeholder.svg"}
+                src={mainImage || "/placeholder.svg"}
                 alt="Design Preview"
                 fill
                 className="object-contain transition-all duration-500"
@@ -594,7 +647,11 @@ export default function DisenaPage() {
             </div>
             {/* Barra de progreso de selección de categorías */}
             <div className="flex items-center gap-2 mb-2 px-2">
-              <div className="text-2xl">🔥</div>
+              {/* 1. Logo azul en la barra de progreso */}
+              {/* (Asegúrate de que el SVG en /images/logocasamaps.svg tenga fill="#0D00FF") */}
+              <div style={{ background: 'white', borderRadius: '50%', padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Image src="/images/CASA.svg" alt="Logo Casa" width={24} height={24} />
+              </div>
               <div className="flex-1 h-4 bg-blue-100 rounded-full overflow-hidden relative">
                 <div className="h-4 bg-gradient-to-r from-blue-500 to-orange-400 rounded-full transition-all duration-500" style={{ width: `${areaPercent}%` }} />
                 <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-blue-700">
@@ -602,6 +659,124 @@ export default function DisenaPage() {
                 </div>
               </div>
             </div>
+            {areaPercent === 100 && (
+              <div className="flex flex-col items-center my-4">
+                <span className="text-blue-700 font-bold mb-2">¡Has completado el área disponible!</span>
+              </div>
+            )}
+            {/* En el render, mostrar la alerta si el área está llena o queda poco espacio */}
+            {(areaLlena || areaRestantePositivo) && (
+              <div className="text-center my-4">
+                {areaLlena ? (
+                  <div className="text-red-600 font-bold mb-2">
+                    El área adicional está completamente ocupada. Aumenta el área para agregar más productos o continúa a la cotización.
+                  </div>
+                ) : (
+                  <div className="text-blue-700 font-bold mb-2">
+                    Área restante: {areaRestante} m²
+                  </div>
+                )}
+                {sugerencias.length > 0 && (
+                  <div className="text-blue-700">
+                    Productos que puedes agregar con el área restante:
+                    <ul className="list-disc list-inside">
+                      {sugerencias.map(s => (
+                        <li key={s.id}>{s.name_es} ({SERVICE_AREA_MAX[s.name_en]} m²)</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {areaRestante > 0 && sugerencias.length === 0 && (
+                  <div className="text-orange-600 font-bold mt-2">
+                    No hay productos que quepan en el área restante. Puedes aumentar el área para agregar más opciones.
+                  </div>
+                )}
+              </div>
+            )}
+            {/* Alerta si el usuario intenta agregar un producto que no cabe */}
+            {showNoFitAlert.show && (
+              <div className="text-center text-orange-600 font-bold my-4">
+                No puedes agregar "{showNoFitAlert.nombre}" porque no cabe en el área restante.<br />
+                {sugerencias.length > 0 ? (
+                  <span>Productos que sí puedes agregar: {sugerencias.map(s => s.name_es).join(', ')}</span>
+                ) : (
+                  <span>No hay productos que quepan en el área restante. Aumenta el área para más opciones.</span>
+                )}
+                <button className="ml-4 px-2 py-1 bg-blue-100 rounded" onClick={() => setShowNoFitAlert({show: false, nombre: ''})}>Cerrar</button>
+              </div>
+            )}
+            {/* SOLO mostrar el botón para abrir el modal, NO la lista de sugerencias fuera del modal */}
+            {areaRestante > 0 && sugerencias.length > 0 && (
+              <div className="text-center my-4">
+                <button
+                  className="px-4 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 transition"
+                  onClick={() => setShowSuggestionsModal(true)}
+                >
+                  Ver productos que puedes agregar con el área restante
+                </button>
+              </div>
+            )}
+            {showSuggestionsModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full relative animate-fade-in border-2 border-blue-100">
+                  <button
+                    className="absolute top-3 right-3 text-gray-400 hover:text-blue-600 text-2xl font-bold"
+                    onClick={() => setShowSuggestionsModal(false)}
+                    aria-label="Cerrar"
+                  >
+                    ×
+                  </button>
+                  <h2 className="text-xl font-bold text-blue-700 mb-4 text-center">Productos que puedes agregar con el área restante ({areaRestante} m²)</h2>
+                  <div className="space-y-4 max-h-80 overflow-y-auto">
+                    {sugerenciasPorCategoria.map(cat => (
+                      <div key={cat.id}>
+                        <h3 className="text-blue-600 font-bold mb-2">{cat.name}</h3>
+                        <div className="space-y-3">
+                          {cat.productos.map(s => (
+                            <Card key={s.id} className="flex items-center gap-3 p-3 border border-blue-100 bg-blue-50">
+                              {s.image && (
+                                <Image
+                                  src={s.image.startsWith('http') ? s.image : `http://localhost:8000/media/${s.image.startsWith('services/') ? s.image : 'services/' + s.image}`}
+                                  alt={s.name_es}
+                                  width={40}
+                                  height={40}
+                                  className="rounded object-cover"
+                                />
+                              )}
+                              <div className="flex-1">
+                                <h4 className="neutra-font-bold text-gray-900 text-sm">{language === "es" ? s.name_es : s.name_en}</h4>
+                                <p className="text-xs text-blue-600 neutra-font">Área: {SERVICE_AREA_MAX[s.name_en]} m²</p>
+                              </div>
+                              <button
+                                className="px-3 py-1 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 transition text-xs"
+                                onClick={() => {
+                                  setSelectedOptions(prev => {
+                                    const current = prev[s.category_id] || {};
+                                    const newQty = (current[s.id] || 0) + 1;
+                                    return { ...prev, [s.category_id]: { ...current, [s.id]: newQty } };
+                                  });
+                                  setShowSuggestionsModal(false);
+                                }}
+                              >
+                                Agregar
+                              </button>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-center mt-6">
+                    <button
+                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition font-bold"
+                      onClick={() => setShowSuggestionsModal(false)}
+                    >
+                      Cerrar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           {/* Panel de configuración lateral con altura fija y scroll */}
           <div className="lg:col-span-1">
@@ -615,76 +790,113 @@ export default function DisenaPage() {
               {/* Contenido scrolleable */}
               <div className="flex-1 overflow-y-auto p-4">
                   <div className="space-y-4">
-                  {services.filter((s) => s.category_id.toString() === activeTab).map((service) => {
-                    const maxUnits = SERVICE_MAX_UNITS[service.name_en];
-                    const selectedQty = selectedOptions[service.category_id]?.[service.id] || 0;
-                    return (
-                      <Card
-                        key={service.id}
-                        className={`p-3 transition-all hover:shadow-md ${selectedQty > 0 ? "border-blue-600 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          {service.image && (
-                            <Image
-                              src={
-                                service.image.startsWith('http')
-                                  ? service.image
-                                  : `http://localhost:8000/media/${service.image.startsWith('services/') ? service.image : 'services/' + service.image}`
-                              }
-                              alt={service.name_es}
-                              width={40}
-                              height={40}
-                              className="rounded object-cover"
-                            />
-                          )}
-                          <div className="flex-1">
-                            <h4 className="neutra-font-bold text-gray-900 text-sm">{language === "es" ? service.name_es : service.name_en}</h4>
-                            <p className="text-xs text-blue-600 neutra-font">${service.price_min_usd || 0} USD</p>
-                            {SERVICE_AREA_MAX[service.name_en] && (
-                              <p className="text-xs text-gray-500">{t("area")}: {SERVICE_AREA_MAX[service.name_en]} m²</p>
+                  {services.filter((s) => s.category_id.toString() === activeTab).length === 0 ? (
+                    <div className="text-center text-gray-400 py-8">No hay servicios para esta categoría.</div>
+                  ) : (
+                    services.filter((s) => s.category_id.toString() === activeTab).map((service) => {
+                      const config = SERVICE_CONFIG[service.name_es] || { default: 0, max: 5, type: 'number' };
+                      const selectedQty = selectedOptions[service.category_id]?.[service.id] ?? config.default;
+                      return (
+                        <Card
+                          key={service.id}
+                          onClick={() => setActiveProductId(service.id)}
+                          className={`p-3 transition-all hover:shadow-md ${selectedQty ? "border-blue-600 bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            {service.image && (
+                              <Image
+                                src={service.image.startsWith('http') ? service.image : `http://localhost:8000/media/${service.image.startsWith('services/') ? service.image : 'services/' + service.image}`}
+                                alt={service.name_es}
+                                width={40}
+                                height={40}
+                                className="rounded object-cover"
+                              />
+                            )}
+                            <div className="flex-1">
+                              <h4 className="neutra-font-bold text-gray-900 text-sm">{language === "es" ? service.name_es : service.name_en}</h4>
+                              <p className="text-xs text-blue-600 neutra-font">${service.price_min_usd || 0} USD</p>
+                              {SERVICE_AREA_MAX[service.name_en] && (
+                                <p className="text-xs text-gray-500">{t("area")}: {SERVICE_AREA_MAX[service.name_en]} m²</p>
+                              )}
+                            </div>
+                            {/* Input numérico o switch según corresponda */}
+                            {config.type === 'number' ? (
+                              <div className="flex items-center gap-2">
+                                <button
+                                  className={`w-8 h-8 rounded bg-blue-50 text-blue-600 font-bold text-lg flex items-center justify-center border border-blue-100 hover:bg-blue-100 transition ${selectedQty <= config.default ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                  onClick={() => {
+                                    if (selectedQty > config.default) {
+                                      setSelectedOptions(prev => {
+                                        const updated = {
+                                          ...prev,
+                                          [service.category_id]: {
+                                            ...prev[service.category_id],
+                                            [service.id]: (selectedQty as number) - 1
+                                          }
+                                        };
+                                        updateMainImage(updated);
+                                        return updated;
+                                      });
+                                    }
+                                  }}
+                                  disabled={selectedQty <= config.default}
+                                  type="button"
+                                >
+                                  -
+                                </button>
+                                <span className="w-6 text-center font-bold text-gray-900">{selectedQty}</span>
+                                <button
+                                  className="w-8 h-8 rounded bg-blue-600 text-white font-bold text-lg flex items-center justify-center border border-blue-600 hover:bg-blue-700 transition"
+                                  onClick={() => {
+                                    const areaProducto = SERVICE_AREA_MAX[service.name_en] || 0;
+                                    if (areaLlena || (areaProducto > areaRestante)) {
+                                      setShowNoFitAlert({show: true, nombre: service.name_es});
+                                      return;
+                                    }
+                                    if ((selectedQty as number) < (config.max as number)) {
+                                      setSelectedOptions(prev => {
+                                        const updated = {
+                                          ...prev,
+                                          [service.category_id]: {
+                                            ...prev[service.category_id],
+                                            [service.id]: (selectedQty as number) + 1
+                                          }
+                                        };
+                                        updateMainImage(updated);
+                                        return updated;
+                                      });
+                                    }
+                                  }}
+                                  disabled={areaLlena || (selectedQty as number) >= (config.max as number)}
+                                  type="button"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            ) : (
+                              <input
+                                type="checkbox"
+                                checked={!!selectedQty}
+                                onChange={e => {
+                                  setSelectedOptions(prev => {
+                                    const updated = {
+                                      ...prev,
+                                      [service.category_id]: {
+                                        ...prev[service.category_id],
+                                        [service.id]: e.target.checked
+                                      }
+                                    };
+                                    updateMainImage(updated);
+                                    return updated;
+                                  });
+                                }}
+                              />
                             )}
                           </div>
-                          {/* Selector de cantidad para servicios con máximo */}
-                          {maxUnits ? (
-                            <div className="flex items-center gap-2">
-                              <button
-                                className="px-2 py-1 bg-blue-100 text-blue-700 rounded font-bold text-lg"
-                                onClick={() => handleOptionQuantity(service.category_id, service, -1, maxUnits)}
-                                disabled={selectedQty === 0}
-                              >-</button>
-                              <span className="font-bold text-blue-700 min-w-[20px] text-center">{selectedQty}</span>
-                              <button
-                                className="px-2 py-1 bg-blue-600 text-white rounded font-bold text-lg"
-                                onClick={() => handleOptionQuantity(service.category_id, service, 1, maxUnits)}
-                                disabled={selectedQty >= maxUnits}
-                              >+</button>
-                            </div>
-                          ) : (
-                            <button
-                              className={`ml-2 px-3 py-1 rounded ${selectedQty > 0 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700"}`}
-                              onClick={() => handleOptionQuantity(service.category_id, service, selectedQty > 0 ? -1 : 1)}
-                            >{selectedQty > 0 ? t("remove") : t("add")}</button>
-                          )}
-                          {/* Checkmark para opciones seleccionadas */}
-                          {selectedQty > 0 && (
-                            <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center">
-                              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                  fillRule="evenodd"
-                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            </div>
-                          )}
-                        </div>
-                        {/* Alerta visual si excede el máximo */}
-                        {maxUnits && selectedQty > maxUnits && (
-                          <div className="text-red-600 font-bold text-xs mt-2">{t("maxUnitsExceeded").replace("{{max}}", maxUnits.toString())}</div>
-                        )}
-                      </Card>
-                    );
-                  })}
+                        </Card>
+                      );
+                    })
+                  )}
                   </div>
               </div>
               {/* Panel de precio total - FIJO en la parte inferior */}
@@ -725,7 +937,7 @@ export default function DisenaPage() {
                                 Object.keys(servicesObj).includes(s.id.toString())
                               );
                               const esDefault = defaultNames.includes(s.name_en);
-                              return area > 0 && area <= areaRestante && !yaSeleccionado && !esDefault;
+                              return area > 0 && area <= areaAdicional && !yaSeleccionado && !esDefault;
                             })
                             .length === 0 ? (
                               <li className="text-center text-gray-500 flex flex-col items-center gap-4">
@@ -764,7 +976,7 @@ export default function DisenaPage() {
                                     Object.keys(servicesObj).includes(s.id.toString())
                                   );
                                   const esDefault = defaultNames.includes(s.name_en);
-                                  return area > 0 && area <= areaRestante && !yaSeleccionado && !esDefault;
+                                  return area > 0 && area <= areaAdicional && !yaSeleccionado && !esDefault;
                                 })
                                 .map(s => (
                                   <li key={s.id} className="flex items-center justify-between bg-blue-50 rounded p-3 border border-blue-100">

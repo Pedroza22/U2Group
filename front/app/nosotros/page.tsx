@@ -306,7 +306,7 @@ export default function NosotrosPage() {
               <div className="bg-white rounded-2xl p-10 shadow-2xl text-center border-2 border-blue-100 hover:shadow-blue-200 transition-shadow">
                 <div className="mb-6">
                   <Image
-                    src="https://avataaars.io/?avatarStyle=Circle&topType=LongHairStraight&accessoriesType=Blank&hairColor=Brown&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=Default&mouthType=Default&skinColor=Light"
+                    src="/images/sofi.png"
                     alt="Sofía Solarte"
                     width={120}
                     height={120}
@@ -332,7 +332,7 @@ export default function NosotrosPage() {
               <div className="bg-white rounded-2xl p-10 shadow-2xl text-center border-2 border-blue-100 hover:shadow-blue-200 transition-shadow">
                 <div className="mb-6">
                   <Image
-                    src="https://avataaars.io/?avatarStyle=Circle&topType=ShortHairShortCurly&accessoriesType=Blank&hairColor=Black&facialHairType=BeardLight&facialHairColor=Black&clotheType=CollarSweater&eyeType=Happy&eyebrowType=Default&mouthType=Smile&skinColor=Light"
+                    src="/images/lima.png"
                     alt="Juan José Lima"
                     width={120}
                     height={120}

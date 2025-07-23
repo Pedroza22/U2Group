@@ -1,14 +1,22 @@
-"use client";
-
-import Link from "next/link";
+"use client"
+import { useSearchParams } from "next/navigation"
 
 export default function CartPage() {
-  // Aquí podrías usar el contexto del carrito para mostrar productos
+  const params = useSearchParams();
+  const success = params.get("success");
+  const canceled = params.get("canceled");
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-      <h1 className="text-3xl font-bold mb-4">Carrito de Compras</h1>
-      <p className="mb-6 text-gray-600">Tu carrito está vacío.</p>
-      <Link href="/marketplace" className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Ir al Marketplace</Link>
+    <div className="max-w-xl mx-auto py-20 text-center">
+      {success && (
+        <div className="text-green-600 text-2xl font-bold mb-4">¡Pago realizado con éxito!</div>
+      )}
+      {canceled && (
+        <div className="text-red-600 text-2xl font-bold mb-4">El pago fue cancelado.</div>
+      )}
+      {!success && !canceled && (
+        <div className="text-gray-700 text-xl">Tu carrito está vacío o pendiente de pago.</div>
+      )}
     </div>
   );
 } 

@@ -36,9 +36,22 @@ export default function BlogPage() {
     try {
       setLoading(true);
       const res = await axios.get(`${API_URL}/blogs/`);
-      setAllBlogs(res.data as AdminBlog[]);
+      let blogs: AdminBlog[] = [];
+      if (Array.isArray(res.data)) {
+        blogs = res.data;
+      } else if (res.data && Array.isArray(res.data.results)) {
+        blogs = res.data.results;
+      } else if (res.data && typeof res.data === "object") {
+        for (const key in res.data) {
+          if (Array.isArray(res.data[key])) {
+            blogs = res.data[key];
+            break;
+          }
+        }
+      }
+      setAllBlogs(blogs);
       // Para cada blog, obtener el contador de likes/favoritos
-      (res.data as AdminBlog[]).forEach((blog) => {
+      blogs.forEach((blog) => {
         getBlogLikeFavoriteCount(blog.id).then(count => {
           setLikeCounts(prev => ({ ...prev, [blog.id]: count }));
         });
@@ -46,7 +59,7 @@ export default function BlogPage() {
       setError("");
     } catch (err) {
       console.error('Error al cargar blogs:', err);
-              setError("Error loading blogs");
+      setError("Error loading blogs");
     } finally {
       setLoading(false);
     }

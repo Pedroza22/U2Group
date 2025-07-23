@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import viewsets, status, permissions
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import Project, ProjectImage, Blog, BlogLikeFavorite, MarketplaceProduct
+from .models import Project, ProjectImage, Blog, BlogLikeFavorite, MarketplaceProduct, Order
 from .serializers import ProjectSerializer, ProjectImageSerializer, BlogSerializer, BlogLikeFavoriteSerializer, MarketplaceProductSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import action
@@ -11,6 +11,12 @@ from django.utils.decorators import method_decorator
 from django.shortcuts import get_object_or_404
 from django.db.models import F
 from django.db import transaction
+import stripe
+from django.conf import settings
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from django.http import HttpResponse
 
 # Create your views here.
 
@@ -154,6 +160,15 @@ class MarketplaceProductViewSet(viewsets.ModelViewSet):
         ordering = self.request.query_params.get('ordering', '-created_at')
         return queryset.order_by(ordering)
 
+    def create(self, request, *args, **kwargs):
+        print(f"[MarketplaceProductViewSet] Datos recibidos: {request.data}")
+        print(f"[MarketplaceProductViewSet] Files: {request.FILES}")
+        try:
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
+            print(f"[MarketplaceProductViewSet] Error en create: {e}")
+            raise
+
     @action(detail=True, methods=['post'])
     def toggle_featured(self, request, pk=None):
         product = self.get_object()
@@ -167,3 +182,59 @@ class MarketplaceProductViewSet(viewsets.ModelViewSet):
         product.is_active = not product.is_active
         product.save()
         return Response({'status': 'success', 'is_active': product.is_active})
+
+@api_view(['POST'])
+def create_stripe_checkout_session(request):
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    items = request.data.get('items', [])
+    line_items = []
+    for item in items:
+        line_items.append({
+            'price_data': {
+                'currency': 'usd',
+                'product_data': {
+                    'name': item['name'],
+                },
+                'unit_amount': int(float(item['price']) * 100),
+            },
+            'quantity': item.get('quantity', 1),
+        })
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=line_items,
+            mode='payment',
+            success_url=request.build_absolute_uri('/cart?success=true'),
+            cancel_url=request.build_absolute_uri('/cart?canceled=true'),
+        )
+        return Response({'id': session.id, 'url': session.url})
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@csrf_exempt
+def stripe_webhook(request):
+    import stripe
+    from django.conf import settings
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    event = None
+    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except Exception as e:
+        return HttpResponse(status=400)
+    # Maneja el evento de pago exitoso
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        Order.objects.get_or_create(
+            stripe_session_id=session['id'],
+            defaults={
+                'email': session.get('customer_details', {}).get('email'),
+                'amount_total': float(session['amount_total']) / 100,
+                'status': 'paid',
+                'raw_data': session,
+            }
+        )
+    return HttpResponse(status=200)

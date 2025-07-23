@@ -84,9 +84,16 @@ export default function AdminDashboardPage() {
     setIsLoading(true);
     try {
       const data = await getProjects();
-      setProjects(data as AdminProject[]);
+      // Verificar que data sea un array
+      if (Array.isArray(data)) {
+        setProjects(data as AdminProject[]);
+      } else {
+        console.error('getProjects devolvió algo que no es un array:', data);
+        setProjects([]);
+      }
     } catch (error) {
-      // Manejo de error opcional
+      console.error('Error al cargar proyectos:', error);
+      setProjects([]);
     }
     setIsLoading(false);
   };
@@ -95,9 +102,22 @@ export default function AdminDashboardPage() {
   const loadBlogs = async () => {
     try {
       const data = await getBlogs();
-      setBlogs(data as AdminBlog[]); // Cast explícito para evitar error de tipo
+      let safeBlogs: AdminBlog[] = [];
+      if (Array.isArray(data)) {
+        safeBlogs = data;
+      } else if (data && Array.isArray(data.results)) {
+        safeBlogs = data.results;
+      } else if (data && typeof data === "object") {
+        for (const key in data) {
+          if (Array.isArray(data[key])) {
+            safeBlogs = data[key];
+            break;
+          }
+        }
+      }
+      setBlogs(safeBlogs);
     } catch (error) {
-      // Manejo de error opcional
+      setBlogs([]);
     }
   };
 
@@ -491,7 +511,7 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {projects.map((project) => (
+              {Array.isArray(projects) && projects.map((project) => (
                 <Card key={project.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="relative aspect-video">
                     <Image src={project.image || "/placeholder.svg"} alt={project.name} fill className="object-cover" />
@@ -560,12 +580,12 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="space-y-4">
-              {blogs.length === 0 ? (
+              {Array.isArray(blogs) && blogs.length === 0 ? (
                 <div className="text-center text-gray-500 neutra-font py-12">
                   No blogs registered. Create the first one!
                 </div>
               ) : (
-                blogs.map((blog: any) => {
+                Array.isArray(blogs) && blogs.map((blog: any) => {
                   // Compatibilidad: blog.images (array), blog.image (string), blog.tags (array), blog.author (objeto o string)
                   const mainImage = Array.isArray(blog.images) && blog.images.length > 0 ? blog.images[0] : (blog.image || "/placeholder.svg");
                   const extraImages = Array.isArray(blog.images) && blog.images.length > 1 ? blog.images.slice(1) : [];

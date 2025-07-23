@@ -4,6 +4,8 @@ import { useState } from "react"
 import { X, Plus, Minus, Trash2, ShoppingBag } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import { useCart } from "@/context/cart-context"
+import axios from "axios"
 
 interface CartItem {
   id: string
@@ -20,48 +22,38 @@ interface CartSidebarProps {
 }
 
 export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: "56478SM",
-      name: "56478SM",
-      image: "/placeholder.svg?height=80&width=120",
-      price: 1000,
-      planSet: "PDF",
-      quantity: 1,
-    },
-    {
-      id: "833073WAT",
-      name: "833073WAT",
-      image: "/placeholder.svg?height=80&width=120",
-      price: 1500,
-      planSet: "PDF + Editable",
-      quantity: 1,
-    },
-    {
-      id: "86415HH",
-      name: "86415HH",
-      image: "/placeholder.svg?height=80&width=120",
-      price: 1000,
-      planSet: "PDF",
-      quantity: 2,
-    },
-  ])
+  const { cartItems, removeFromCart, clearCart } = useCart();
 
   const updateQuantity = (id: string, newQuantity: number) => {
     if (newQuantity === 0) {
-      removeItem(id)
+      removeFromCart(id)
       return
     }
-    setCartItems((items) => items.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
+    // This function is no longer needed as update is handled by useCart context
   }
 
   const removeItem = (id: string) => {
-    setCartItems((items) => items.filter((item) => item.id !== id))
+    removeFromCart(id)
   }
 
-  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const total = cartItems.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0);
 
-  if (!isOpen) return null
+  const handleCheckout = async () => {
+    try {
+      const response = await axios.post("/api/admin/stripe/create-checkout-session/", {
+        items: cartItems.map(item => ({
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity || 1,
+        })),
+      });
+      window.location.href = response.data.url;
+    } catch (error) {
+      alert("Error al iniciar el pago. Intenta de nuevo.");
+    }
+  };
+
+  if (!isOpen) return null;
 
   return (
     <>
@@ -103,7 +95,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                   <div className="flex gap-4">
                     <div className="w-20 h-16 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
                       <Image
-                        src={item.image || "/placeholder.svg"}
+                        src={item.main_image || "/placeholder.svg"}
                         alt={item.name}
                         width={80}
                         height={64}
@@ -113,13 +105,13 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 truncate">Plan {item.name}</h3>
-                      <p className="text-sm text-gray-600 mb-2">{item.planSet}</p>
+                      <p className="text-sm text-gray-600 mb-2">{item.architectural_style}</p>
                       <p className="text-lg font-bold text-[#0D00FF]">${item.price.toLocaleString()}</p>
                     </div>
 
                     <div className="flex flex-col items-end gap-2">
                       <button
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeFromCart(item.id)}
                         className="p-1 text-gray-400 hover:text-red-500 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -157,7 +149,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                 <span className="text-[#0D00FF]">${total.toLocaleString()}</span>
               </div>
 
-              <Button className="w-full bg-gradient-to-r from-[#0D00FF] to-[#4F46E5] hover:from-[#0D00FF]/90 hover:to-[#4F46E5]/90 text-white font-semibold py-3 rounded-xl">
+              <Button className="w-full bg-gradient-to-r from-[#0D00FF] to-[#4F46E5] hover:from-[#0D00FF]/90 hover:to-[#4F46E5]/90 text-white font-semibold py-3 rounded-xl" onClick={handleCheckout}>
                 Proceder al Pago
               </Button>
 

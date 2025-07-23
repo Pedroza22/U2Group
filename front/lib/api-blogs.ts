@@ -70,10 +70,15 @@ export async function toggleBlogFavorite(blogId: number): Promise<BlogLikeFavori
 }
 
 export async function getBlogLikeFavoriteCount(blogId: number) {
-  const res = await axios.get(`${API_URL}/blog-likes-favorites/?blog=${blogId}`);
-  const all = res.data;
-  return {
-    likes: all.filter((item: any) => item.liked).length,
-    favorites: all.filter((item: any) => item.favorited).length,
-  };
+  try {
+    const res = await axios.get(`${API_URL}/blog-likes-favorites/?blog=${blogId}`);
+    const all = res.data;
+    return {
+      likes: Array.isArray(all) ? all.filter((item: any) => item.liked).length : 0,
+      favorites: Array.isArray(all) ? all.filter((item: any) => item.favorited).length : 0,
+    };
+  } catch (error) {
+    // Si la ruta no existe o hay error, devuelve 0 likes y 0 favoritos
+    return { likes: 0, favorites: 0 };
+  }
 } 

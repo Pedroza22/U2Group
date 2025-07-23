@@ -25,10 +25,12 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           {/* PROVIDER DE IDIOMAS - Envuelve toda la aplicación y el banner de cookies */}
           <LanguageProvider>
-            <AuthProvider>
-              {children}
-              <CookieBanner />
-            </AuthProvider>
+            <CartProvider>
+              <AuthProvider>
+                {children}
+                <CookieBanner />
+              </AuthProvider>
+            </CartProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

@@ -110,10 +110,12 @@ export default function HomePage() {
         setLoadingBlogs(true);
         const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/admin";
         const res = await axios.get(`${API_URL}/blogs/`);
-        setBlogs((res.data as any[]).slice(0, 4)); // Solo los 4 más recientes
+        console.log("Respuesta blogs:", res.data);
+        let blogs = Array.isArray(res.data) ? res.data : res.data.results || [];
+        setBlogs(blogs.slice(0, 4)); // Solo los 4 más recientes
         setErrorBlogs("");
-      } catch (err) {
-        setErrorBlogs("Error loading blogs");
+      } catch (err: any) {
+        setErrorBlogs(err?.message || "Error al cargar blogs");
       } finally {
         setLoadingBlogs(false);
       }

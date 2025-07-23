@@ -18,16 +18,31 @@ interface MarketplaceEditorProps {
 interface OptionFormState {
   name: string
   price: number
-  image: string
+  image: string | File
   description: string
   category: string
   style: string
   area_m2: number
+  area_ft2: number
   rooms: number
   bathrooms: number
   floors: number
   is_featured: boolean
   is_active: boolean
+  // Campos adicionales para la vista de detalle
+  width: number
+  depth: number
+  max_ridge_height: number
+  garage_type: string
+  garage_area: number
+  garage_cars: number
+  garage_entry: string
+  ceiling_height_lower: number
+  ceiling_height_first: number
+  foundation_type: string
+  porch_front_area: number
+  porch_rear_area: number
+  optional_lower_level: number
   [key: string]: any // Índice de tipo para permitir acceso dinámico
 }
 
@@ -43,11 +58,26 @@ export default function MarketplaceEditor({ categories, onSave }: MarketplaceEdi
     category: "residential",
     style: "modern",
     area_m2: 0,
+    area_ft2: 0,
     rooms: 1,
     bathrooms: 1,
     floors: 1,
     is_featured: false,
-    is_active: true
+    is_active: true,
+    // Campos adicionales para la vista de detalle
+    width: 0,
+    depth: 0,
+    max_ridge_height: 0,
+    garage_type: "",
+    garage_area: 0,
+    garage_cars: 0,
+    garage_entry: "",
+    ceiling_height_lower: 0,
+    ceiling_height_first: 0,
+    foundation_type: "",
+    porch_front_area: 0,
+    porch_rear_area: 0,
+    optional_lower_level: 0
   })
 
   // Estado para productos/planos
@@ -57,8 +87,19 @@ export default function MarketplaceEditor({ categories, onSave }: MarketplaceEdi
   // Cargar productos desde la API
   const loadProducts = async () => {
     setIsLoading(true);
-    const data = await getMarketplaceProducts();
-    setProducts(data);
+    try {
+      const data = await getMarketplaceProducts();
+      // Verificar que data sea un array
+      if (Array.isArray(data)) {
+        setProducts(data);
+      } else {
+        console.error('getMarketplaceProducts devolvió algo que no es un array:', data);
+        setProducts([]);
+      }
+    } catch (error) {
+      console.error('Error al cargar productos:', error);
+      setProducts([]);
+    }
     setIsLoading(false);
   };
 
@@ -68,6 +109,32 @@ export default function MarketplaceEditor({ categories, onSave }: MarketplaceEdi
 
   // Crear producto
   const handleSaveProduct = async (formData: any) => {
+    console.log('handleSaveProduct - formData a enviar:', formData);
+    console.log('handleSaveProduct - editingOption:', editingOption);
+    
+    // Validar campos requeridos
+    const requiredFields = ['name', 'description', 'category', 'style', 'price', 'area_m2'];
+    const missingFields = requiredFields.filter(field => !formData[field]);
+    
+    if (missingFields.length > 0) {
+      console.error('Campos faltantes:', missingFields);
+      alert(`Campos requeridos faltantes: ${missingFields.join(', ')}`);
+      return;
+    }
+    
+    // Validar que los valores numéricos sean válidos
+    const numericFields = ['price', 'area_m2', 'area_ft2', 'rooms', 'bathrooms', 'floors'];
+    const invalidNumericFields = numericFields.filter(field => {
+      const value = formData[field];
+      return value !== undefined && value !== null && (isNaN(Number(value)) || Number(value) < 0);
+    });
+    
+    if (invalidNumericFields.length > 0) {
+      console.error('Campos numéricos inválidos:', invalidNumericFields);
+      alert(`Campos numéricos inválidos: ${invalidNumericFields.join(', ')}`);
+      return;
+    }
+    
     if (editingOption) {
       await updateMarketplaceProduct(editingOption.id, formData);
     } else {
@@ -89,12 +156,26 @@ export default function MarketplaceEditor({ categories, onSave }: MarketplaceEdi
   // Definir los filtros fijos
   const fixedFilters = [
     { name: "Área (m²)", key: "area_m2", type: "number" },
+    { name: "Área (ft²)", key: "area_ft2", type: "number" },
     { name: "Habitaciones", key: "rooms", type: "number" },
     { name: "Baños", key: "bathrooms", type: "number" },
     { name: "Pisos", key: "floors", type: "number" },
     { name: "Precio (USD)", key: "price", type: "number" },
     { name: "Categoría", key: "category", type: "text" },
     { name: "Estilo", key: "style", type: "text" },
+    { name: "Ancho (pies)", key: "width", type: "number" },
+    { name: "Profundidad (pies)", key: "depth", type: "number" },
+    { name: "Altura Máxima", key: "max_ridge_height", type: "number" },
+    { name: "Tipo Garaje", key: "garage_type", type: "text" },
+    { name: "Área Garaje", key: "garage_area", type: "number" },
+    { name: "Carros Garaje", key: "garage_cars", type: "number" },
+    { name: "Entrada Garaje", key: "garage_entry", type: "text" },
+    { name: "Altura Techo Inferior", key: "ceiling_height_lower", type: "number" },
+    { name: "Altura Techo Primer Nivel", key: "ceiling_height_first", type: "number" },
+    { name: "Tipo Fundación", key: "foundation_type", type: "text" },
+    { name: "Área Porche Frontal", key: "porch_front_area", type: "number" },
+    { name: "Área Porche Trasero", key: "porch_rear_area", type: "number" },
+    { name: "Nivel Inferior Opcional", key: "optional_lower_level", type: "number" },
   ];
 
   // Manejadores para el formulario
@@ -108,18 +189,19 @@ export default function MarketplaceEditor({ categories, onSave }: MarketplaceEdi
     } else {
       setFormData(prev => ({
         ...prev,
-        [name]: name === "price" || name === "area_m2" || name === "rooms" || name === "bathrooms" || name === "floors" ? Number(value) : value
+        [name]: name === "price" || name === "area_m2" || name === "area_ft2" || name === "rooms" || name === "bathrooms" || name === "floors" || 
+                name === "width" || name === "depth" || name === "max_ridge_height" || name === "garage_area" || name === "garage_cars" || 
+                name === "ceiling_height_lower" || name === "ceiling_height_first" || name === "porch_front_area" || name === "porch_rear_area" || 
+                name === "optional_lower_level" ? Number(value) : value
       }))
     }
   }
 
   const handleImageChange = (file: File | null) => {
     if (file) {
-      // Aquí deberías manejar la subida de la imagen y obtener la URL
-      // Por ahora usamos una URL temporal
       setFormData(prev => ({
         ...prev,
-        image: URL.createObjectURL(file)
+        image: file  // Guardar el archivo real, no la URL
       }))
     }
   }
@@ -177,11 +259,26 @@ export default function MarketplaceEditor({ categories, onSave }: MarketplaceEdi
       category: "residential",
       style: "modern",
       area_m2: 0,
+      area_ft2: 0,
       rooms: 1,
       bathrooms: 1,
       floors: 1,
       is_featured: false,
-      is_active: true
+      is_active: true,
+      // Campos adicionales para la vista de detalle
+      width: 0,
+      depth: 0,
+      max_ridge_height: 0,
+      garage_type: "",
+      garage_area: 0,
+      garage_cars: 0,
+      garage_entry: "",
+      ceiling_height_lower: 0,
+      ceiling_height_first: 0,
+      foundation_type: "",
+      porch_front_area: 0,
+      porch_rear_area: 0,
+      optional_lower_level: 0
     })
     setEditingOption(null)
   }
@@ -192,16 +289,31 @@ export default function MarketplaceEditor({ categories, onSave }: MarketplaceEdi
     setFormData({
       name: option.name,
       price: option.price,
-      image: option.image || "",
+      image: (option as any).image || "",
       description: option.description || "",
       category: (option as any).category || "residential",
       style: (option as any).style || "modern",
       area_m2: (option as any).area_m2 || 0,
+      area_ft2: (option as any).area_ft2 || 0,
       rooms: (option as any).rooms || 1,
       bathrooms: (option as any).bathrooms || 1,
       floors: (option as any).floors || 1,
       is_featured: (option as any).is_featured || false,
-      is_active: (option as any).is_active !== undefined ? (option as any).is_active : true
+      is_active: (option as any).is_active !== undefined ? (option as any).is_active : true,
+      // Campos adicionales para la vista de detalle
+      width: (option as any).width || 0,
+      depth: (option as any).depth || 0,
+      max_ridge_height: (option as any).max_ridge_height || 0,
+      garage_type: (option as any).garage_type || "",
+      garage_area: (option as any).garage_area || 0,
+      garage_cars: (option as any).garage_cars || 0,
+      garage_entry: (option as any).garage_entry || "",
+      ceiling_height_lower: (option as any).ceiling_height_lower || 0,
+      ceiling_height_first: (option as any).ceiling_height_first || 0,
+      foundation_type: (option as any).foundation_type || "",
+      porch_front_area: (option as any).porch_front_area || 0,
+      porch_rear_area: (option as any).porch_rear_area || 0,
+      optional_lower_level: (option as any).optional_lower_level || 0
     })
     setShowOptionEditor(true)
   }
@@ -239,7 +351,7 @@ export default function MarketplaceEditor({ categories, onSave }: MarketplaceEdi
               ) : products.length === 0 ? (
                 <tr><td colSpan={10} className="text-center text-gray-400 py-4">No hay productos/planos registrados</td></tr>
               ) : (
-                products.map(option => (
+                Array.isArray(products) && products.map(option => (
                   <tr key={option.id} className="border-b">
                     <td className="px-3 py-2">{option.name}</td>
                     <td className="px-3 py-2">{option.image ? <img src={option.image} alt={option.name} className="w-16 h-12 object-cover rounded" /> : "-"}</td>
