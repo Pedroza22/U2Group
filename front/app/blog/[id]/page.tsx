@@ -15,7 +15,7 @@ import type { AdminBlog } from "@/data/admin-data"
 import axios from "axios";
 import { getBlogLikeFavorite, toggleBlogLike, toggleBlogFavorite, getBlogLikeFavoriteCount } from "@/lib/api-blogs";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/admin";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 export default function BlogPostPage() {
   const { t } = useLanguage()
@@ -38,7 +38,7 @@ export default function BlogPostPage() {
     const fetchBlog = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(`${API_URL}/blogs/${blogId}/`);
+        const res = await axios.get(`${API_URL}/admin/blogs/${blogId}/`);
         setBlogPost(res.data as AdminBlog);
         setError("");
       } catch (err: any) {
@@ -53,7 +53,7 @@ export default function BlogPostPage() {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const res = await axios.get(`${API_URL}/blogs/`);
+        const res = await axios.get(`${API_URL}/admin/blogs/`);
         const blogs: AdminBlog[] = res.data as AdminBlog[];
         if (blogPost) {
           setRelatedBlogs(blogs.filter((b) => b.category === blogPost.category && b.id !== blogPost.id).slice(0, 3));

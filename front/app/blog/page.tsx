@@ -30,12 +30,12 @@ export default function BlogPage() {
 
   const categoryRef = useRef<HTMLDivElement>(null);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/admin";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
   const loadBlogs = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/blogs/`);
+      const res = await axios.get(`${API_URL}/admin/blogs/`);
       setAllBlogs(res.data as AdminBlog[]);
       // Para cada blog, obtener el contador de likes/favoritos
       (res.data as AdminBlog[]).forEach((blog) => {

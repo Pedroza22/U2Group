@@ -95,6 +95,24 @@ class MarketplaceProduct(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    # Precios dinámicos
+    price_pdf_m2 = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], default=1000)
+    price_pdf_sqft = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], default=1000)
+    price_editable_m2 = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], default=1500)
+    price_editable_sqft = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], default=1500)
+    
+    # Campos para included/not included
+    included_items = models.JSONField(default=list)
+    not_included_items = models.JSONField(default=list)
+    
+    # Especificaciones adicionales
+    area_sqft = models.DecimalField(max_digits=8, decimal_places=2, validators=[MinValueValidator(0)], default=0)
+    area_unit = models.CharField(max_length=10, choices=[('sqft', 'Square Feet'), ('m2', 'Square Meters')], default='sqft')
+    garage_spaces = models.PositiveIntegerField(default=2)
+    
+    # Imágenes del Main Level
+    main_level_images = models.JSONField(default=list)
 
     def __str__(self):
         return self.name

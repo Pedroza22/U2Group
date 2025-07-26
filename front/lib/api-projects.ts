@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { Project } from "@/data/projects";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/admin";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 export async function getProjects(): Promise<Project[]> {
   const res = await axios.get<Project[]>(`${API_URL}/projects/`);

@@ -12,7 +12,7 @@ export default function PriceCalculator({ onClose }: { onClose?: () => void }) {
 
   const INITIAL_AREA = 75
   const MAX_AREA = 200
-  const PRICE_PER_M2 = 4
+  const PRICE_PER_M2 = 1
 
   const [area, setArea] = useState(INITIAL_AREA)
   const total = area * PRICE_PER_M2

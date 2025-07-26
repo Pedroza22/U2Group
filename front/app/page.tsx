@@ -18,7 +18,7 @@ import PriceCalculator from "@/components/price-calculator"
 function SimpleCalculator() {
   const { t, language } = useLanguage();
   const [area, setArea] = useState(75)
-  const PRICE_PER_M2 = 4
+  const PRICE_PER_M2 = 1
   const total = area * PRICE_PER_M2
 
   return (
@@ -108,8 +108,8 @@ export default function HomePage() {
     const fetchBlogs = async () => {
       try {
         setLoadingBlogs(true);
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/admin";
-        const res = await axios.get(`${API_URL}/blogs/`);
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+        const res = await axios.get(`${API_URL}/admin/blogs/`);
         setBlogs((res.data as any[]).slice(0, 4)); // Solo los 4 más recientes
         setErrorBlogs("");
       } catch (err) {

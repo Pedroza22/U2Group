@@ -70,6 +70,32 @@ const PROJECT_LOCATIONS: ProjectLocation[] = [
   },
 ]
 
+// Función para generar el ícono de la casa como SVG
+const createHouseIcon = (color: string = "#0D00FF") => {
+  const svg = `
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.3)"/>
+        </filter>
+      </defs>
+      <path 
+        d="M16 4L4 12V28H28V12L16 4Z" 
+        fill="${color}"
+        stroke="white"
+        stroke-width="1.5"
+        filter="url(#shadow)"
+      />
+      <path 
+        d="M12 28V18H20V28" 
+        fill="white"
+      />
+    </svg>
+  `;
+  
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+};
+
 interface GoogleMapsWorkingProps {
   apiKey: string
   height?: string
@@ -152,22 +178,127 @@ export default function GoogleMapsWorking({
         styles: [
           {
             featureType: "administrative",
-            elementType: "geometry",
-            stylers: [{ visibility: "off" }],
+            elementType: "all",
+            stylers: [
+              {
+                saturation: "-100"
+              }
+            ]
+          },
+          {
+            featureType: "administrative.province",
+            elementType: "all",
+            stylers: [
+              {
+                visibility: "off"
+              }
+            ]
+          },
+          {
+            featureType: "landscape",
+            elementType: "all",
+            stylers: [
+              {
+                saturation: -100
+              },
+              {
+                lightness: 65
+              },
+              {
+                visibility: "on"
+              }
+            ]
           },
           {
             featureType: "poi",
-            stylers: [{ visibility: "off" }],
+            elementType: "all",
+            stylers: [
+              {
+                saturation: -100
+              },
+              {
+                lightness: "50"
+              },
+              {
+                visibility: "simplified"
+              }
+            ]
           },
           {
             featureType: "road",
-            elementType: "labels.icon",
-            stylers: [{ visibility: "off" }],
+            elementType: "all",
+            stylers: [
+              {
+                saturation: "-100"
+              }
+            ]
+          },
+          {
+            featureType: "road.highway",
+            elementType: "all",
+            stylers: [
+              {
+                visibility: "simplified"
+              }
+            ]
+          },
+          {
+            featureType: "road.arterial",
+            elementType: "all",
+            stylers: [
+              {
+                lightness: "30"
+              }
+            ]
+          },
+          {
+            featureType: "road.local",
+            elementType: "all",
+            stylers: [
+              {
+                lightness: "40"
+              }
+            ]
           },
           {
             featureType: "transit",
-            stylers: [{ visibility: "off" }],
+            elementType: "all",
+            stylers: [
+              {
+                saturation: -100
+              },
+              {
+                visibility: "simplified"
+              }
+            ]
           },
+          {
+            featureType: "water",
+            elementType: "geometry",
+            stylers: [
+              {
+                hue: "#ffff00"
+              },
+              {
+                lightness: -25
+              },
+              {
+                saturation: -97
+              }
+            ]
+          },
+          {
+            featureType: "water",
+            elementType: "labels",
+            stylers: [
+              {
+                lightness: -25
+              },
+              {
+                saturation: -100
+              }
+            ]
+          }
         ],
         disableDefaultUI: false,
         zoomControl: true,
@@ -208,12 +339,9 @@ export default function GoogleMapsWorking({
           map,
           title: location.name,
           icon: {
-            path: window.google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
-            scale: 6,
-            fillColor: "#0D00FF",
-            fillOpacity: 1,
-            strokeColor: "#FFFFFF",
-            strokeWeight: 2,
+            url: createHouseIcon("#0D00FF"),
+            scaledSize: new window.google.maps.Size(32, 32),
+            anchor: new window.google.maps.Point(16, 32), // Centrar el ícono
           },
           animation: window.google.maps.Animation.DROP,
         })
@@ -234,7 +362,7 @@ export default function GoogleMapsWorking({
               ${
                 location.projectUrl
                   ? `<a href="${location.projectUrl}" style="color: #6B46C1; font-weight: 600;">
-                      Ver Proyecto →
+                      Ver Proyecto → 
                     </a>`
                   : ""
               }

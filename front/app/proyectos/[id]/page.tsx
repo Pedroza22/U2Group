@@ -12,7 +12,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import type { AdminProject } from "@/data/admin-data";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/admin";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 export default function ProjectDetailPage() {
   const { t } = useLanguage();

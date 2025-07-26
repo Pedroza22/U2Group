@@ -98,7 +98,7 @@ def save_calculator_entry(request):
         if area <= 0:
             return Response({"error": "Área inválida"}, status=status.HTTP_400_BAD_REQUEST)
 
-        price = area * 4
+        price = area * 1
         data['price'] = price
 
         serializer = CalculatorEntrySerializer(data=data)

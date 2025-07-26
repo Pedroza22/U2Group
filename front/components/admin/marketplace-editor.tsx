@@ -3,300 +3,294 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Plus, Edit, Trash2 } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Plus, Edit, Trash2, Eye } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import ImageUploader from "./image-uploader"
-import { type AdminDesignOption, type AdminDesignCategory } from "@/data/admin-data"
-import { MarketplaceFilterManager, type MarketplaceFilter, type MarketplaceFilterType } from "@/data/admin-data"
 import { getMarketplaceProducts, createMarketplaceProduct, updateMarketplaceProduct, deleteMarketplaceProduct } from "@/lib/api-marketplace";
+import MarketplacePlanEditor from "./marketplace-plan-editor";
+
+interface MarketplaceProduct {
+  id?: number
+  name: string
+  description: string
+  category: string
+  style: string
+  price: number
+  area_m2: number
+  rooms: number
+  bathrooms: number
+  floors: number
+  image?: string
+  images?: string[]
+  features: string[]
+  is_featured: boolean
+  is_active: boolean
+  created_at?: string
+  updated_at?: string
+  included_items?: string[]
+  not_included_items?: string[]
+  price_pdf_m2?: number
+  price_pdf_sqft?: number
+  price_editable_m2?: number
+  price_editable_sqft?: number
+  area_sqft?: number
+  area_unit?: 'sqft' | 'm2'
+  garage_spaces?: number
+  main_level_images?: string[]
+}
 
 interface MarketplaceEditorProps {
-  categories: AdminDesignCategory[]
-  onSave: (categories: AdminDesignCategory[]) => void
+  products?: MarketplaceProduct[]
+  onRefresh?: () => void
 }
 
-interface OptionFormState extends Omit<AdminDesignOption, 'id'> {
-  id?: string
-  sqft?: number
-  bedrooms?: number
-  bathrooms?: number
-  stories?: number
-  garage?: number
-  isExclusive?: boolean
-  architecturalStyle?: string
-}
-
-export default function MarketplaceEditor({ categories, onSave }: MarketplaceEditorProps) {
-  const [selectedCategory, setSelectedCategory] = useState<AdminDesignCategory | null>(null)
-  const [editingOption, setEditingOption] = useState<AdminDesignOption | null>(null)
-  const [showOptionEditor, setShowOptionEditor] = useState(false)
-  const [formData, setFormData] = useState<OptionFormState>({
-    name: "",
-    price: 0,
-    image: "",
-    description: "",
-    sqft: 0,
-    bedrooms: 1,
-    bathrooms: 1,
-    stories: 1,
-    garage: 1,
-    isExclusive: false,
-    architecturalStyle: ""
-  })
-
+export default function MarketplaceEditor({ products: initialProducts, onRefresh }: MarketplaceEditorProps) {
   // Estado para productos/planos
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<MarketplaceProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<MarketplaceProduct | null>(null);
+  const [showDetailView, setShowDetailView] = useState(false);
 
   // Cargar productos desde la API
   const loadProducts = async () => {
-    setIsLoading(true);
-    const data = await getMarketplaceProducts();
-    setProducts(data);
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      setError(null);
+      console.log('Cargando productos del marketplace...');
+      const data = await getMarketplaceProducts();
+      console.log('Productos cargados:', data);
+      setProducts(data);
+    } catch (err) {
+      console.error('Error cargando productos:', err);
+      setError('Error al cargar productos. Verifica que el servidor esté corriendo.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    loadProducts();
-  }, []);
+    if (initialProducts && initialProducts.length > 0) {
+      setProducts(initialProducts);
+      setIsLoading(false);
+    } else {
+      // Solo ejecutar en el cliente si no tenemos productos iniciales
+      if (typeof window !== 'undefined') {
+        loadProducts();
+      }
+    }
+  }, [initialProducts]);
 
   // Crear producto
-  const handleSaveProduct = async (formData: any) => {
-    if (editingOption) {
-      await updateMarketplaceProduct(editingOption.id, formData);
-    } else {
-      await createMarketplaceProduct(formData);
+  const handleSaveProduct = async (product: MarketplaceProduct) => {
+    try {
+      console.log('Guardando producto:', product);
+      if (product.id) {
+        await updateMarketplaceProduct(product.id, product);
+      } else {
+        await createMarketplaceProduct(product);
+      }
+      setShowDetailView(false);
+      setSelectedProduct(null);
+      await loadProducts();
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error('Error guardando producto:', err);
+      setError('Error al guardar el producto.');
     }
-    setShowOptionEditor(false);
-    setEditingOption(null);
-    await loadProducts();
   };
 
   // Eliminar producto
   const handleDeleteProduct = async (id: number) => {
     if (confirm("¿Seguro que quieres eliminar este producto/plano?")) {
-      await deleteMarketplaceProduct(id);
-      await loadProducts();
+      try {
+        await deleteMarketplaceProduct(id);
+        setShowDetailView(false);
+        setSelectedProduct(null);
+        await loadProducts();
+        if (onRefresh) onRefresh();
+      } catch (err) {
+        console.error('Error eliminando producto:', err);
+        setError('Error al eliminar el producto.');
+      }
     }
   };
 
-  // Definir los filtros fijos
-  const fixedFilters = [
-    { name: "Área (m²)", key: "area", type: "number" },
-    { name: "Habitaciones", key: "bedrooms", type: "number" },
-    { name: "Baños", key: "bathrooms", type: "number" },
-    { name: "Garaje", key: "garage", type: "number" },
-    { name: "Precio (USD)", key: "price", type: "number" },
-    { name: "Estilo arquitectónico", key: "architecturalStyle", type: "text" },
-  ];
+  // Abrir vista detallada
+  const handleViewProduct = (product: MarketplaceProduct) => {
+    setSelectedProduct(product);
+    setShowDetailView(true);
+  };
 
-  // Manejadores para el formulario
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target
-    if (type === "checkbox" && e.target instanceof HTMLInputElement) {
-      setFormData(prev => ({
-        ...prev,
-        [name]: (e.target as HTMLInputElement).checked
-      }))
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: name === "price" || name === "sqft" || name === "bedrooms" || name === "bathrooms" || name === "stories" || name === "garage" ? Number(value) : value
-      }))
-    }
+  // Crear nuevo producto
+  const handleCreateNew = () => {
+    setSelectedProduct(undefined);
+    setShowDetailView(true);
+  };
+
+  // Cerrar vista detallada
+  const handleCloseDetail = () => {
+    setShowDetailView(false);
+    setSelectedProduct(null);
+  };
+
+  const categoryLabels = {
+    residential: "Residencial",
+    commercial: "Comercial",
+    industrial: "Industrial",
+    specialized: "Especializado"
   }
 
-  const handleImageChange = (file: File | null) => {
-    if (file) {
-      // Aquí deberías manejar la subida de la imagen y obtener la URL
-      // Por ahora usamos una URL temporal
-      setFormData(prev => ({
-        ...prev,
-        image: URL.createObjectURL(file)
-      }))
-    }
+  const styleLabels = {
+    modern: "Moderno",
+    contemporary: "Contemporáneo",
+    traditional: "Tradicional",
+    minimalist: "Minimalista",
+    industrial: "Industrial"
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedCategory) return
-
-    const newCategories = [...categories]
-    const categoryIndex = newCategories.findIndex(c => c.id === selectedCategory.id)
-
-    if (categoryIndex === -1) return
-
-    if (editingOption) {
-      // Editar opción existente
-      const optionIndex = newCategories[categoryIndex].options.findIndex(o => o.id === editingOption.id)
-      if (optionIndex !== -1) {
-        newCategories[categoryIndex].options[optionIndex] = {
-          ...formData,
-          id: editingOption.id
-        } as AdminDesignOption
-      }
-    } else {
-      // Agregar nueva opción
-      newCategories[categoryIndex].options.push({
-        ...formData,
-        id: Date.now().toString() // Generamos un ID temporal
-      } as AdminDesignOption)
-    }
-
-    onSave(newCategories)
-    setShowOptionEditor(false)
-    resetForm()
-  }
-
-  const handleDeleteOption = (categoryId: string, optionId: string) => {
-    const newCategories = categories.map(category => {
-      if (category.id === categoryId) {
-        return {
-          ...category,
-          options: category.options.filter(option => option.id !== optionId)
-        }
-      }
-      return category
-    })
-    onSave(newCategories)
-  }
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      price: 0,
-      image: "",
-      description: "",
-      sqft: 0,
-      bedrooms: 1,
-      bathrooms: 1,
-      stories: 1,
-      garage: 1,
-      isExclusive: false,
-      architecturalStyle: ""
-    })
-    setEditingOption(null)
-  }
-
-  const handleEditOption = (category: AdminDesignCategory, option: AdminDesignOption) => {
-    setSelectedCategory(category)
-    setEditingOption(option)
-    setFormData({
-      name: option.name,
-      price: option.price,
-      image: option.image || "",
-      description: option.description || "",
-      sqft: (option as any).sqft || 0,
-      bedrooms: (option as any).bedrooms || 1,
-      bathrooms: (option as any).bathrooms || 1,
-      stories: (option as any).stories || 1,
-      garage: (option as any).garage || 1,
-      isExclusive: (option as any).isExclusive || false,
-      architecturalStyle: (option as any).architecturalStyle || ""
-    })
-    setShowOptionEditor(true)
-  }
-
-  const handleAddOption = (category: AdminDesignCategory) => {
-    setSelectedCategory(category)
-    resetForm()
-    setShowOptionEditor(true)
+  // Si estamos en vista detallada, mostrar el componente de detalle
+  if (showDetailView) {
+    return (
+      <MarketplacePlanEditor
+        product={selectedProduct}
+        onSave={handleSaveProduct}
+        onDelete={handleDeleteProduct}
+        onClose={handleCloseDetail}
+        isEditing={true}
+      />
+    );
   }
 
   return (
     <div className="space-y-6">
-      {/* Lista general de productos/planos */}
-      <div className="bg-white border border-blue-200 rounded-xl p-4 mb-6">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="text-lg font-bold text-blue-900">Productos/Planos</h2>
-          <Button onClick={() => handleAddOption({ id: "general", name: "General", nameEs: "General", nameEn: "General", options: [] })} size="sm">+ Agregar plano</Button>
+      {/* Mostrar error si existe */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+          <p className="text-red-700">{error}</p>
+          <Button onClick={loadProducts} size="sm" className="mt-2">
+            Reintentar
+          </Button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="bg-blue-50">
-                <th className="px-3 py-2 text-left">Nombre</th>
-                <th className="px-3 py-2 text-left">Imagen</th>
-                <th className="px-3 py-2 text-left">Descripción</th>
-                {fixedFilters.map(f => (
-                  <th key={f.key} className="px-3 py-2 text-left">{f.name}</th>
-                ))}
-                <th className="px-3 py-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr><td colSpan={10} className="text-center text-gray-400 py-4">Cargando...</td></tr>
-              ) : products.length === 0 ? (
-                <tr><td colSpan={10} className="text-center text-gray-400 py-4">No hay productos/planos registrados</td></tr>
-              ) : (
-                products.map(option => (
-                  <tr key={option.id} className="border-b">
-                    <td className="px-3 py-2">{option.name}</td>
-                    <td className="px-3 py-2">{option.image ? <img src={option.image} alt={option.name} className="w-16 h-12 object-cover rounded" /> : "-"}</td>
-                    <td className="px-3 py-2">{option.description || "-"}</td>
-                    {fixedFilters.map(f => (
-                      <td key={f.key} className="px-3 py-2">{option[f.key] || "-"}</td>
-                    ))}
-                    <td className="px-3 py-2 flex gap-2">
-                      <Button size="sm" variant="outline" onClick={() => handleEditOption({ id: "general", name: "General", nameEs: "General", nameEn: "General", options: [] }, option)}>Editar</Button>
-                      <Button size="sm" variant="destructive" onClick={() => handleDeleteProduct(option.id)}>Eliminar</Button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      {/* Modal de edición/creación de producto/plano */}
-      {showOptionEditor && (
-        <Dialog open={showOptionEditor} onOpenChange={setShowOptionEditor}>
-          <DialogContent className="max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{editingOption ? "Editar plano" : "Nuevo plano"}</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={e => { e.preventDefault(); handleSaveProduct(formData); }} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Nombre del plano</label>
-                  <input type="text" name="name" value={formData.name} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required />
-                </div>
-                <div>
-                  <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Precio (USD)</label>
-                  <input type="number" name="price" value={formData.price} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" required min="0" />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm neutra-font-bold text-gray-700 mb-2">Descripción</label>
-                <textarea name="description" value={formData.description} onChange={handleInputChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" rows={3} />
-              </div>
-              <div>
-                <ImageUploader value={formData.image} onChange={handleImageChange} label="Imagen principal del plano" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {fixedFilters.map(f => (
-                  <div key={f.key}>
-                    <label className="block text-sm neutra-font-bold text-gray-700 mb-2">{f.name}</label>
-                    <input
-                      type={f.type}
-                      name={f.key}
-                      value={formData[f.key] || ""}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                      required={f.key !== "architecturalStyle"}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-4 pt-4">
-                <Button type="button" variant="outline" onClick={() => setShowOptionEditor(false)} className="flex-1 neutra-font bg-transparent">Cancelar</Button>
-                <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 neutra-font">{editingOption ? "Actualizar" : "Crear"} plano</Button>
-              </div>
-            </form>
-          </DialogContent>
-        </Dialog>
       )}
+
+      {/* Header con botón de crear */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-900">Productos/Planos del Marketplace</h2>
+        <Button onClick={handleCreateNew} className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="h-4 w-4 mr-2" />
+          Agregar nuevo plano
+        </Button>
+      </div>
+
+      {/* Lista de productos */}
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
+        {isLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando productos...</p>
+          </div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500 mb-4">No hay productos/planos registrados</p>
+            <Button onClick={handleCreateNew} className="bg-blue-600 hover:bg-blue-700">
+              <Plus className="h-4 w-4 mr-2" />
+              Crear primer plano
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {products.map((product) => (
+              <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <div className="relative">
+                  <img 
+                    src={product.image || "/placeholder.svg"} 
+                    alt={product.name}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="absolute top-3 right-3 flex space-x-2">
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => handleViewProduct(product)}
+                      className="bg-white/90 hover:bg-white"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {product.is_featured && (
+                    <div className="absolute top-3 left-3">
+                      <span className="bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">
+                        Destacado
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="p-4">
+                  <h3 className="font-bold text-lg mb-2">{product.name}</h3>
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                    {product.description}
+                  </p>
+                  
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-2xl font-bold text-blue-600">
+                      ${product.price.toLocaleString()}
+                    </span>
+                    <div className="flex space-x-1">
+                      <Badge variant="outline" className="text-xs">
+                        {categoryLabels[product.category as keyof typeof categoryLabels] || product.category}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {styleLabels[product.style as keyof typeof styleLabels] || product.style}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-2 text-center text-xs mb-4">
+                    <div>
+                      <div className="font-bold">{product.area_m2}</div>
+                      <div className="text-gray-600">m²</div>
+                    </div>
+                    <div>
+                      <div className="font-bold">{product.rooms}</div>
+                      <div className="text-gray-600">Habs</div>
+                    </div>
+                    <div>
+                      <div className="font-bold">{product.bathrooms}</div>
+                      <div className="text-gray-600">Baños</div>
+                    </div>
+                    <div>
+                      <div className="font-bold">{product.floors}</div>
+                      <div className="text-gray-600">Pisos</div>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleViewProduct(product)}
+                      className="flex-1"
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      Ver
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleViewProduct(product)}
+                      className="flex-1"
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Editar
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 } 

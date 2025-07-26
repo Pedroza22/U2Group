@@ -113,6 +113,7 @@ class BlogLikeFavoriteViewSet(viewsets.ModelViewSet):
 class MarketplaceProductViewSet(viewsets.ModelViewSet):
     queryset = MarketplaceProduct.objects.all()
     serializer_class = MarketplaceProductSerializer
+    parser_classes = (MultiPartParser, FormParser)
 
     def get_queryset(self):
         queryset = MarketplaceProduct.objects.all()

@@ -46,6 +46,9 @@ import {
   updateBlog,
   deleteBlog,
 } from "@/lib/api-blogs";
+import {
+  getMarketplaceProducts,
+} from "@/lib/api-marketplace";
 import { useToast } from "@/hooks/use-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
@@ -75,6 +78,9 @@ export default function AdminDashboardPage() {
 
   // Estado para categorías de servicios
   const [categories, setCategories] = useState<any[]>([]);
+
+  // Estado para productos del marketplace
+  const [marketplaceProducts, setMarketplaceProducts] = useState<any[]>([]);
 
   // --- LÓGICA DE PROYECTOS CON API REAL ---
   // Corrección de tipado y referencias obsoletas
@@ -121,6 +127,22 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Función para cargar productos del marketplace
+  const loadMarketplaceProducts = async () => {
+    try {
+      const data = await getMarketplaceProducts();
+      console.log('Marketplace products loaded:', data);
+      setMarketplaceProducts(data);
+    } catch (error) {
+      console.error('Error loading marketplace products:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los productos del marketplace",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("u2-admin-token");
     if (!token) {
@@ -131,6 +153,7 @@ export default function AdminDashboardPage() {
     loadBlogs();
     loadServices();
     loadCategories();
+    loadMarketplaceProducts();
     // Cargar opciones de diseño
     setDesignOptions(AdminDataManager.getDesignOptions());
   }, [router]);
@@ -467,7 +490,7 @@ export default function AdminDashboardPage() {
             className="neutra-font"
           >
             <DollarSign className="w-4 h-4 mr-2" />
-            Marketplace
+            Marketplace ({marketplaceProducts.length})
           </Button>
           <Button
             onClick={() => setActiveTab("settings")}
@@ -831,8 +854,8 @@ export default function AdminDashboardPage() {
             </div>
 
             <MarketplaceEditor
-              categories={designOptions}
-              onSave={handleDesignOptionsUpdate}
+              products={marketplaceProducts}
+              onRefresh={loadMarketplaceProducts}
             />
           </div>
         )}
