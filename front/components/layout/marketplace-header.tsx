@@ -6,7 +6,7 @@ import { Menu, X, ShoppingCart, LogOut, LogIn, User, Heart, Globe } from "lucide
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth } from "@/context/auth-context"
 import { useLanguage } from "@/hooks/use-language"
 
 export default function MarketplaceHeader() {
@@ -17,7 +17,7 @@ export default function MarketplaceHeader() {
   const { language, setLanguage, t } = useLanguage()
 
   const handleLoginClick = () => {
-    router.push("/login")
+    router.push("/login?redirect=" + encodeURIComponent(window.location.pathname))
   }
 
   const handleLogoutClick = () => {

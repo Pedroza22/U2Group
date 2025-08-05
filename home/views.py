@@ -17,6 +17,14 @@ from django.conf import settings
 import jwt
 import datetime
 import logging
+from django.utils import timezone
+
+from Back.stripe_config import create_payment_intent, validate_stripe_config
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+import stripe
 
 User = get_user_model()
 
@@ -319,4 +327,412 @@ def get_user_orders(request):
             'error': 'Error al cargar los pedidos',
             'details': str(e),
             'trace': traceback.format_exc()
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def create_payment_intent(request):
+    """
+    Crear un PaymentIntent de Stripe
+    """
+    try:
+        # Validar configuración de Stripe
+        is_valid, message = validate_stripe_config()
+        if not is_valid:
+            return Response({
+                'error': message
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        data = request.data
+        amount = data.get('amount')  # En dólares
+        currency = data.get('currency', 'usd')
+        order_id = data.get('order_id')
+        customer_email = data.get('customer_email')
+
+        # Crear el PaymentIntent usando la función de Stripe
+        from Back.stripe_config import create_payment_intent as create_stripe_payment_intent
+        payment_intent = create_stripe_payment_intent(
+            amount=amount,
+            currency=currency,
+            metadata={
+                'order_id': order_id,
+                'customer_email': customer_email
+            }
+        )
+
+        return Response({
+            'client_secret': payment_intent.client_secret,
+            'payment_intent_id': payment_intent.id
+        })
+
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def confirm_payment(request):
+    """
+    Confirmar un pago de Stripe
+    """
+    try:
+        # Validar configuración de Stripe
+        is_valid, message = validate_stripe_config()
+        if not is_valid:
+            return Response({
+                'error': message
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        data = request.data
+        payment_intent_id = data.get('payment_intent_id')
+        order_id = data.get('order_id')
+
+        # Obtener el PaymentIntent usando la función de Stripe
+        from Back.stripe_config import confirm_payment as confirm_stripe_payment
+        payment_intent = confirm_stripe_payment(payment_intent_id)
+
+        if payment_intent.status == 'succeeded':
+            # Actualizar el estado de la orden
+            try:
+                order = Order.objects.get(id=order_id)
+                order.status = 'paid'
+                order.stripe_payment_intent_id = payment_intent_id
+                order.save()
+                
+                return Response({
+                    'success': True,
+                    'message': 'Pago confirmado exitosamente'
+                })
+            except Order.DoesNotExist:
+                return Response({
+                    'error': 'Orden no encontrada'
+                }, status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response({
+                'error': 'El pago no fue exitoso'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def stripe_webhook(request):
+    """
+    Webhook de Stripe para procesar eventos de pago
+    """
+    try:
+        # Obtener el payload del webhook
+        payload = request.body
+        sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+        
+        # Verificar la firma del webhook
+        from Back.stripe_config import STRIPE_CONFIG
+        webhook_secret = STRIPE_CONFIG['webhook_secret']
+        
+        if not webhook_secret:
+            logger.warning("Webhook secret no configurado")
+            return Response({'error': 'Webhook secret no configurado'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, webhook_secret
+            )
+        except ValueError as e:
+            logger.error(f"Error al parsear el payload: {e}")
+            return Response({'error': 'Invalid payload'}, status=status.HTTP_400_BAD_REQUEST)
+        except stripe.error.SignatureVerificationError as e:
+            logger.error(f"Error de verificación de firma: {e}")
+            return Response({'error': 'Invalid signature'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Manejar el evento
+        if event['type'] == 'payment_intent.succeeded':
+            payment_intent = event['data']['object']
+            logger.info(f"Pago exitoso: {payment_intent['id']}")
+            
+            # Actualizar la orden si existe
+            order_id = payment_intent.get('metadata', {}).get('order_id')
+            if order_id:
+                try:
+                    order = Order.objects.get(id=order_id)
+                    order.status = 'paid'
+                    order.stripe_payment_intent_id = payment_intent['id']
+                    order.save()
+                    logger.info(f"Orden {order_id} actualizada como pagada")
+                except Order.DoesNotExist:
+                    logger.warning(f"Orden {order_id} no encontrada")
+            
+        elif event['type'] == 'payment_intent.payment_failed':
+            payment_intent = event['data']['object']
+            logger.warning(f"Pago fallido: {payment_intent['id']}")
+            
+            # Actualizar la orden si existe
+            order_id = payment_intent.get('metadata', {}).get('order_id')
+            if order_id:
+                try:
+                    order = Order.objects.get(id=order_id)
+                    order.status = 'failed'
+                    order.save()
+                    logger.info(f"Orden {order_id} marcada como fallida")
+                except Order.DoesNotExist:
+                    logger.warning(f"Orden {order_id} no encontrada")
+        
+        return Response({'status': 'success'})
+        
+    except Exception as e:
+        logger.error(f"Error en webhook: {str(e)}")
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def stripe_config(request):
+    """
+    Endpoint para obtener la configuración de Stripe del frontend
+    """
+    try:
+        is_valid, message = validate_stripe_config()
+        return Response({
+            'stripe_configured': is_valid,
+            'publishable_key': settings.STRIPE_PUBLISHABLE_KEY,
+            'message': message
+        })
+    except Exception as e:
+        return Response({
+            'stripe_configured': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def create_payment_method_view(request):
+    """
+    Crea un PaymentMethod de Stripe
+    """
+    try:
+        # Validar configuración de Stripe
+        is_valid, message = validate_stripe_config()
+        if not is_valid:
+            return Response({
+                'error': message
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        data = request.data
+        type = data.get('type', 'card')
+        card_data = data.get('card')
+        billing_details = data.get('billing_details')
+
+        # Crear el PaymentMethod
+        from Back.stripe_config import create_payment_method
+        payment_method = create_payment_method(
+            type=type,
+            card_data=card_data,
+            billing_details=billing_details
+        )
+
+        return Response({
+            'id': payment_method.id,
+            'type': payment_method.type,
+            'card': payment_method.card if hasattr(payment_method, 'card') else None,
+            'billing_details': payment_method.billing_details
+        })
+
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def create_customer_view(request):
+    """
+    Crea un Customer de Stripe
+    """
+    try:
+        # Validar configuración de Stripe
+        is_valid, message = validate_stripe_config()
+        if not is_valid:
+            return Response({
+                'error': message
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        data = request.data
+        email = data.get('email')
+        name = data.get('name')
+        metadata = data.get('metadata')
+
+        if not email:
+            return Response({
+                'error': 'Email es requerido'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Crear el Customer
+        from Back.stripe_config import create_customer
+        customer = create_customer(
+            email=email,
+            name=name,
+            metadata=metadata
+        )
+
+        return Response({
+            'id': customer.id,
+            'email': customer.email,
+            'name': customer.name,
+            'created': customer.created
+        })
+
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def create_checkout_session_view(request):
+    """
+    Crea una sesión de checkout de Stripe
+    """
+    try:
+        # Validar configuración de Stripe
+        is_valid, message = validate_stripe_config()
+        if not is_valid:
+            return Response({
+                'error': message
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        data = request.data
+        line_items = data.get('line_items', [])
+        success_url = data.get('success_url')
+        cancel_url = data.get('cancel_url')
+        customer_email = data.get('customer_email')
+        metadata = data.get('metadata')
+
+        if not line_items:
+            return Response({
+                'error': 'line_items es requerido'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if not success_url or not cancel_url:
+            return Response({
+                'error': 'success_url y cancel_url son requeridos'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Crear la sesión de checkout
+        from Back.stripe_config import create_checkout_session
+        session = create_checkout_session(
+            line_items=line_items,
+            success_url=success_url,
+            cancel_url=cancel_url,
+            customer_email=customer_email,
+            metadata=metadata
+        )
+
+        return Response({
+            'id': session.id,
+            'url': session.url,
+            'payment_intent': session.payment_intent if hasattr(session, 'payment_intent') else None
+        })
+
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def refund_payment_view(request):
+    """
+    Reembolsa un pago
+    """
+    try:
+        # Validar configuración de Stripe
+        is_valid, message = validate_stripe_config()
+        if not is_valid:
+            return Response({
+                'error': message
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        data = request.data
+        payment_intent_id = data.get('payment_intent_id')
+        amount = data.get('amount')  # En centavos
+        reason = data.get('reason', 'requested_by_customer')
+
+        if not payment_intent_id:
+            return Response({
+                'error': 'payment_intent_id es requerido'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Crear el reembolso
+        from Back.stripe_config import refund_payment
+        refund = refund_payment(
+            payment_intent_id=payment_intent_id,
+            amount=amount,
+            reason=reason
+        )
+
+        return Response({
+            'id': refund.id,
+            'amount': refund.amount,
+            'status': refund.status,
+            'reason': refund.reason
+        })
+
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def test_stripe_connection_view(request):
+    """
+    Endpoint para probar la conexión con Stripe
+    """
+    try:
+        from Back.stripe_config import test_stripe_connection
+        is_success, message = test_stripe_connection()
+        
+        return Response({
+            'success': is_success,
+            'message': message,
+            'timestamp': timezone.now().isoformat()
+        })
+        
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e),
+            'timestamp': timezone.now().isoformat()
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def test_payment_method_view(request):
+    """
+    Endpoint para crear un PaymentMethod de prueba
+    """
+    try:
+        from Back.stripe_config import create_test_payment_method
+        
+        # Crear PaymentMethod de prueba
+        payment_method_id = create_test_payment_method()
+        
+        if payment_method_id:
+            return Response({
+                'success': True,
+                'payment_method_id': payment_method_id,
+                'message': 'PaymentMethod de prueba creado exitosamente'
+            })
+        else:
+            return Response({
+                'success': False,
+                'error': 'No se pudo crear el PaymentMethod de prueba'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

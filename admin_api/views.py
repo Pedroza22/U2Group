@@ -11,23 +11,64 @@ from django.utils.decorators import method_decorator
 from django.shortcuts import get_object_or_404
 from django.db.models import F
 from django.db import transaction
+from rest_framework.views import APIView
+import logging
+
+# Configurar logging
+logger = logging.getLogger(__name__)
 
 # Create your views here.
+
+class TestAPIView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    
+    def get(self, request):
+        return Response({
+            "message": "API funcionando correctamente",
+            "status": "success",
+            "endpoints": {
+                "projects": "/api/admin/projects/",
+                "blogs": "/api/admin/blogs/",
+                "marketplace": "/api/admin/marketplace/"
+            }
+        })
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all().order_by('-id')
     serializer_class = ProjectSerializer
     parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [AllowAny]  # Permitir acceso sin autenticación
+    authentication_classes = []  # Deshabilitar autenticación
+
+    def perform_create(self, serializer):
+        logger.info(f"Creando nuevo proyecto por el usuario: {self.request.user}")
+        project = serializer.save()
+        logger.info(f"Proyecto creado exitosamente: {project.id} - {project.name}")
+
+    def perform_update(self, serializer):
+        logger.info(f"Actualizando proyecto ID: {serializer.instance.id} por el usuario: {self.request.user}")
+        serializer.save()
+        logger.info("Proyecto actualizado exitosamente.")
+
+    def perform_destroy(self, instance):
+        logger.warning(f"Eliminando proyecto ID: {instance.id} por el usuario: {self.request.user}")
+        instance.delete()
+        logger.warning("Proyecto eliminado exitosamente.")
 
 class ProjectImageViewSet(viewsets.ModelViewSet):
     queryset = ProjectImage.objects.all()
     serializer_class = ProjectImageSerializer
     parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [AllowAny]  # Permitir acceso sin autenticación
+    authentication_classes = []  # Deshabilitar autenticación
 
 class BlogViewSet(viewsets.ModelViewSet):
     queryset = Blog.objects.all().order_by('-date')
     serializer_class = BlogSerializer
     parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [AllowAny]  # Permitir acceso sin autenticación
+    authentication_classes = []  # Deshabilitar autenticación
 
     @method_decorator(csrf_exempt, name='dispatch')
     @action(detail=True, methods=['post'], permission_classes=[AllowAny], authentication_classes=[])
@@ -53,6 +94,7 @@ class BlogLikeFavoriteViewSet(viewsets.ModelViewSet):
     queryset = BlogLikeFavorite.objects.all()
     serializer_class = BlogLikeFavoriteSerializer
     permission_classes = [AllowAny]
+    authentication_classes = []  # Deshabilitar autenticación
 
     def get_queryset(self):
         blog_id = self.request.query_params.get('blog')
@@ -114,6 +156,16 @@ class MarketplaceProductViewSet(viewsets.ModelViewSet):
     queryset = MarketplaceProduct.objects.all()
     serializer_class = MarketplaceProductSerializer
     parser_classes = (MultiPartParser, FormParser)
+    authentication_classes = []  # Deshabilitar autenticación
+    
+    def get_permissions(self):
+        """
+        Permite acceso público para listar productos,
+        pero requiere autenticación para crear/editar/eliminar
+        """
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return super().get_permissions()
 
     def get_queryset(self):
         queryset = MarketplaceProduct.objects.all()
@@ -160,6 +212,15 @@ class MarketplaceProductViewSet(viewsets.ModelViewSet):
         product = self.get_object()
         product.is_featured = not product.is_featured
         product.save()
+        return Response({'status': 'success', 'is_featured': product.is_featured})
+
+    @action(detail=True, methods=['post'])
+    def toggle_active(self, request, pk=None):
+        product = self.get_object()
+        product.is_active = not product.is_active
+        product.save()
+        return Response({'status': 'success', 'is_active': product.is_active})
+
         return Response({'status': 'success', 'is_featured': product.is_featured})
 
     @action(detail=True, methods=['post'])

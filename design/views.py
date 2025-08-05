@@ -9,13 +9,16 @@ from .serializers import ServiceSerializer, FilterConfigurationSerializer
 from home.models import Product
 from home.serializer import ProductSerializer
 from django.core.mail import EmailMessage
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 import datetime
 from django.conf import settings
 
 class FilterConfigurationListView(ListAPIView):
     queryset = FilterConfiguration.objects.all()
     serializer_class = FilterConfigurationSerializer
+    permission_classes = [AllowAny]
+    authentication_classes = []
 
 class MarketplaceView(ListAPIView):
     queryset = Product.objects.all().prefetch_related('images')
@@ -23,13 +26,21 @@ class MarketplaceView(ListAPIView):
     filterset_fields = ['bedrooms', 'bathrooms', 'garage', 'architectural_style']
     search_fields = ['name', 'description']
     ordering_fields = ['price', 'area_m2', 'created_at']
+    permission_classes = [AllowAny]
+    authentication_classes = []
 
 class CategoryListView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    
     def get(self, request):
         categories = Category.objects.all().values('id', 'name', 'emoji')
         return Response(list(categories))
 
 class ServiceListView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    
     def get(self, request):
         category_id = request.query_params.get('category_id')
         qs = Service.objects.all()
@@ -40,6 +51,9 @@ class ServiceListView(APIView):
         return Response(list(services))
 
 class GeneralConfigListView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    
     def get(self, request):
         configs = GeneralConfig.objects.all().values('key', 'value')
         return Response(list(configs))
@@ -47,8 +61,13 @@ class GeneralConfigListView(APIView):
 class ServiceDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
+    permission_classes = [AllowAny]
+    authentication_classes = []
 
 class DesignEntryView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    
     def post(self, request):
         try:
             area_total = request.data.get("area_total")
@@ -83,6 +102,7 @@ class DesignEntryView(APIView):
             return Response({"error": "Error interno"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def send_invoice(request):
     email = request.data.get('email')
     products = request.data.get('products', [])
@@ -152,14 +172,22 @@ def send_invoice(request):
         to=[email, remitente],
     )
     email_msg.content_subtype = "html"
-    email_msg.send()
-    return Response({"ok": True})
+    try:
+        email_msg.send()
+        print('📧 ✅ Correo enviado exitosamente')
+        return Response({"ok": True})
+    except Exception as e:
+        print('📧 ❌ Error enviando correo:', str(e))
+        return Response({"error": f"Error enviando correo: {str(e)}"}, status=500)
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def send_contact_message(request):
     data = request.data
     user_email = data.get('email')
-    print('Correo recibido en el backend:', user_email) 
+    print('📧 Enviando mensaje de contacto...')
+    print('📧 Datos recibidos:', data)
+    print('📧 Correo del usuario:', user_email)
     remitente = settings.EMAIL_HOST_USER
     nombre = data.get('firstName', '') + ' ' + data.get('lastName', '')
     telefono = data.get('phone', '')
@@ -203,8 +231,8 @@ def send_contact_message(request):
     email_msg = EmailMessage(
         subject="Nuevo mensaje de contacto - U2 Group",
         body=html_content,
-        from_email=None,
-        to=[user_email, remitente],
+        from_email="u2@u2.group",
+        to=[user_email, "u2@u2.group"],
     )
     email_msg.content_subtype = "html"
     email_msg.send()
