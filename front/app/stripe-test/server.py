@@ -6,10 +6,11 @@ Stripe Sample.
 Python 3.6 or newer required.
 """
 from flask import Flask, jsonify, request
+import os
 
 import stripe
 # This is your test secret API key.
-stripe.api_key = 'sk_test_51Rb6okFKGZAnibj3tr3imYeOmAqNggG4nvCKscyKJc7LbLr9ZtPxcS1VrhsAKT2FoqjdIbtpDJ05yB3JtLctc92E00RgBPAm2a'
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY', 'sk_test_placeholder')
 stripe.api_version = '2025-07-30.basil'
 
 app = Flask(__name__,

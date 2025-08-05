@@ -30,8 +30,8 @@ def create_env_file():
         return False
     
     # Claves reales de Stripe (extraídas del código de ejemplo)
-    stripe_publishable_key = "pk_test_51Rb6okFKGZAnibj3dR4FU4Qn1CVmwJgmrJceKOJiDYb8OXfpvRpAmiGcBHU3g6mTaAPemCjVJAvCSHV5kHC1sB3G00ELkY2F7Z"
-    stripe_secret_key = "sk_test_51Rb6okFKGZAnibj3tr3imYeOmAqNggG4nvCKscyKJc7LbLr9ZtPxcS1VrhsAKT2FoqjdIbtpDJ05yB3JtLctc92E00RgBPAm2a"
+    stripe_publishable_key = "pk_test_placeholder"
+    stripe_secret_key = "sk_test_placeholder"
     
     # Crear contenido del archivo .env.local
     env_content = f"""# Configuración de Stripe para el Frontend
@@ -57,8 +57,8 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 def create_backend_env():
     """Crear archivo .env para el backend"""
     # Claves reales de Stripe (extraídas del código de ejemplo)
-    stripe_secret_key = "sk_test_51Rb6okFKGZAnibj3tr3imYeOmAqNggG4nvCKscyKJc7LbLr9ZtPxcS1VrhsAKT2FoqjdIbtpDJ05yB3JtLctc92E00RgBPAm2a"
-    stripe_publishable_key = "pk_test_51Rb6okFKGZAnibj3dR4FU4Qn1CVmwJgmrJceKOJiDYb8OXfpvRpAmiGcBHU3g6mTaAPemCjVJAvCSHV5kHC1sB3G00ELkY2F7Z"
+    stripe_secret_key = "sk_test_placeholder"
+    stripe_publishable_key = "pk_test_placeholder"
     
     env_content = f"""# Configuración de Stripe para el Backend
 STRIPE_SECRET_KEY={stripe_secret_key}
