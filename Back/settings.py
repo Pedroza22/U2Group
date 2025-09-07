@@ -58,15 +58,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Back.wsgi.application'
 
-# Database
+# Database - Configuración Supabase
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'u2group_db'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+        'NAME': os.getenv('SUPABASE_DB_NAME', 'postgres'),
+        'USER': os.getenv('SUPABASE_DB_USER', 'postgres.fifkylbudotxkgodfkeo'),
+        'PASSWORD': os.getenv('SUPABASE_DB_PASSWORD', 'U2Group2025$'),
+        'HOST': os.getenv('SUPABASE_DB_HOST', 'aws-1-us-east-2.pooler.supabase.com'),
+        'PORT': os.getenv('SUPABASE_DB_PORT', '6543'),
     }
 }
 
@@ -122,14 +122,15 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', '')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'urbanunitystudios@gmail.com')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'x r s f c s a i p t s p d x y y')
+ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'urbanunitystudios@gmail.com')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'urbanunitystudios@gmail.com')
+
+# Frontend configuration
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://u2.group')
 
 # Stripe configuration usando variables de entorno
-STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', '')
-STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', '')
-
-# Supabase configuration usando variables de entorno
-SUPABASE_URL = os.getenv('SUPABASE_URL', '')
-SUPABASE_KEY = os.getenv('SUPABASE_KEY', '')
+STRIPE_PUBLISHABLE_KEY = os.getenv('STRIPE_PUBLISHABLE_KEY', 'pk_test_51Rb6okFKGZAnibj3dR4FU4Qn1CVmwJgmrJceKOJiDYb8OXfpvRpAmiGcBHU3g6mTaAPemCjVJAvCSHV5kHC1sB3G00ELkY2F7Z')
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', 'sk_test_51Rb6okFKGZAnibj3tr3imYeOmAqNggG4nvCKscyKJc7LbLr9ZtPxcS1VrhsAKT2FoqjdIbtpDJ05yB3JtLctc92E00RgBPAm2a')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', 'whsec_XQ80ZywQsiDogu7OvK6oT5zXRMMPXoEY')
