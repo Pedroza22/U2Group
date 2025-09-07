@@ -5,14 +5,14 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "../../../components/ui/button"
 import { Card } from "../../../components/ui/card"
-import {
+import { 
   Plus,
   Edit,
   Trash2,
   LogOut,
   Home,
-  FileText,
-  Settings,
+  FileText, 
+  Settings, 
   Eye,
   Star,
   Calendar,
@@ -408,7 +408,7 @@ export default function AdminDashboardPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600 neutra-font">Loading admin panel...</p>
-        </div>
+      </div>
       </div>
     )
   }
@@ -440,7 +440,7 @@ export default function AdminDashboardPage() {
                 <Home className="w-4 h-4 mr-2" />
                 Ver Sitio
               </Button>
-              <Button
+              <Button 
                 variant="outline"
                 onClick={handleLogout}
                 className="text-red-600 border-red-200 hover:bg-red-50 neutra-font bg-transparent"
@@ -456,47 +456,47 @@ export default function AdminDashboardPage() {
       <div className="w-full px-2 py-4 md:container md:mx-auto md:px-4 md:py-8">
         {/* NAVEGACIÓN DE PESTAÑAS */}
         <div className="flex gap-2 mb-8 overflow-x-auto flex-nowrap whitespace-nowrap scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent">
-          <Button
+              <Button 
             onClick={() => setActiveTab("projects")}
             variant={activeTab === "projects" ? "default" : "outline"}
             className="neutra-font"
           >
             <Home className="w-4 h-4 mr-2" />
             Proyectos ({projects.length})
-          </Button>
-          <Button
+              </Button>
+              <Button 
             onClick={() => setActiveTab("blogs")}
             variant={activeTab === "blogs" ? "default" : "outline"}
             className="neutra-font"
-          >
-            <FileText className="w-4 h-4 mr-2" />
+              >
+                <FileText className="w-4 h-4 mr-2" />
             Blogs ({blogs.length})
-          </Button>
+              </Button>
           {/* Eliminar la pestaña de Opciones de Diseño */}
-          <Button
+              <Button 
             onClick={() => setActiveTab("services")}
             variant={activeTab === "services" ? "default" : "outline"}
             className="neutra-font"
-          >
-            <FileText className="w-4 h-4 mr-2" />
+              >
+                <FileText className="w-4 h-4 mr-2" />
             Servicios de Diseño ({services.length})
-          </Button>
-          <Button
+              </Button>
+              <Button 
             onClick={() => setActiveTab("marketplace")}
             variant={activeTab === "marketplace" ? "default" : "outline"}
             className="neutra-font"
           >
             <DollarSign className="w-4 h-4 mr-2" />
             Marketplace
-          </Button>
-          <Button
+              </Button>
+              <Button 
             onClick={() => setActiveTab("settings")}
             variant={activeTab === "settings" ? "default" : "outline"}
             className="neutra-font"
-          >
-            <Settings className="w-4 h-4 mr-2" />
+              >
+                <Settings className="w-4 h-4 mr-2" />
             Configuración
-          </Button>
+              </Button>
         </div>
 
         {/* CONTENIDO DE PROYECTOS */}
@@ -1037,7 +1037,7 @@ function DesignOptionEditor({
               </Button>
             </div>
           </form>
-        </div>
+            </div>
       </Card>
     </div>
   )

@@ -2,17 +2,17 @@
 
 import { useState, useEffect } from "react"
 import axios from "axios";
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Button } from "../components/ui/button"
+import { Card } from "../components/ui/card"
 import { ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import Header from "@/components/layout/header"
-import Footer from "@/components/layout/footer"
-import GoogleMapsWorking from "@/components/google-maps-working"
-import IntroVideo from "@/components/intro-video"
-import { useLanguage } from "@/hooks/use-language"
-import PriceCalculator from "@/components/price-calculator"
+import Header from "../components/layout/header"
+import Footer from "../components/layout/footer"
+import GoogleMapsWorking from "../components/google-maps-working"
+import IntroVideo from "../components/intro-video"
+import { useLanguage } from "../hooks/use-language"
+import PriceCalculator from "../components/price-calculator"
 
 // Componente simple de calculadora
 function SimpleCalculator() {
@@ -248,7 +248,7 @@ export default function HomePage() {
               </div>
               <div className="mb-6 rounded-2xl overflow-hidden border-2 border-blue-100 shadow-xl">
                 <GoogleMapsWorking
-                  apiKey="AIzaSyC2NBqGaRtCaiAcFyKw2eB1jrLPD1rBKPA"
+                  apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}
                   height="600px"
                   zoom={4}
                   center={{ lat: 10, lng: -40 }}
