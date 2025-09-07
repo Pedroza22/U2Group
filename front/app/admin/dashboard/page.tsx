@@ -3,8 +3,8 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Button } from "../../../components/ui/button"
+import { Card } from "../../../components/ui/card"
 import {
   Plus,
   Edit,
@@ -27,11 +27,11 @@ import {
   type AdminBlog,
   type AdminDesignCategory,
   type AdminDesignOption,
-} from "@/data/admin-data"
-import ProjectEditor from "@/components/admin/project-editor"
-import BlogEditor from "@/components/admin/blog-editor"
-import MarketplaceEditor from "@/components/admin/marketplace-editor"
-import ImageUploader from "@/components/admin/image-uploader"
+} from "../../../data/admin-data"
+import ProjectEditor from "../../../components/admin/project-editor"
+import BlogEditor from "../../../components/admin/blog-editor"
+import MarketplaceEditor from "../../../components/admin/marketplace-editor"
+import ImageUploader from "../../../components/admin/image-uploader"
 import axios from "axios";
 import {
   getProjects,
@@ -39,14 +39,14 @@ import {
   updateProject,
   deleteProject,
   uploadProjectImage,
-} from "@/lib/api-projects";
+} from "../../../lib/api-projects";
 import {
   getBlogs,
   createBlog,
   updateBlog,
   deleteBlog,
-} from "@/lib/api-blogs";
-import { useToast } from "@/hooks/use-toast";
+} from "../../../lib/api-blogs";
+import { useToast } from "../../../hooks/use-toast";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
