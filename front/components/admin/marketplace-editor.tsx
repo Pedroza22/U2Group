@@ -1,14 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Button } from "../ui/button"
+import { Card } from "../ui/card"
 import { Plus, Edit, Trash2 } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog"
 import ImageUploader from "./image-uploader"
-import { type AdminDesignOption, type AdminDesignCategory } from "@/data/admin-data"
-import { MarketplaceFilterManager, type MarketplaceFilter, type MarketplaceFilterType } from "@/data/admin-data"
-import { getMarketplaceProducts, createMarketplaceProduct, updateMarketplaceProduct, deleteMarketplaceProduct } from "@/lib/api-marketplace";
+import { type AdminDesignOption, type AdminDesignCategory } from "../../data/admin-data"
+import { MarketplaceFilterManager, type MarketplaceFilter, type MarketplaceFilterType } from "../../data/admin-data"
+import { getMarketplaceProducts, createMarketplaceProduct, updateMarketplaceProduct, deleteMarketplaceProduct } from "../../lib/api-marketplace";
 
 interface MarketplaceEditorProps {
   categories: AdminDesignCategory[]

@@ -3,12 +3,12 @@
 import type React from "react"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Button } from "../../components/ui/button"
+import { Card } from "../../components/ui/card"
 import { ArrowRight, Mail, Phone, MapPin } from "lucide-react"
-import Header from "@/components/layout/header"
-import Footer from "@/components/layout/footer"
-import { useLanguage } from "@/hooks/use-language"
+import Header from "../../components/layout/header"
+import Footer from "../../components/layout/footer"
+import { useLanguage } from "../../hooks/use-language"
 import axios from "axios";
 
 export default function ContactoPage() {
